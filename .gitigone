@@ -1,0 +1,8 @@
+# Ignore the virtual environment
+.env
+env/
+venv/
+ENV/
+.venv/
+alembic/versions/
+alembic/__pycache__/
