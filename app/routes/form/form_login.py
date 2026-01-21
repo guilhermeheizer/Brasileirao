@@ -9,9 +9,10 @@ from app.utils.token import criar_token, verificar_token
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from app.models.usuario_models import Usuario
+from datetime import timedelta
 
 
-login_router = APIRouter(tags=["Login"])
+login_router = APIRouter(tags=["login"])
 
 @login_router.post("/login")
 async def login(login_schema: LoginSchema, session: Session = Depends(pegar_sessao)):
@@ -71,5 +72,5 @@ async def refresh_token(usuario: Usuario = Depends(verificar_token)):
     acess_token = criar_token(getattr(usuario, "id"))
     return {
         "access_token": acess_token,
-        "token_type": "bearer"
+        "token_type": "Bearer"
     }

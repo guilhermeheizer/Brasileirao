@@ -3,7 +3,7 @@ from app.schemas.usuario_schema import UsuarioSchema
 from app.core.dependencies import pegar_sessao
 from app.services.usuario_service import criar_usuario_service
 
-usuario_router = APIRouter(tags=["Usuario"])
+usuario_router = APIRouter(tags=["usuario"])
 
 # Vamos usar decoradores para definir as rotas relacionadas a autenticação
 @usuario_router.get("/")   

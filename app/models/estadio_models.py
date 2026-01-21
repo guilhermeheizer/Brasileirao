@@ -10,8 +10,16 @@ class Estadio(Base):
     est_nome = Column(String(100), nullable=False)
     cidade_cid_id = Column(Integer, ForeignKey("cidade.cid_id"), nullable=False)
 
-    # cidade_relacao = relationship("Cidade", backref="estadios")
+    # Relacionamento com Cidade
+    cidade = relationship("Cidade", back_populates="estadios")
 
     def __init__(self, est_nome, cidade_cid_id):
         self.est_nome = est_nome
         self.cidade_cid_id = cidade_cid_id
+
+    def as_dict(self):
+        return {
+            "est_id": self.est_id,
+            "est_nome": self.est_nome,
+            "cidade_cid_id": self.cidade_cid_id
+        }

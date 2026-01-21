@@ -14,7 +14,7 @@ from app.services.cidade_service import (
 )
 
 
-cidade_router = APIRouter(tags=["Cidade"])
+cidade_router = APIRouter(tags=["cidade"])
 
 @cidade_router.get("/listar", response_model=ResponseCidadesSchema)
 def listar_cidades(session: Session = Depends(pegar_sessao)):
@@ -32,67 +32,85 @@ Raises:
 Returns:
     ResponseCidadesSchema: Uma resposta no formato do esquema Pydantic `ResponseCidadesSchema`, 
     que contém uma lista de cidades no formato especificado por `CidadesSchema`.
-
-Exemplo:
-    Requisição:
-        GET /cidade/listar
-
-    Resposta (200):
-        {
-            "cidades": [
-                {
-                    "cid_id": 1,
-                    "cid_nome": "São Paulo",
-                    "cid_uf": "SP"
-                },
-                {
-                    "cid_id": 2,
-                    "cid_nome": "Rio de Janeiro",
-                    "cid_uf": "RJ"
-                }
-            ]
-        }
     """
     try:
         return listar_todas_cidades(session)
     except HTTPException as ex:
-        raise ex
+        log_erro = (f"{ex.detail}")
+        raise HTTPException(status_code=500, detail=log_erro)
+    finally:
+        session.close()
 
 @cidade_router.post("/", response_model=CidadesSchema)
 def criar_nova_cidade(cidade: CidadesSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
-    """
-    Insere uma nova cidade no banco.
+    """Insere uma nova cidade no banco.
+
+    Args:
+        cidade (CidadesSchema): cidade: Dados da cidade a ser criada.
+        session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI   
+                                     via dependência de injeção (Depends(pegar_sessao)).
+        usuario (Usuario, optional): Defaults to Depends(verificar_token).
+
+    Raises:
+        HTTPException: Lançada se ocorrer um erro durante a criação da cidade.
+
+    Returns:
+        CidadesSchema: A cidade criada.
     """
     try:
         return criar_cidade(cidade, session)
     except HTTPException as ex:
-        raise ex
+        log_erro = (f"{ex.detail}")
+        raise HTTPException(status_code=404, detail=log_erro)
     finally:
         session.close()
 
 
 @cidade_router.put("/{cidade_id}", response_model=CidadesSchema)
 def atualizar_cidade_por_id(cidade_id: int, cidade_atualizada: CidadesSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
-    """
-    Atualiza uma cidade pelo ID.
+    """Atualiza cidade
+
+    Args:
+        cidade_id (int): informe o ID da cidade a ser atualizada.
+        cidade_atualizada (CidadesSchema): Dados para atualizar a cidade.
+        session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI   
+                                     via dependência de injeção (Depends(pegar_sessao)).
+        usuario (Usuario, optional): Defaults to Depends(verificar_token).
+
+    Raises:
+        HTTPException: Lançada se ocorrer um erro durante a atualização da cidade.
+    Returns:
+        CidadesSchema: A cidade atualizada.
     """
     try:
         return atualizar_cidade(cidade_id, cidade_atualizada, session)
     except HTTPException as ex:
-        raise ex
+        log_erro = (f"{ex.detail}")
+        raise HTTPException(status_code=404, detail=log_erro)
     finally:
         session.close()
 
 @cidade_router.delete("/{cidade_id}")
 def deletar_cidade_por_id(cidade_id: int, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
-    """
-    Remove uma cidade pelo ID.
+    """Deleção de uma cidade
+
+    Args:
+        cidade_id (int): Informe o ID da cidade a ser deletada.
+        session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI   
+                                     via dependência de injeção (Depends(pegar_sessao)).
+        usuario (Usuario, optional): Defaults to Depends(verificar_token).
+
+    Raises:
+        HTTPException: Lançada se ocorrer um erro durante a exclusão da cidade.
+    Returns:
+        CidadesSchema: A cidade excluída.
     """
     try:
         deletar_cidade(cidade_id, session)
-        return {"message": "Cidade deletada com sucesso"}
+        return {"message": "Cidade excluida com sucesso"}
     except HTTPException as ex:
-        raise ex
+        log_erro = (f"{ex.detail}")
+        raise HTTPException(status_code=404, detail=log_erro)
     finally:
         session.close()
 
@@ -102,12 +120,26 @@ def listar_cidades_paginacao(
     nome: Optional[str] = Query(None, description="Busca parcial pelo nome da cidade"),
     pagina: int = Query(1, description="Número da página", ge=1),
     tamanho_pagina: int = Query(10, description="Tamanho da página", ge=1),
-    session: Session = Depends(pegar_sessao),
-):
-    """
-    Lista as cidades com paginação e busca por nome.
+    session: Session = Depends(pegar_sessao)):
+    """Lista as cidades com paginação e busca por nome.
+
+    Args:
+        nome (Optional[str], optional): Defaults to Query(None, description="Busca parcial pelo nome da cidade").
+        pagina (int, optional): Defaults to Query(1, description="Número da página", ge=1).
+        tamanho_pagina (int, optional): Defaults to Query(10, description="Tamanho da página", ge=1).   
+        session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI   
+                                     via dependência de injeção (Depends(pegar_sessao)).
+
+    Raises:
+        HTTPException: Lançada se ocorrer um erro durante a listagem das cidades.
+
+    Returns: ResponseCidadesSchema: Uma resposta no formato do esquema Pydantic `ResponseCidadesSchema`, 
+             que contém uma lista de cidades no formato especificado por `CidadesSchema`.
     """
     try:
         return listar_cidades_paginadas(nome, pagina, tamanho_pagina, session)
     except HTTPException as ex:
-        raise ex
+        log_erro = (f"{ex.detail}")
+        raise HTTPException(status_code=404, detail=log_erro)
+    finally:
+        session.close()

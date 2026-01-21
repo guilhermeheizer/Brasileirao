@@ -11,6 +11,7 @@ class Cidade(Base):
     cid_uf = Column(CHAR(2), nullable=False)
 
     estadios = relationship("Estadio", cascade="all, delete")
+    clubes = relationship("Clube", cascade="all, delete", back_populates="cidade")
 
     def __init__(self, cid_nome, cid_uf):
         self.cid_nome = cid_nome

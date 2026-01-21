@@ -7,13 +7,12 @@ from app.core.database import get_db
 from sqlalchemy.orm import Session
 from app.models.usuario_models import Usuario
 
-
 # Usamos diretamente o get_db para obter a sessão
 pegar_sessao = get_db
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+auth2_scheme = OAuth2PasswordBearer(tokenUrl="login/login-form")
 
-def verificar_token(token: str = Depends(oauth2_scheme), session: Session = Depends(pegar_sessao)):
+def verificar_token(token: str = Depends(auth2_scheme), session: Session = Depends(pegar_sessao)):
     if settings.SECRET_KEY is None:
         raise HTTPException(status_code=500, detail="Chave secreta não configurada!")
     try:

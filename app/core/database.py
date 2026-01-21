@@ -29,6 +29,5 @@ def get_db():
 
 # Cria as tabelas no banco de dados
 def criar_tabelas(): 
-    print("Criando tabelas no banco de dados...")
-    from app.models import cidade_models, estadio_models, usuario_models  # Importa os modelos para registrar as tabelas
+    from app.models import cidade_models, estadio_models, usuario_models, clube_models  # Importa os modelos para registrar as tabelas
     Base.metadata.create_all(bind=engine)

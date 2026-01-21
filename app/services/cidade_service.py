@@ -24,7 +24,7 @@ def listar_todas_cidades(session: Session) -> ResponseCidadesSchema:
 
     # Validação quando não houver cidades cadastradas
     if not cidades:
-        raise HTTPException(status_code=404, detail="Não há cidades cadastradas")
+        raise HTTPException(status_code=404, detail="Não há cidades cadastradas.")
     
     # Convertendo os objetos Cidade para o formato do schema
     cidades_schema = [CidadesSchema(**cidade.as_dict()) for cidade in cidades]
@@ -42,12 +42,13 @@ def criar_cidade(cidade: CidadesSchema, session: Session) -> CidadesSchema:
         CidadesSchema: Dados da cidade criada.
     """
     if buscar_cidade_nome(False, cidade.cid_nome, session):  # Verifica se a cidade já existe
-        raise HTTPException(status_code=400, detail=f"Cidade {cidade.cid_nome} já cadastrada")
+        raise HTTPException(status_code=400, detail=f"Cidade {cidade.cid_nome.title()} já cadastrada.")
     
     consiste_uf(cidade.cid_uf)  # Verifica se a UF é válida
-    print("UF válida:", cidade.cid_uf)
-    nova_cidade = Cidade(cid_nome=re.sub(r'\s+', ' ', cidade.cid_nome.strip()), cid_uf=cidade.cid_uf.upper()) # Remove espaços extras
-    print("Criando cidade:", nova_cidade.as_dict())
+
+    nova_cidade = Cidade(cid_nome=re.sub(r'\s+', ' ', cidade.cid_nome.strip()).title(), 
+                         cid_uf=cidade.cid_uf.upper()) # Remove espaços extras
+
     session.add(nova_cidade)
     session.commit()
     session.refresh(nova_cidade)
@@ -69,17 +70,29 @@ def atualizar_cidade(cidade_id: int, cidade_atualizada: CidadesSchema, session: 
         CidadesSchema: Dados da cidade atualizada.
     """
     cidade_db = session.query(Cidade).filter(Cidade.cid_id == cidade_id).first()
+
     if not cidade_db:
-        raise HTTPException(status_code=404, detail="Cidade não encontrada")
+        raise HTTPException(status_code=404, detail="Cidade não encontrada.")
     
-    consiste_uf(cidade_atualizada.cid_uf)  # Verifica se a UF é válida
+    if cidade_atualizada.cid_nome:
+        # Normaliza o nome do clube (remove espaços duplicados e aplica Title Case)
+        nome_normalizado = re.sub(r'\s+', ' ', cidade_atualizada.cid_nome.strip()).title()
 
-    cidade_db.cid_nome = re.sub(r'\s+', ' ', cidade_atualizada.cid_nome.strip()) # Remove espaços extras
-    cidade_db.cid_uf = cidade_atualizada.cid_uf.upper()
-    session.commit()
-    session.refresh(cidade_db)
+        cidade_existente = buscar_cidade_nome(False, nome_normalizado, session)
+        if cidade_existente and cidade_existente.cid_nome == nome_normalizado:
+            raise HTTPException(status_code=404, detail=f"Cidade {cidade_atualizada.cid_nome.strip().title()} já cadastrada.")
+        
+        cidade_db.cid_nome = nome_normalizado
+
+    if cidade_atualizada.cid_uf:
+        consiste_uf(cidade_atualizada.cid_uf)  # Verifica se a UF é válida
+        cidade_db.cid_uf = cidade_atualizada.cid_uf.upper()
+
+    if cidade_atualizada:
+        session.commit()
+        session.refresh(cidade_db)
+
     return CidadesSchema(**cidade_db.as_dict())
-
 
 def deletar_cidade(cidade_id: int, session: Session) -> None:
     """Deletar registro na tabela de cidade
@@ -93,7 +106,7 @@ def deletar_cidade(cidade_id: int, session: Session) -> None:
     """
     cidade_db = session.query(Cidade).filter(Cidade.cid_id == cidade_id).first()
     if not cidade_db:
-        raise HTTPException(status_code=404, detail="Cidade não encontrada")
+        raise HTTPException(status_code=404, detail="Cidade não encontrada.")
     
     session.delete(cidade_db)
     session.commit()
@@ -116,14 +129,16 @@ def listar_cidades_paginadas(nome: Optional[str], pagina: int, tamanho_pagina: i
     """
     query = session.query(Cidade)
     if nome:
-        query = query.filter(Cidade.__table__.c.cid_nome.ilike(f"%{nome.upper()}%").upper())
+        query = query.filter(Cidade.__table__.c.cid_nome.ilike(f"%{nome}%"))
+        
     cidades = (
         query.offset((pagina - 1) * tamanho_pagina).limit(tamanho_pagina).all()
     )
     if not cidades:
-        raise HTTPException(status_code=404, detail="Nenhuma cidade encontrada")
+        raise HTTPException(status_code=404, detail="Nenhuma cidade encontrada.")
     
     cidades_schema = [CidadesSchema(**cidade.as_dict()) for cidade in cidades]
+    
     return ResponseCidadesSchema(cidades=cidades_schema)
 
 
@@ -143,7 +158,7 @@ def buscar_cidade_nome(retorna_exception: bool, nome: str, session: Session) -> 
         Optional[CidadesSchema]: Representação da cidade encontrada ou None se não encontrada.
     """
     # Busca pela cidade no banco de dados (ignora case com ilike)
-    cidade = session.query(Cidade).filter(Cidade.__table__.c.cid_nome.ilike(f"%{nome.upper()}%")).first()
+    cidade = session.query(Cidade).filter(Cidade.__table__.c.cid_nome.ilike(f"%{nome}%")).first()
 
     if not cidade:
         if retorna_exception:
@@ -214,7 +229,6 @@ def consiste_uf (uf: str) -> bool:
         "RS", "RO", "RR", "SC", "SP", "SE", "TO"
     ]
     if uf.upper() in ufs_validas:
-        print("Consiste_uf - UF válida:", uf)
         return True
     else:
-        raise HTTPException(status_code=400, detail=f"UF {uf} inválida")
+        raise HTTPException(status_code=400, detail=f"UF {uf} inválida.")

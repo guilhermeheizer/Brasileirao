@@ -1,0 +1,15 @@
+Anotações para o READ.md
+
+Utilizo o VIDE CODING. Então, o código gerado pela IA irá, sim, agregar ao dia a dia do desenvolvedor, mas tenho que compreender o que foi gerado e ter o conhecimento de validar e melhorar o que foi gerado.
+Ao chegar no ponto de criar um prompt, eu, como analista de sistemas / desenvolvedor, já passei pelos requisitos do sistema, validação com o usuário, separação dos processos, definição do DER e definição dos programas (front e back).
+Nada mais, nada menos para mim um bom prompt para criar uma função deve ter: qual o objetivo, os parâmetros de entrada, quais as tabelas envolvidas, como é a lógica (leitura das tabelas/arquivos) e as saídas (gravações de tabelas relatórios). 
+Resumindo, um prompt é a velha e a atual: ANÁLISE DE PROGRAMA.
+
+- Restrições para gravação dos atributos alfanumericos no banco
+  Os atributos como nomes das cidade, estádios e dos clubes utilizam o
+  métodos do .title().
+  Então ao informar o nome da cidade  "águas de lindóia", utilizo o 
+  title e vai gravar no atributo nome da tabela de cidades: "Águas de Lindóia".
+  
+  O objetivo deste tratamento é para que o projeto fique mais simples. Por que cada
+  banco de dados possui especifidades no tratamento de acentos e maiúsculas  miniúsculas

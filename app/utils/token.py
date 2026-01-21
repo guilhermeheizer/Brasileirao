@@ -36,6 +36,7 @@ def criar_token(id_usuario: int, duracao_token=timedelta(minutes=settings.ACCESS
 
     dic_info = {"sub": str(id_usuario), "exp": data_expiracao} # Informação do token de acordo com o padrão JWT: https://www.jwt.io/
     token = jwt.encode(dic_info, chave_secreta, algorithm=settings.ALGORITHM)
+ 
     return token
 
 def verificar_token(token: str = Depends(oauth2_scheme), session: Session = Depends(pegar_sessao)):
