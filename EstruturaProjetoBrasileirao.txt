@@ -105,357 +105,101 @@ Funções utilitárias, como:Hash de senhas usando bcrypt (ex. hashing.py).
 Gerenciamento de JWT para autenticação (ex. token.py).
 
 
-app/main.py:
-
-Entrypoint do projeto. Configura FastAPI, conecta o banco e inclui as rotas.
-
-
-Exemplo de Código
-
-1. core/config.py
-
-from pydantic import BaseSettings
-
-class Settings(BaseSettings):
-    DATABASE_URL: str
-    SECRET_KEY: str = "meusegredoseguro"
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-
-    class Config:
-        env_file = ".env"
-
-settings = Settings()
-
-2. core/database.py
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
-
-from app.core.config import settings
-
-engine = create_engine(settings.DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
-
-3. models/clube.py
-
-from sqlalchemy import Column, Integer, String
-from app.core.database import Base
-
-class Clube(Base):
-    __tablename__ = "clubes"
-    id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String, unique=True, index=True)
-    cidade_id = Column(Integer)  # FK com a tabela cidade
-
-4. routes/crud/clube.py
-
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-
-from app.models.clube import Clube
-from app.schemas.clube import ClubeCreate
-from app.core.database import SessionLocal
-from app.services.clube_service import verificar_nome_clube_unico
-
-router = APIRouter()
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-@router.post("/")
-def criar_clube(clube: ClubeCreate, db: Session = Depends(get_db)):
-    if not verificar_nome_clube_unico(db, clube.nome):
-        raise HTTPException(status_code=400, detail="Clube já cadastrado.")
-    novo_clube = Clube(nome=clube.nome, cidade_id=clube.cidade_id)
-    db.add(novo_clube)
-    db.commit()
-    db.refresh(novo_clube)
-    return novo_clube
-
-
-Essa é uma base estruturada para o projeto Brasileirao. A separação de responsabilidades permite adicionar funcionalidades no futuro sem complicar o código. Se precisar de mais detalhamentos ou ajustes, posso ajudar!
-
-Segue abaixo os arquivos Python para cada tabela, seguindo o modelo fornecido:
-
-
-Arquivo: cartao_models.py
-
-from sqlalchemy import Column, Integer, String, ForeignKey, CHAR
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
-class Cartao(Base):
-    __tablename__ = "cartao"
-
-    car_serie = Column(CHAR(1), primary_key=True)
-    car_ano = Column(Integer, primary_key=True)
-    clube_clu_sigla = Column(CHAR(3), ForeignKey("clube.clu_sigla"), primary_key=True)
-    car_qtd_vermelho = Column(Integer, nullable=True)
-    car_qtd_amarelo = Column(Integer, nullable=True)
-
-    def __init__(self, car_serie, car_ano, clube_clu_sigla, car_qtd_vermelho=None, car_qtd_amarelo=None):
-        self.car_serie = car_serie
-        self.car_ano = car_ano
-        self.clube_clu_sigla = clube_clu_sigla
-        self.car_qtd_vermelho = car_qtd_vermelho
-        self.car_qtd_amarelo = car_qtd_amarelo
-
-
-Arquivo: cidade_models.py
-
-from sqlalchemy import Column, Integer, String, CHAR
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
-class Cidade(Base):
-    __tablename__ = "cidade"
-
-    cid_id = Column(Integer, primary_key=True, autoincrement=True)
-    cid_nome = Column(String(100), nullable=False)
-    cid_uf = Column(CHAR(2), nullable=False)
-
-    def __init__(self, cid_nome, cid_uf):
-        self.cid_nome = cid_nome
-        self.cid_uf = cid_uf
-
-
-Arquivo: classificacao_geral_models.py
-
-from sqlalchemy import Column, Integer, String, CHAR, ForeignKey
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
-class ClassificacaoGeral(Base):
-    __tablename__ = "classificacao_geral"
-
-    clg_id = Column(Integer, primary_key=True, autoincrement=True)
-    clg_serie = Column(CHAR(1), nullable=False)
-    clg_ano = Column(Integer, nullable=False)
-    clg_pontos = Column(Integer, nullable=False)
-    clg_vitorias = Column(Integer, nullable=False)
-    clg_saldo_gols = Column(Integer, nullable=False)
-    clg_gols_pro = Column(Integer, nullable=False)
-    clg_confronto_direto = Column(Integer, nullable=False)
-    clg_vermelho_clube_clu_sigla = Column(CHAR(3), ForeignKey("clube.clu_sigla"), nullable=False)
-    clg_amarelo_clube_clu_sigla = Column(CHAR(3), ForeignKey("clube.clu_sigla"), nullable=False)
-    clube_clu_sigla = Column(CHAR(3), ForeignKey("clube.clu_sigla"), nullable=False)
-    clg_qtd_jogou = Column(Integer, nullable=True)
-    clg_qtd_empates = Column(Integer, nullable=True)
-    clg_qtd_derrotas = Column(Integer, nullable=True)
-    clg_gols_contra = Column(Integer, nullable=True)
-
-    def __init__(self, clg_serie, clg_ano, clg_pontos, clg_vitorias, clg_saldo_gols, clg_gols_pro, 
-                 clg_confronto_direto, clg_vermelho_clube_clu_sigla, clg_amarelo_clube_clu_sigla,
-                 clube_clu_sigla, clg_qtd_jogou=None, clg_qtd_empates=None, clg_qtd_derrotas=None, clg_gols_contra=None):
-        self.clg_serie = clg_serie
-        self.clg_ano = clg_ano
-        self.clg_pontos = clg_pontos
-        self.clg_vitorias = clg_vitorias
-        self.clg_saldo_gols = clg_saldo_gols
-        self.clg_gols_pro = clg_gols_pro
-        self.clg_confronto_direto = clg_confronto_direto
-        self.clg_vermelho_clube_clu_sigla = clg_vermelho_clube_clu_sigla
-        self.clg_amarelo_clube_clu_sigla = clg_amarelo_clube_clu_sigla
-        self.clube_clu_sigla = clube_clu_sigla
-        self.clg_qtd_jogou = clg_qtd_jogou
-        self.clg_qtd_empates = clg_qtd_empates
-        self.clg_qtd_derrotas = clg_qtd_derrotas
-        self.clg_gols_contra = clg_gols_contra
-
-
-Os demais arquivos seguirão a mesma lógica. Para simplificar a resposta, listei apenas os arquivos específicos que você pode replicar com base neste esquema. Caso seja necessário ajuda adicional, posso detalhar qualquer tabela!
-
-Segue os models restantes que faltam, seguindo o mesmo padrão.
-
-
-Arquivo: classificacao_rodada_models.py
-
-from sqlalchemy import Column, Integer, String, CHAR, ForeignKey
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
-class ClassificacaoRodada(Base):
-    __tablename__ = "classificacao_rodada"
-
-    clr_id = Column(Integer, primary_key=True, autoincrement=True)
-    clr_serie = Column(CHAR(1), nullable=False)
-    clr_ano = Column(Integer, nullable=False)
-    clr_rodada = Column(String(45), nullable=True)
-    clr_pontos = Column(Integer, nullable=False)
-    clr_vitorias = Column(Integer, nullable=False)
-    clr_saldo_gols = Column(Integer, nullable=False)
-    clr_gols_pro = Column(Integer, nullable=False)
-    clr_confronto_direto = Column(Integer, nullable=False)
-    clr_vermelho_clube_clu_sigla = Column(CHAR(3), ForeignKey("clube.clu_sigla"), nullable=False)
-    clr_amarelo_clube_clu_sigla = Column(CHAR(3), ForeignKey("clube.clu_sigla"), nullable=False)
-    clube_clu_sigla = Column(CHAR(3), ForeignKey("clube.clu_sigla"), nullable=False)
-    clr_qtd_jogou = Column(Integer, nullable=True)
-    clr_qtd_empates = Column(Integer, nullable=True)
-    clr_qtd_derrotas = Column(Integer, nullable=True)
-    clr_gols_contra = Column(Integer, nullable=True)
-
-    def __init__(self, clr_serie, clr_ano, clr_rodada, clr_pontos, clr_vitorias, clr_saldo_gols, clr_gols_pro,
-                 clr_confronto_direto, clr_vermelho_clube_clu_sigla, clr_amarelo_clube_clu_sigla,
-                 clube_clu_sigla, clr_qtd_jogou=None, clr_qtd_empates=None, clr_qtd_derrotas=None, clr_gols_contra=None):
-        self.clr_serie = clr_serie
-        self.clr_ano = clr_ano
-        self.clr_rodada = clr_rodada
-        self.clr_pontos = clr_pontos
-        self.clr_vitorias = clr_vitorias
-        self.clr_saldo_gols = clr_saldo_gols
-        self.clr_gols_pro = clr_gols_pro
-        self.clr_confronto_direto = clr_confronto_direto
-        self.clr_vermelho_clube_clu_sigla = clr_vermelho_clube_clu_sigla
-        self.clr_amarelo_clube_clu_sigla = clr_amarelo_clube_clu_sigla
-        self.clube_clu_sigla = clube_clu_sigla
-        self.clr_qtd_jogou = clr_qtd_jogou
-        self.clr_qtd_empates = clr_qtd_empates
-        self.clr_qtd_derrotas = clr_qtd_derrotas
-        self.clr_gols_contra = clr_gols_contra
-
-
-Arquivo: clube_models.py
-
-from sqlalchemy import Column, Integer, String, CHAR, ForeignKey
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
-class Clube(Base):
-    __tablename__ = "clube"
-
-    clu_sigla = Column(CHAR(3), primary_key=True)
-    clu_nome = Column(String(60), nullable=False)
-    clu_serie = Column(CHAR(1), nullable=False)
-    clu_link_escudo = Column(String(100), nullable=False)
-    cidade_cid_id = Column(Integer, ForeignKey("cidade.cid_id"), nullable=False)
-
-    def __init__(self, clu_sigla, clu_nome, clu_serie, clu_link_escudo, cidade_cid_id):
-        self.clu_sigla = clu_sigla
-        self.clu_nome = clu_nome
-        self.clu_serie = clu_serie
-        self.clu_link_escudo = clu_link_escudo
-        self.cidade_cid_id = cidade_cid_id
-
-
-Arquivo: estadio_models.py
-
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
-class Estadio(Base):
-    __tablename__ = "estadio"
-
-    est_id = Column(Integer, primary_key=True, autoincrement=True)
-    est_nome = Column(String(100), nullable=False)
-    cidade_cid_id = Column(Integer, ForeignKey("cidade.cid_id"), nullable=False)
-
-    def __init__(self, est_nome, cidade_cid_id):
-        self.est_nome = est_nome
-        self.cidade_cid_id = cidade_cid_id
-
-
-Arquivo: parametro_models.py
-
-from sqlalchemy import Column, Integer, CHAR
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
-class Parametro(Base):
-    __tablename__ = "parametro"
-
-    par_id = Column(Integer, primary_key=True, autoincrement=True)
-    par_serie = Column(CHAR(1), nullable=False)
-    par_ano = Column(Integer, nullable=False)
-
-    def __init__(self, par_serie, par_ano):
-        self.par_serie = par_serie
-        self.par_ano = par_ano
-
-
-Arquivo: rodada_models.py
-
-from sqlalchemy import Column, Integer, String, CHAR, DATETIME, ForeignKey
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
-class Rodada(Base):
-    __tablename__ = "rodada"
-
-    rod_serie = Column(CHAR(1), primary_key=True)
-    rod_ano = Column(Integer, primary_key=True)
-    rod_rodada = Column(Integer, primary_key=True)
-    rod_sequencia = Column(Integer, primary_key=True)
-    rod_data = Column(DATETIME, nullable=False)
-    clube_clu_sigla_mandante = Column(CHAR(3), ForeignKey("clube.clu_sigla"), nullable=False)
-    rod_gols_mandante = Column(Integer, nullable=True)
-    clube_clu_sigla_visitante = Column(CHAR(3), ForeignKey("clube.clu_sigla"), nullable=False)
-    rod_gols_visitante = Column(Integer, nullable=True)
-    rod_pontos_mandante = Column(Integer, nullable=True)
-    rod_pontos_visitante = Column(Integer, nullable=True)
-    rod_qtd_vermelho = Column(Integer, nullable=True)
-    rod_qtd_amarelo = Column(Integer, nullable=True)
-    rod_calculou_classificacao = Column(CHAR(1), default="N", nullable=True)
-    rod_partida_finalidaza = Column(CHAR(1), default="N", nullable=True)
-
-    def __init__(self, rod_serie, rod_ano, rod_rodada, rod_sequencia, rod_data, clube_clu_sigla_mandante,
-                 rod_gols_mandante=None, clube_clu_sigla_visitante=None, rod_gols_visitante=None, rod_pontos_mandante=None,
-                 rod_pontos_visitante=None, rod_qtd_vermelho=None, rod_qtd_amarelo=None,
-                 rod_calculou_classificacao="N", rod_partida_finalidaza="N"):
-        self.rod_serie = rod_serie
-        self.rod_ano = rod_ano
-        self.rod_rodada = rod_rodada
-        self.rod_sequencia = rod_sequencia
-        self.rod_data = rod_data
-        self.clube_clu_sigla_mandante = clube_clu_sigla_mandante
-        self.rod_gols_mandante = rod_gols_mandante
-        self.clube_clu_sigla_visitante = clube_clu_sigla_visitante
-        self.rod_gols_visitante = rod_gols_visitante
-        self.rod_pontos_mandante = rod_pontos_mandante
-        self.rod_pontos_visitante = rod_pontos_visitante
-        self.rod_qtd_vermelho = rod_qtd_vermelho
-        self.rod_qtd_amarelo = rod_qtd_amarelo
-        self.rod_calculou_classificacao = rod_calculou_classificacao
-        self.rod_partida_finalidaza = rod_partida_finalidaza
-
-
-Arquivo: usuario_models.py
-
-from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
-class Usuario(Base):
-    __tablename__ = "usuario"
-
-    usu_id = Column(Integer, primary_key=True, autoincrement=True)
-    usu_nome = Column(String(100), nullable=False)
-    usu_email = Column(String(100), nullable=False)
-    usu_senha = Column(String(100), nullable=False)
-    usu_ativo = Column(Boolean, nullable=False, default=True)
-    usu_admin = Column(Boolean, nullable=False, default=False)
-
-    def __init__(self, usu_nome, usu_email, usu_senha, usu_ativo=True, usu_admin=False):
-        self.usu_nome = usu_nome
-        self.usu_email = usu_email
-        self.usu_senha = usu_senha
-        self.usu_ativo = usu_ativo
-        self.usu_admin = usu_admin
-
-
-Esses modelos agora cobrem todas as tabelas da sua base de dados brasileirao.db. Caso precise de mais ajustes ou esclarecimentos, é só pedir! 😊
+Endpoint para informar o placar dos jogos da rodada
+
+exemplo:
+
+No exemplo, tenho que considerar a possibilidde de tb informar jogos atrasados das rodadas.
+
+# Endpoint para Criar os Jogos da Rodada
+@app.post("/rodadas/{rod_serie}/{rod_ano}/{rod_rodada}")
+async def criar_jogos(
+    rod_serie: str = Path(..., description="Série do Campeonato ('A' ou 'B')"),
+    rod_ano: int = Path(..., description="Ano da Competição"),
+    rod_rodada: int = Path(..., description="Número da Rodada (1 a 38)"),
+    request: List[RodadaRequest] = []
+):
+    chave_rodada = f"{rod_serie}-{rod_ano}-{rod_rodada}"
+
+    if chave_rodada in rodadas_db:
+        raise HTTPException(status_code=400, detail="A rodada já foi cadastrada.")
+
+    rodadas_db[chave_rodada] = [{
+        "rod_sequencia": r.rod_sequencia,
+        "rod_data": r.rod_data,
+        "clube_clu_sigla_mandante": r.clube_clu_sigla_mandante,
+        "clube_clu_sigla_visitante": r.clube_clu_sigla_visitante,
+        "rod_calculou_classificacao": 'N',
+        "rod_partida_finalidaza": 'N',
+        "estadio_est_id": r.estadio_est_id,
+        "placar_time_mandante": 0,
+        "placar_time_visitante": 0
+    } for r in request]
+
+    return {"message": "Jogos criados com sucesso.", "rodada": chave_rodada}
+	
+
+{
+   "1":[
+      {
+         "time_mandante_sigla":"GOI",
+         "placar_time_mandante 0,
+         "time_visitante_sigla":"AMA",
+         "placar_time_visitante":0
+      },
+      {
+         "time_mandante_sigla":"PAY",
+         "placar_time_mandante 0,
+         "time_visitante_sigla":"CAP",
+         "placar_time_visitante":0
+      },
+      {
+         "time_mandante_sigla":"CRI",
+         "placar_time_mandante 0,
+         "time_visitante_sigla":"OPE",
+         "placar_time_visitante":0
+      },
+      {
+         "time_mandante_sigla":"CFC",
+         "placar_time_mandante 0,
+         "time_visitante_sigla":"VNO",
+         "placar_time_visitante":0
+      },
+      {
+         "time_mandante_sigla":"CRB",
+         "placar_time_mandante 0,
+         "time_visitante_sigla":"CHA",
+         "placar_time_visitante":0
+      },
+      {
+         "time_mandante_sigla":"AME",
+         "placar_time_mandante 0,
+         "time_visitante_sigla":"BSP",
+         "placar_time_visitante":0
+      },
+      {
+         "time_mandante_sigla":"AFE",
+         "placar_time_mandante 0,
+         "time_visitante_sigla":"REM",
+         "placar_time_visitante 0
+      },
+      {
+         "time_mandante_sigla":"VRE",
+         "placar_time_mandante":0,
+         "time_visitante_sigla":"CUI",
+         "placar_time_visitante 0
+      },
+      {
+         "time_mandante_sigla":"AVA",
+         "placar_time_mandante 0,
+         "time_visitante_sigla":"NOV",
+         "placar_time_visitante 0
+      },
+      {
+         "time_mandante_sigla":"ACG",
+         "placar_time_mandante": 0,
+         "time_visitante_sigla":"ATH",
+         "placar_time_visitante": 0
+      }
+   ]
+}

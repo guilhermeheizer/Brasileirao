@@ -13,3 +13,19 @@ Resumindo, um prompt é a velha e a atual: ANÁLISE DE PROGRAMA.
   
   O objetivo deste tratamento é para que o projeto fique mais simples. Por que cada
   banco de dados possui especifidades no tratamento de acentos e maiúsculas  miniúsculas
+  
+Subir para GitHub:
+# Acesse o diretório do projeto
+cd /caminho/para/seu/projeto/Brasileirao
+
+# Verifique o status do repositório
+git status
+
+# Adicione todos os arquivos modificados
+git add .
+
+# Salve as alterações com uma mensagem clara
+git commit -m "Descrição das alterações realizadas"
+
+# Envie os arquivos para o repositório remoto na branch principal
+git push origin main

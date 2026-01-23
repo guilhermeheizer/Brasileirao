@@ -46,8 +46,8 @@ def criar_cidade(cidade: CidadesSchema, session: Session) -> CidadesSchema:
     
     consiste_uf(cidade.cid_uf)  # Verifica se a UF é válida
 
-    nova_cidade = Cidade(cid_nome=re.sub(r'\s+', ' ', cidade.cid_nome.strip()).title(), 
-                         cid_uf=cidade.cid_uf.upper()) # Remove espaços extras
+    nova_cidade = Cidade(cid_nome=re.sub(r'\s+', ' ', cidade.cid_nome.strip()).title(), # Remove espaços extras
+                         cid_uf=cidade.cid_uf.upper()) 
 
     session.add(nova_cidade)
     session.commit()
@@ -94,7 +94,7 @@ def atualizar_cidade(cidade_id: int, cidade_atualizada: CidadesSchema, session: 
 
     return CidadesSchema(**cidade_db.as_dict())
 
-def deletar_cidade(cidade_id: int, session: Session) -> None:
+def deletar_cidade(cidade_id: int, session: Session):
     """Deletar registro na tabela de cidade
 
     Args:
@@ -110,6 +110,7 @@ def deletar_cidade(cidade_id: int, session: Session) -> None:
     
     session.delete(cidade_db)
     session.commit()
+    return "Cidade excluida com sucesso"
 
 
 def listar_cidades_paginadas(nome: Optional[str], pagina: int, tamanho_pagina: int, session: Session) -> ResponseCidadesSchema:

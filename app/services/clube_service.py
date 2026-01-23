@@ -108,13 +108,14 @@ def atualizar_clube(clu_sigla: str, clube_atualizado: ClubeSchema, session: Sess
     return ClubeSchema(**clube_db.as_dict())
 
 
-def deletar_clube(clu_sigla: str, session: Session) -> None:
+def deletar_clube(clu_sigla: str, session: Session):
     clube = session.query(Clube).filter(Clube.__table__.c.clu_sigla == clu_sigla).first()
     if not clube:
         raise HTTPException(status_code=404, detail="Clube não encontrado.")
 
     session.delete(clube)
     session.commit()
+    return "Clube excluido com sucesso."
 
 def buscar_clube_nome(retorna_exception: bool, nome: str, session: Session) -> Optional[ClubeSchema]:
     """
