@@ -148,7 +148,7 @@ def buscar_clube_sigla(retorna_exception: bool, clube_sigla: str, session: Sessi
 
     Args:
         retorna_exception (bool): Indica se deve lançar uma exceção caso a clube não seja encontrado.
-        clube_id (int): ID do clube a ser buscada.
+        clube_sigla (str): Sigla do clube a ser buscada.
         session (Session): Sessão ativa do SQLAlchemy para conectar ao banco.
 
     Raises:
@@ -231,7 +231,7 @@ def listar_clubes_paginadas(nome: Optional[str], pagina: int, tamanho_pagina: in
 
     # Filtro opcional pelo nome do clube
     if nome:
-        query = query.filter(Clube.__table__.c.clu_nome.ilike(f"%{nome.upper()}%"))
+        query = query.filter(Clube.__table__.c.clu_nome.ilike(f"%{nome}%"))
 
     # Paginação
     clubes = query.offset((pagina - 1) * tamanho_pagina).limit(tamanho_pagina).all()

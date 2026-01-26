@@ -40,10 +40,12 @@ from app.routes.crud.usuario_routers import usuario_router
 from app.routes.crud.cidade_routes import cidade_router
 from app.routes.crud.clube_routers import clube_router
 from app.routes.crud.estadio_routers import estadio_router
+from app.routes.crud.cartao_routers import cartao_router
 app.router.include_router(usuario_router, prefix="/usuario")
 app.router.include_router(login_router, prefix="/login")
 app.router.include_router(cidade_router, prefix="/cidade")
 app.router.include_router(clube_router, prefix="/clube")
 app.router.include_router(estadio_router, prefix="/estadio")
+app.router.include_router(cartao_router, prefix="/cartao")
 # print("Rotas incluídas com sucesso.")
 
