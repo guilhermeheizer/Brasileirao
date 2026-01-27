@@ -54,24 +54,24 @@ def criar_cartao(dados: CartaoSchema, session: Session) -> CartaoSchema:
     consiste_serie(dados.car_serie.upper())
     consiste_sigla(dados.clube_clu_sigla.upper())
 
-    if not buscar_clube_sigla(False, dados.clube_clu_sigla, session):
+    if not buscar_clube_sigla(False, dados.clube_clu_sigla.upper(), session):
         raise HTTPException(status_code=404, detail=f"Clube com sigla '{dados.clube_clu_sigla}' não encontrado.")
 
     # Verifica se o clube existe
-    clube = session.query(Clube).filter(Clube.__table__.c.clu_sigla == dados.clube_clu_sigla).first()
+    clube = session.query(Clube).filter(Clube.__table__.c.clu_sigla == dados.clube_clu_sigla.upper()).first()
     if not clube:
-        raise HTTPException(status_code=404, detail=f"Clube com sigla '{dados.clube_clu_sigla}' não encontrado.")
+        raise HTTPException(status_code=404, detail=f"Clube com sigla '{dados.clube_clu_sigla.upper()}' não encontrado.")
 
     # Verifica se já existe um cartão com o mesmo conjunto de chaves primárias
     cartao_existente = session.query(Cartao).filter(
-        Cartao.__table__.c.car_serie == dados.car_serie,
+        Cartao.__table__.c.car_serie == dados.car_serie.upper(),
         Cartao.__table__.c.car_ano == dados.car_ano,
-        Cartao.__table__.c.clube_clu_sigla == dados.clube_clu_sigla,
+        Cartao.__table__.c.clube_clu_sigla == dados.clube_clu_sigla.upper(),
     ).first()
     if cartao_existente:
         raise HTTPException(
             status_code=400, 
-            detail=f"Cartão para o clube '{dados.clube_clu_sigla}' na série '{dados.car_serie}' do ano {dados.car_ano} já existe."
+            detail=f"Cartão para o clube '{dados.clube_clu_sigla.upper()}' na série '{dados.car_serie.upper()}' do ano {dados.car_ano} já existe."
         )
 
     qtd_vermelho = dados.car_qtd_vermelho if dados.car_qtd_vermelho is not None else 0
@@ -152,18 +152,18 @@ def deletar_cartao(car_serie: str, car_ano: int, clube_clu_sigla: str, session: 
     Returns:
         str: Mensagem de sucesso ao excluir o cartão.
     """
-    consiste_serie(car_serie)
-    consiste_sigla(clube_clu_sigla)
+    consiste_serie(car_serie.upper())
+    consiste_sigla(clube_clu_sigla.upper())
 
     cartao = session.query(Cartao).filter(
-        Cartao.__table__.c.car_serie == car_serie,
+        Cartao.__table__.c.car_serie == car_serie.upper(),
         Cartao.__table__.c.car_ano == car_ano,
-        Cartao.__table__.c.clube_clu_sigla == clube_clu_sigla,
+        Cartao.__table__.c.clube_clu_sigla == clube_clu_sigla.upper(),
     ).first()
 
     if not cartao:
         raise HTTPException(
-            status_code=404, detail=f"Cartão para o clube '{clube_clu_sigla}' na série '{car_serie}' do ano {car_ano} não encontrado."
+            status_code=404, detail=f"Cartão para o clube '{clube_clu_sigla.upper()}' na série '{car_serie.upper()}' do ano {car_ano} não encontrado."
         )
 
     session.delete(cartao)
@@ -217,7 +217,7 @@ def listar_cartoes_paginados(nome: Optional[str], pagina: int, tamanho_pagina: i
     query = session.query(
 	    Cartao.__table__.c.car_serie,
 		Cartao.__table__.c.car_ano,
-        Cartao.__table__.c.car_sigla,
+        Cartao.__table__.c.clube_clu_sigla,
         Clube.__table__.c.clu_nome.label("clu_nome"),
         Cartao.__table__.c.car_qtd_vermelho,
         Cartao.__table__.c.car_qtd_amarelo,
@@ -239,7 +239,7 @@ def listar_cartoes_paginados(nome: Optional[str], pagina: int, tamanho_pagina: i
         CartaoClubeSchema(
 		    car_serie=cartao.car_serie,
 			car_ano=cartao.car_ano,
-            clube_clu_sigla=cartao.car_sigla,
+            clube_clu_sigla=cartao.clube_clu_sigla,
             clube_nome=cartao.clu_nome,
             car_qtd_vermelho=cartao.car_qtd_vermelho,
             car_qtd_amarelo=cartao.car_qtd_amarelo,
