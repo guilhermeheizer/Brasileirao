@@ -10,7 +10,7 @@ class Clube(Base):
     clu_nome = Column(String(60), nullable=False)
     clu_serie = Column(CHAR(1), nullable=False)
     clu_link_escudo = Column(String(100), nullable=False)
-    cidade_cid_id = Column(Integer, ForeignKey("cidade.cid_id", ondelete="CASCADE"), primary_key=True)
+    cidade_cid_id = Column(Integer, ForeignKey("cidade.cid_id"), nullable=False)
 
     # Relacionamento com Cidade
     cidade = relationship("Cidade", back_populates="clubes")

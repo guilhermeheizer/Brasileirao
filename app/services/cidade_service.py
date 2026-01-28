@@ -20,7 +20,7 @@ def listar_todas_cidades(session: Session) -> ResponseCidadesSchema:
         ResponseCidadesSchema: Contém uma lista de cidades no formato esperado na API.
     """
     # Obtemos todas as cidades do banco de dados
-    cidades = session.query(Cidade).all()
+    cidades = session.query(Cidade).order_by(Cidade.__table__.c.cid_nome).all()
 
     # Validação quando não houver cidades cadastradas
     if not cidades:
@@ -131,10 +131,13 @@ def listar_cidades_paginadas(nome: Optional[str], pagina: int, tamanho_pagina: i
     query = session.query(Cidade)
     if nome:
         query = query.filter(Cidade.__table__.c.cid_nome.ilike(f"%{nome}%"))
+
+    query = query.order_by(Cidade.__table__.c.cid_nome)
         
     cidades = (
         query.offset((pagina - 1) * tamanho_pagina).limit(tamanho_pagina).all()
     )
+    
     if not cidades:
         raise HTTPException(status_code=404, detail="Nenhuma cidade encontrada.")
     

@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.models.clube_models import Clube
 from app.models.cidade_models import Cidade
+from app.models.cartao_models import Cartao
 from app.schemas.clube_schema import ResponseClubeSchema, ClubeSchema, ClubeCidadeSchema, ResponseClubeCidadeSchema
 from app.services.cidade_service import buscar_cidade_id
 from typing import List
@@ -21,7 +22,7 @@ def listar_todos_clubes(session: Session) -> ResponseClubeSchema:
     Returns:
         ResponseClubeSchema: Representação dos clubes encontrados.
     """
-    clubes = session.query(Clube).all()
+    clubes = session.query(Clube).order_by(Clube.__table__.c.clu_nome).all()
     if not clubes:
         raise HTTPException(status_code=404, detail="Nenhum clube encontrado.")
     
@@ -231,7 +232,11 @@ def listar_clubes_paginadas(nome: Optional[str], pagina: int, tamanho_pagina: in
 
     # Filtro opcional pelo nome do clube
     if nome:
+        print ("nome clube:", nome)
         query = query.filter(Clube.__table__.c.clu_nome.ilike(f"%{nome}%"))
+        print ("Query:", query)
+
+    query = query.order_by(Clube.__table__.c.clu_nome)
 
     # Paginação
     clubes = query.offset((pagina - 1) * tamanho_pagina).limit(tamanho_pagina).all()

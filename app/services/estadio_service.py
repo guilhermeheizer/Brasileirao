@@ -21,7 +21,7 @@ def listar_todos_estadios(session: Session) -> ResponseEstadioSchema:
     Returns:
         ResponseEstadioSchema: Representação dos estadios encontrados.
     """
-    estadios = session.query(Estadio).all()
+    estadios = session.query(Estadio).order_by(Estadio.__table__.c.est_nome).all()
     if not estadios:
         raise HTTPException(status_code=404, detail="Nenhum estadio encontrado.")
     
@@ -174,8 +174,10 @@ def listar_estadios_paginadas(nome: Optional[str], pagina: int, tamanho_pagina: 
 
     # Filtro opcional pelo nome do estadio
     if nome:
-        query = query.filter(Estadio.__table__.c.est_nome.ilike(f"%{nome.upper()}%"))
+        query = query.filter(Estadio.__table__.c.est_nome.ilike(f"%{nome}%"))
 
+    query = query.order_by(Estadio.__table__.c.est_nome)
+    
     # Paginação
     estadios = query.offset((pagina - 1) * tamanho_pagina).limit(tamanho_pagina).all()
 

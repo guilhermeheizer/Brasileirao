@@ -1,8 +1,8 @@
-"""criar tabelas
+"""Initial schema
 
-Revision ID: b86a4960a93d
+Revision ID: e71ea39b41f5
 Revises: 
-Create Date: 2026-01-24 21:04:45.657624
+Create Date: 2026-01-28 17:07:53.777023
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'b86a4960a93d'
+revision: str = 'e71ea39b41f5'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -42,8 +42,8 @@ def upgrade() -> None:
     sa.Column('clu_serie', sa.CHAR(length=1), nullable=False),
     sa.Column('clu_link_escudo', sa.String(length=100), nullable=False),
     sa.Column('cidade_cid_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['cidade_cid_id'], ['cidade.cid_id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('clu_sigla', 'cidade_cid_id')
+    sa.ForeignKeyConstraint(['cidade_cid_id'], ['cidade.cid_id'], ),
+    sa.PrimaryKeyConstraint('clu_sigla')
     )
     op.create_table('estadio',
     sa.Column('est_id', sa.Integer(), autoincrement=True, nullable=False),

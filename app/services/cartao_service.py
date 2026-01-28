@@ -7,8 +7,7 @@ from typing import Optional
 import re
 from app.schemas.cartao_schema import (
     CartaoClubeSchema,
-    ResponseCartaoClubeSchema,
-    ResponseCartaoClubeSchema,
+    ResponseCartaoClubeSchema, 
     ResponseCartaoSchema,
     CartaoSchema,
 )
@@ -45,8 +44,8 @@ def criar_cartao(dados: CartaoSchema, session: Session) -> CartaoSchema:
 
     Raises:
         HTTPException: Erro: 404 - Clube associado não encontrado.
-        HTTPException: Erro: 400 - Cartão já existente.
-        HTTPException: Erro: 400 - Clube com sigla '{clube_sigla}' já existe.
+        HTTPException: Erro: 404 - Cartão já existente.
+        HTTPException: Erro: 404 - Clube com sigla '{clube_sigla}' já existe.
 
     Returns:
         ResponseCartaoSchema: Representação do cartão criado.
@@ -70,7 +69,7 @@ def criar_cartao(dados: CartaoSchema, session: Session) -> CartaoSchema:
     ).first()
     if cartao_existente:
         raise HTTPException(
-            status_code=400, 
+            status_code=404, 
             detail=f"Cartão para o clube '{dados.clube_clu_sigla.upper()}' na série '{dados.car_serie.upper()}' do ano {dados.car_ano} já existe."
         )
 
