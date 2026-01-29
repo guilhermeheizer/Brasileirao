@@ -119,7 +119,7 @@ def atualizar_cartao(car_serie: str, car_ano: int, clube_clu_sigla: str, dados: 
 
     if not cartao:
         raise HTTPException(
-            status_code=404, detail=f"Cartão para o clube '{clube_clu_sigla}' na série '{car_serie}' do ano {car_ano} não encontrado."
+            status_code=404, detail=f"Cartão para o clube '{clube_clu_sigla.upper()}' na série '{car_serie.upper()}' do ano {car_ano} não encontrado."
         )
 
     # Atualiza os campos fornecidos

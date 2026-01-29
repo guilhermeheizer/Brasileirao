@@ -232,9 +232,7 @@ def listar_clubes_paginadas(nome: Optional[str], pagina: int, tamanho_pagina: in
 
     # Filtro opcional pelo nome do clube
     if nome:
-        print ("nome clube:", nome)
         query = query.filter(Clube.__table__.c.clu_nome.ilike(f"%{nome}%"))
-        print ("Query:", query)
 
     query = query.order_by(Clube.__table__.c.clu_nome)
 

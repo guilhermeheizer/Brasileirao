@@ -70,7 +70,7 @@ def criar_novo_estadio(estadio: EstadioSchema, session: Session = Depends(pegar_
 
 @estadio_router.put("/{est_id}", response_model=EstadioSchema)
 def atualizar_estadio_por_sigla(
-    est_id: str,
+    est_id: int,
     estadio_atualizado: EstadioSchema,
     session: Session = Depends(pegar_sessao),
     usuario: Usuario = Depends(verificar_token)):

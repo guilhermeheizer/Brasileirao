@@ -56,8 +56,8 @@ def criar_estadio(estadio: EstadioSchema, session: Session) -> EstadioSchema:
     return EstadioSchema(**novo_estadio.as_dict())
 
 
-def atualizar_estadio(est_id: str, estadio_atualizado: EstadioSchema, session: Session) -> EstadioSchema:
-    estadio_db = session.query(Estadio).filter(Estadio.__table__.c.est_id == est_id.upper()).first()
+def atualizar_estadio(est_id: int, estadio_atualizado: EstadioSchema, session: Session) -> EstadioSchema:
+    estadio_db = session.query(Estadio).filter(Estadio.__table__.c.est_id == est_id).first()
 
     if not estadio_db:
         raise HTTPException(status_code=404, detail="Estadio não encontrado.")
