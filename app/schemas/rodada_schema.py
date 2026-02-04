@@ -12,6 +12,9 @@ class RodadaBaseSchema(BaseModel):
     clube_clu_sigla_mandante: str
     clube_clu_sigla_visitante: str
     estadio_est_id: int
+    
+    class Config:
+        from_attributes = True
 
 
 class CriarRodadaSchema(RodadaBaseSchema):
@@ -19,9 +22,17 @@ class CriarRodadaSchema(RodadaBaseSchema):
     rod_partida_finalidaza: Optional[str] = "N"
 
 
-class AtualizarRodadaPlacarSchema(CriarRodadaSchema):
+class AtualizarRodadaPlacarSchema(BaseModel):
+    rod_serie: str
+    rod_ano: int
+    rod_rodada: int
+    rod_sequencia: int
     rod_gols_mandante: int
     rod_gols_visitante: int
+    rod_partida_finalidaza: str
+    
+    class Config:
+        from_attributes = True
 
 
 class ResponseRodadaSchema(AtualizarRodadaPlacarSchema):
@@ -62,7 +73,7 @@ class JogoFormPlacarSchema(BaseModel):
     car_qtd_amarelo_mandante: Optional[int] = 0 # Cartões amarelos do mandante (pode ser nulo)
     car_qtd_vermelho_visitante: Optional[int] = 0 # Cartões vermelhos do visitante (pode ser nulo)
     car_qtd_amarelo_visitante: Optional[int] = 0 # Cartões amarelos do visitante (pode ser nulo)
-    rod_partida_finalidaza: str  # Indica se a partida foi finalizada ("S" ou "N")
+    rod_partida_finalidaza: str  # Indica se a partida foi finalidaza ("S" ou "N")
     rod_calculou_classificacao: str  # Indica se a classificação foi calculada ("S" ou "N")
 
 

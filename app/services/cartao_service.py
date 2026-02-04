@@ -1,4 +1,6 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import text
 from fastapi import HTTPException
 from app.models.cartao_models import Cartao
 from app.models.clube_models import Clube
@@ -89,6 +91,93 @@ def criar_cartao(dados: CartaoSchema, session: Session) -> CartaoSchema:
     session.refresh(novo_cartao)
 
     return CartaoSchema(**novo_cartao.as_dict())
+
+
+def criar_cartoes_para_clubes(serie: str, ano: int, session: Session) -> dict:
+    """
+    Cria registros na tabela 'cartao' para todos os clubes de uma determinada série e ano,
+    com os contadores de cartões zerados (qtd vermelho e amarelo).
+    
+    Args:
+        db (Session): Sessão do banco de dados.
+        serie (str): Série do campeonato ('A' ou 'B').
+        ano (int): Ano do campeonato.
+
+    Raises:
+        HTTPException: Caso já existam registros com a mesma série e ano ou algum erro do banco de dados.
+
+    Returns:
+        dict: Mensagem indicando que os registros foram criados com sucesso.
+    """
+    consiste_serie(serie.upper())
+    
+    # Verificar se já existem registros na tabela `cartao` para a série e ano fornecidos
+    cartao_verifica_query = text("""
+        SELECT COUNT(*)
+        FROM cartao
+        WHERE car_serie = :serie
+        AND car_ano = :ano
+    """)
+    registros_existentes = session.execute(cartao_verifica_query, {"serie": serie.upper(), "ano": ano}).scalar()
+    
+    if registros_existentes and registros_existentes > 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Já existem registros na tabela 'cartao' para a série '{serie.upper()}' e ano '{ano}'."
+        )
+    
+    # Buscar todos os clubes da série
+    clube_query = text("""
+        SELECT
+            clu_sigla,
+            clu_nome,
+            clu_serie,
+            clu_link_escudo,
+            cidade_cid_id
+        FROM clube
+        WHERE clu_serie = :serie
+    """)
+    clubes_resultados = session.execute(clube_query, {"serie": serie.upper()}).fetchall()
+
+    if not clubes_resultados:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Nenhum clube encontrado para a série '{serie.upper()}'."
+        )
+
+    # Preparar e executar os inserts na tabela `cartao`
+    try:
+        for clube in clubes_resultados:
+            insert_cartao_query = text("""
+                INSERT INTO cartao (
+                    car_serie,
+                    car_ano,
+                    clube_clu_sigla,
+                    car_qtd_vermelho,
+                    car_qtd_amarelo
+                ) VALUES (
+                    :serie,
+                    :ano,
+                    :clube_clu_sigla,
+                    0,
+                    0
+                )
+            """)
+            session.execute(insert_cartao_query, {
+                "serie": serie.upper(),
+                "ano": ano,
+                "clube_clu_sigla": clube.clu_sigla
+            })
+        
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro ao inserir os registros na tabela 'cartao': {str(e)}"
+        )
+    
+    return {"message": f"Registros de cartões criados com sucesso para a série '{serie.upper()}' e ano '{ano}'."}
 
 
 def atualizar_cartao(car_serie: str, car_ano: int, clube_clu_sigla: str, dados: CartaoSchema, session: Session) -> CartaoSchema:
@@ -217,7 +306,8 @@ def listar_cartoes_paginados(nome: Optional[str], pagina: int, tamanho_pagina: i
 	    Cartao.__table__.c.car_serie,
 		Cartao.__table__.c.car_ano,
         Cartao.__table__.c.clube_clu_sigla,
-        Clube.__table__.c.clu_nome.label("clu_nome"),
+        Clube.__table__.c.clu_link_escudo.label("clube_link_escudo"),
+        Clube.__table__.c.clu_nome.label("clube_nome"),
         Cartao.__table__.c.car_qtd_vermelho,
         Cartao.__table__.c.car_qtd_amarelo,
     ).join(Clube, Cartao.__table__.c.clube_clu_sigla == Clube.__table__.c.clu_sigla)
@@ -239,7 +329,8 @@ def listar_cartoes_paginados(nome: Optional[str], pagina: int, tamanho_pagina: i
 		    car_serie=cartao.car_serie,
 			car_ano=cartao.car_ano,
             clube_clu_sigla=cartao.clube_clu_sigla,
-            clube_nome=cartao.clu_nome,
+            clube_link_escudo=cartao.clube_link_escudo,
+            clube_nome=cartao.clube_nome,
             car_qtd_vermelho=cartao.car_qtd_vermelho,
             car_qtd_amarelo=cartao.car_qtd_amarelo,
         )

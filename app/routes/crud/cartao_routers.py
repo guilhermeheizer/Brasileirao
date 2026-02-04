@@ -11,13 +11,14 @@ from app.services.cartao_service import (
     atualizar_cartao,
     deletar_cartao,
     listar_cartoes_paginados,
+    criar_cartoes_para_clubes,
 )
 
 cartao_router = APIRouter(tags=["cartao"])
 
 
 @cartao_router.get("/listar", response_model=ResponseCartaoSchema)
-def listar_cartoes(session: Session = Depends(pegar_sessao)):
+async def listar_cartoes(session: Session = Depends(pegar_sessao)):
     """
     Lista todos os cartões cadastrados.
 
@@ -43,7 +44,7 @@ def listar_cartoes(session: Session = Depends(pegar_sessao)):
 
 
 @cartao_router.post("/", response_model=CartaoSchema)
-def criar_novo_cartao(cartao: CartaoSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
+async def criar_novo_cartao(cartao: CartaoSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     """
     Cria um novo cartão no banco de dados.
 
@@ -68,8 +69,34 @@ def criar_novo_cartao(cartao: CartaoSchema, session: Session = Depends(pegar_ses
         session.close()
 
 
+@cartao_router.post("/cria-todos-cartoes")
+async def criar_cartoes(
+    serie: str = Query(description="Série do campeonato ('A' ou 'B')"),
+    ano: int = Query(description="Ano do campeonato"),
+    session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)
+):
+    """
+    Endpoint para criar registros na tabela 'cartao' para todos os clubes de determinada série e ano.
+    
+    Args:
+        serie (str): Série do campeonato ('A' ou 'B').
+        ano (int): Ano do campeonato.
+        db (Session): Sessão ativa do banco de dados.
+
+    Returns:
+        dict: Mensagem de sucesso.
+    """
+    try:
+        return criar_cartoes_para_clubes(serie, ano, session)
+    except HTTPException as ex:
+        log_erro = (f"{ex.detail}")
+        raise HTTPException(status_code=404, detail=log_erro) 
+    finally:
+        session.close()
+
+
 @cartao_router.put("/{serie}/{ano}/{clu_sigla}", response_model=CartaoSchema)
-def atualizar_cartao_por_serie_ano_sigla(
+async def atualizar_cartao_por_serie_ano_sigla(
     serie: str,
     ano: int,
     clu_sigla: str,
@@ -104,7 +131,7 @@ def atualizar_cartao_por_serie_ano_sigla(
 
 
 @cartao_router.delete("/{serie}/{ano}/{clu_sigla}")
-def deletar_cartao_por_sigla(
+async def deletar_cartao_por_sigla(
     serie: str,
     ano: int,
     clu_sigla: str,
@@ -137,11 +164,11 @@ def deletar_cartao_por_sigla(
         session.close()
 
     
-@cartao_router.get("/listar-paginado", response_model=ResponseCartaoClubeSchema)
-def listar_cartoes_paginacao(
+@cartao_router.get("/lista-paginado", response_model=ResponseCartaoClubeSchema)
+async def listar_cartoes_paginacao(
     nome: Optional[str] = Query(None, description="Busca parcial pelo nome da clube"),
     pagina: int = Query(1, description="Número da página", ge=1),
-    tamanho_pagina: int = Query(10, description="Tamanho da página", ge=1),
+    tamanho_pagina: int = Query(20, description="Tamanho da página", ge=1),
     session: Session = Depends(pegar_sessao)):
     """Lista os cartões com paginação e busca por nome.
 

@@ -42,14 +42,14 @@ from app.routes.crud.clube_routers import clube_router
 from app.routes.crud.estadio_routers import estadio_router
 from app.routes.crud.cartao_routers import cartao_router
 from app.routes.form.form_cadastra_rodada_routers import rodada_form_router
-from app.routes.form.form_rodada_routers import router_placar_rodada
+from app.routes.form.form_placar_rodada_routers import router_placar_rodada
 app.router.include_router(usuario_router, prefix="/usuario")
 app.router.include_router(login_router, prefix="/login")
 app.router.include_router(cidade_router, prefix="/cidade")
 app.router.include_router(clube_router, prefix="/clube")
 app.router.include_router(estadio_router, prefix="/estadio")
 app.router.include_router(cartao_router, prefix="/cartao")
-app.router.include_router(rodada_form_router, prefix="/rodada")
+app.router.include_router(rodada_form_router, prefix="/form-manut-rodada")
 app.router.include_router(router_placar_rodada, prefix="/form-placar-rodada")
 # print("Rotas incluídas com sucesso.")
 

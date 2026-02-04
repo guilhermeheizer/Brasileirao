@@ -17,7 +17,7 @@ from app.services.cidade_service import (
 cidade_router = APIRouter(tags=["cidade"])
 
 @cidade_router.get("/listar", response_model=ResponseCidadesSchema)
-def listar_cidades(session: Session = Depends(pegar_sessao)):
+async def listar_cidades(session: Session = Depends(pegar_sessao)):
     """
 Lista todas as cidades cadastradas no banco de dados.
 
@@ -42,7 +42,7 @@ Returns:
         session.close()
 
 @cidade_router.post("/", response_model=CidadesSchema)
-def criar_nova_cidade(cidade: CidadesSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
+async def criar_nova_cidade(cidade: CidadesSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     """Insere uma nova cidade no banco.
 
     Args:
@@ -67,7 +67,7 @@ def criar_nova_cidade(cidade: CidadesSchema, session: Session = Depends(pegar_se
 
 
 @cidade_router.put("/{cidade_id}", response_model=CidadesSchema)
-def atualizar_cidade_por_id(cidade_id: int, cidade_atualizada: CidadesSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
+async def atualizar_cidade_por_id(cidade_id: int, cidade_atualizada: CidadesSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     """Atualiza cidade
 
     Args:
@@ -91,7 +91,7 @@ def atualizar_cidade_por_id(cidade_id: int, cidade_atualizada: CidadesSchema, se
         session.close()
 
 @cidade_router.delete("/{cidade_id}")
-def deletar_cidade_por_id(cidade_id: int, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
+async def deletar_cidade_por_id(cidade_id: int, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     """Deleção de uma cidade
 
     Args:
@@ -116,7 +116,7 @@ def deletar_cidade_por_id(cidade_id: int, session: Session = Depends(pegar_sessa
 
 
 @cidade_router.get("/listar-paginado", response_model=ResponseCidadesSchema)
-def listar_cidades_paginacao(
+async def listar_cidades_paginacao(
     nome: Optional[str] = Query(None, description="Busca parcial pelo nome da cidade"),
     pagina: int = Query(1, description="Número da página", ge=1),
     tamanho_pagina: int = Query(10, description="Tamanho da página", ge=1),

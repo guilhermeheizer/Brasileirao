@@ -18,7 +18,7 @@ class Rodada(Base):
     rod_pontos_mandante = Column(Integer, nullable=True)  # Pontos do mandante
     rod_pontos_visitante = Column(Integer, nullable=True)  # Pontos do visitante
     rod_calculou_classificacao = Column(CHAR(1), nullable=True, default="N")  # Se classificações foram calculadas
-    rod_partida_finalidaza = Column(CHAR(1), nullable=True, default="N")  # Se a partida foi finalizada
+    rod_partida_finalidaza = Column(CHAR(1), nullable=True, default="N")  # Se a partida foi finalidaza
     estadio_est_id = Column(Integer, ForeignKey("estadio.est_id"), nullable=False)  # Estádio onde ocorreu a partida
 
     # Relacionamentos com Clube

@@ -17,7 +17,7 @@ clube_router = APIRouter(tags=["clube"])
 
 
 @clube_router.get("/listar", response_model=ResponseClubeSchema)
-def listar_clubes(session: Session = Depends(pegar_sessao)):
+async def listar_clubes(session: Session = Depends(pegar_sessao)):
     """
     Lista todos os clubes cadastrados.
 
@@ -43,7 +43,7 @@ def listar_clubes(session: Session = Depends(pegar_sessao)):
 
 
 @clube_router.post("/", response_model=ClubeSchema)
-def criar_novo_clube(clube: ClubeSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
+async def criar_novo_clube(clube: ClubeSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     """
     Cria um novo clube no banco de dados.
 
@@ -69,7 +69,7 @@ def criar_novo_clube(clube: ClubeSchema, session: Session = Depends(pegar_sessao
 
 
 @clube_router.put("/{clu_sigla}", response_model=ClubeSchema)
-def atualizar_clube_por_sigla(
+async def atualizar_clube_por_sigla(
     clu_sigla: str,
     clube_atualizado: ClubeSchema,
     session: Session = Depends(pegar_sessao),
@@ -100,7 +100,7 @@ def atualizar_clube_por_sigla(
 
 
 @clube_router.delete("/{clu_sigla}")
-def deletar_clube_por_sigla(
+async def deletar_clube_por_sigla(
     clu_sigla: str,
     session: Session = Depends(pegar_sessao),
     usuario: Usuario = Depends(verificar_token)):
@@ -129,7 +129,7 @@ def deletar_clube_por_sigla(
 
     
 @clube_router.get("/listar-paginado", response_model=ResponseClubeCidadeSchema)
-def listar_clubes_paginacao(
+async def listar_clubes_paginacao(
     nome: Optional[str] = Query(None, description="Busca parcial pelo nome da clube"),
     pagina: int = Query(1, description="Número da página", ge=1),
     tamanho_pagina: int = Query(10, description="Tamanho da página", ge=1),

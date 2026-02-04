@@ -17,7 +17,7 @@ estadio_router = APIRouter(tags=["estadio"])
 
 
 @estadio_router.get("/listar", response_model=ResponseEstadioSchema)
-def listar_estadios(session: Session = Depends(pegar_sessao)):
+async def listar_estadios(session: Session = Depends(pegar_sessao)):
     """
     Lista todos os estadios cadastrados.
 
@@ -43,7 +43,7 @@ def listar_estadios(session: Session = Depends(pegar_sessao)):
 
 
 @estadio_router.post("/", response_model=EstadioSchema)
-def criar_novo_estadio(estadio: EstadioSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
+async def criar_novo_estadio(estadio: EstadioSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     """
     Cria um novo estadio no banco de dados.
 
@@ -100,7 +100,7 @@ def atualizar_estadio_por_sigla(
 
 
 @estadio_router.delete("/{est_id}")
-def deletar_estadio_por_id(
+async def deletar_estadio_por_id(
     est_id: int,
     session: Session = Depends(pegar_sessao),
     usuario: Usuario = Depends(verificar_token)):
@@ -129,7 +129,7 @@ def deletar_estadio_por_id(
 
     
 @estadio_router.get("/listar-paginado", response_model=ResponseEstadioCidadeSchema)
-def listar_estadios_paginacao(
+async def listar_estadios_paginacao(
     nome: Optional[str] = Query(None, description="Busca parcial pelo nome da estadio"),
     pagina: int = Query(1, description="Número da página", ge=1),
     tamanho_pagina: int = Query(10, description="Tamanho da página", ge=1),

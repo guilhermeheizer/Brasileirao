@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.core.dependencies import pegar_sessao, verificar_token
 from app.models.usuario_models import Usuario
 from app.schemas.rodada_schema import CriarRodadaSchema, ResponseRodadasSchema
+from app.services.cartao_service import listar_cartoes_paginados
 from app.services.form.form_cadastra_rodada_service import criar_rodada
 from typing import List
 
@@ -10,8 +11,8 @@ from typing import List
 rodada_form_router = APIRouter(tags=["cadastra rodada"])
 
 
-@rodada_form_router.post("/", response_model=ResponseRodadasSchema)
-def criar_rodadas(
+@rodada_form_router.post("/cria-rodada", response_model=ResponseRodadasSchema)
+async def criar_rodadas(
     rod_serie: str,
     rod_ano: int,
     jogos_data: List[CriarRodadaSchema],

@@ -1,0 +1,122 @@
+[
+  {
+    "rod_serie": "A",
+    "rod_ano": 2026,
+    "rod_rodada": 2,
+    "rod_sequencia": 1,
+    "rod_data": "2026-02-04T19:00:00.848Z",
+    "clube_clu_sigla_mandante": "FLA",
+    "clube_clu_sigla_visitante": "INT",
+    "estadio_est_id": 5,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalidaza": "N"
+  },
+  {
+    "rod_serie": "A",
+    "rod_ano": 2026,
+    "rod_rodada": 2,
+    "rod_sequencia": 2,
+    "rod_data": "2026-02-04T19:00:00.848Z",
+    "clube_clu_sigla_mandante": "RBB",
+    "clube_clu_sigla_visitante": "CAM",
+    "estadio_est_id": 11,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalidaza": "N"
+  },
+    {
+    "rod_serie": "A",
+    "rod_ano": 2026,
+    "rod_rodada": 2,
+    "rod_sequencia": 3,
+    "rod_data": "2026-02-04T19:00:00.848Z",
+    "clube_clu_sigla_mandante": "SAN",
+    "clube_clu_sigla_visitante": "SAO",
+    "estadio_est_id": 6,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalidaza": "N"
+  },
+  {
+    "rod_serie": "A",
+    "rod_ano": 2026,
+    "rod_rodada": 2,
+    "rod_sequencia": 4,
+    "rod_data": "2026-02-04T20:00:00.848Z",
+    "clube_clu_sigla_mandante": "REM",
+    "clube_clu_sigla_visitante": "MIR",
+    "estadio_est_id": 12,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalidaza": "N"
+  },
+  {
+    "rod_serie": "A",
+    "rod_ano": 2026,
+    "rod_rodada": 2,
+    "rod_sequencia": 5,
+    "rod_data": "2026-02-04T21:30:00.848Z",
+    "clube_clu_sigla_mandante": "PAL",
+    "clube_clu_sigla_visitante": "VT",
+    "estadio_est_id": 513,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalidaza": "N"
+  },
+  {
+    "rod_serie": "A",
+    "rod_ano": 2026,
+    "rod_rodada": 2,
+    "rod_sequencia": 6,
+    "rod_data": "2026-02-04T21:30:00.848Z",
+    "clube_clu_sigla_mandante": "GRE",
+    "clube_clu_sigla_visitante": "BOT",
+    "estadio_est_id": 14,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalidaza": "N"
+  },
+  {
+    "rod_serie": "A",
+    "rod_ano": 2026,
+    "rod_rodada": 2,
+    "rod_sequencia": 7,
+    "rod_data": "2026-02-05T19:00:00.848Z",
+    "clube_clu_sigla_mandante": "BAH",
+    "clube_clu_sigla_visitante": "FLU",
+    "estadio_est_id": 15,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalidaza": "N"
+  },
+  {
+    "rod_serie": "A",
+    "rod_ano": 2026,
+    "rod_rodada": 2,
+    "rod_sequencia": 8,
+    "rod_data": "2026-02-05T20:00:00.848Z",
+    "clube_clu_sigla_mandante": "VAS",
+    "clube_clu_sigla_visitante": "CHA",
+    "estadio_est_id": 16,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalidaza": "N"
+  },
+  {
+    "rod_serie": "A",
+    "rod_ano": 2026,
+    "rod_rodada": 2,
+    "rod_sequencia": 9,
+    "rod_data": "2026-02-05T21:30:00.848Z",
+    "clube_clu_sigla_mandante": "CRU",
+    "clube_clu_sigla_visitante": "CFC",
+    "estadio_est_id": 17,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalidaza": "N"
+  },
+  {
+    "rod_serie": "A",
+    "rod_ano": 2026,
+    "rod_rodada": 2,
+    "rod_sequencia": 10,
+    "rod_data": "2026-02-18T21:30:00.848Z",
+    "clube_clu_sigla_mandante": "CAP",
+    "clube_clu_sigla_visitante": "COR",
+    "estadio_est_id": 18,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalidaza": "N"
+  }
+]
