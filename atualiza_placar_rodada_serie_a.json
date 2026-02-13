@@ -1,0 +1,37 @@
+[
+   {
+    "rod_serie": "A",
+    "rod_ano": 2026,
+    "rod_rodada": 3,
+    "rod_sequencia": 7,
+    "rod_gols_mandante": 2,
+    "rod_gols_visitante": 1,
+    "rod_partida_finalizada": "S"
+  },
+    {
+    "rod_serie": "A",
+    "rod_ano": 2026,
+    "rod_rodada": 3,
+    "rod_sequencia": 8,
+    "rod_gols_mandante": 1,
+    "rod_gols_visitante": 0,
+    "rod_partida_finalizada": "S"
+  },    {
+    "rod_serie": "A",
+    "rod_ano": 2026,
+    "rod_rodada": 3,
+    "rod_sequencia": 9,
+    "rod_gols_mandante": 2,
+    "rod_gols_visitante": 0,
+    "rod_partida_finalizada": "S"
+  },
+     {
+    "rod_serie": "A",
+    "rod_ano": 2026,
+    "rod_rodada": 3,
+    "rod_sequencia": 10,
+    "rod_gols_mandante": 1,
+    "rod_gols_visitante": 3,
+    "rod_partida_finalizada": "S"
+  }
+]

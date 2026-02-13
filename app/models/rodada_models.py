@@ -18,7 +18,7 @@ class Rodada(Base):
     rod_pontos_mandante = Column(Integer, nullable=True)  # Pontos do mandante
     rod_pontos_visitante = Column(Integer, nullable=True)  # Pontos do visitante
     rod_calculou_classificacao = Column(CHAR(1), nullable=True, default="N")  # Se classificações foram calculadas
-    rod_partida_finalidaza = Column(CHAR(1), nullable=True, default="N")  # Se a partida foi finalidaza
+    rod_partida_finalizada = Column(CHAR(1), nullable=True, default="N")  # Se a partida foi finalizada
     estadio_est_id = Column(Integer, ForeignKey("estadio.est_id"), nullable=False)  # Estádio onde ocorreu a partida
 
     # Relacionamentos com Clube
@@ -30,7 +30,7 @@ class Rodada(Base):
 
     def __init__(self, rod_serie, rod_ano, rod_rodada, rod_sequencia, rod_data, 
                  clube_clu_sigla_mandante, clube_clu_sigla_visitante, rod_calculou_classificacao, 
-                 rod_partida_finalidaza, estadio_est_id):
+                 rod_partida_finalizada, estadio_est_id):
         self.rod_serie = rod_serie
         self.rod_ano = rod_ano
         self.rod_rodada = rod_rodada
@@ -39,7 +39,7 @@ class Rodada(Base):
         self.clube_clu_sigla_mandante = clube_clu_sigla_mandante
         self.clube_clu_sigla_visitante = clube_clu_sigla_visitante
         self.rod_calculou_classificacao = rod_calculou_classificacao
-        self.rod_partida_finalidaza = rod_partida_finalidaza
+        self.rod_partida_finalizada = rod_partida_finalizada
         self.estadio_est_id = estadio_est_id
 
     def as_dict(self):
@@ -56,6 +56,6 @@ class Rodada(Base):
             "rod_pontos_mandante": self.rod_pontos_mandante,
             "rod_pontos_visitante": self.rod_pontos_visitante,
             "rod_calculou_classificacao": self.rod_calculou_classificacao,
-            "rod_partida_finalidaza": self.rod_partida_finalidaza,
+            "rod_partida_finalizada": self.rod_partida_finalizada,
             "estadio_est_id": self.estadio_est_id
         }

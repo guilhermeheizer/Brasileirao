@@ -14,8 +14,6 @@ class ClassificacaoGeral(Base):
     clg_saldo_gols = Column(Integer, nullable=False)  # Saldo total de gols
     clg_gols_pro = Column(Integer, nullable=False)  # Total de gols marcados ("gols pró")
     clg_confronto_direto = Column(Integer, nullable=False)  # Critério de confronto direto
-    clg_vermelho_clube_clu_sigla = Column(CHAR(3), ForeignKey("clube.clu_sigla"), nullable=False)  # FK Cartões vermelhos
-    clg_amarelo_clube_clu_sigla = Column(CHAR(3), ForeignKey("clube.clu_sigla"), nullable=False)  # FK Cartões amarelos
     clube_clu_sigla = Column(CHAR(3), ForeignKey("clube.clu_sigla"), nullable=False)  # FK Clube
     clg_qtd_jogou = Column(Integer, nullable=True)  # Total de jogos disputados
     clg_qtd_empates = Column(Integer, nullable=True)  # Total de empates
@@ -24,13 +22,10 @@ class ClassificacaoGeral(Base):
 
     # Relacionamento com a tabela Clube
     clube = relationship("Clube", foreign_keys=[clube_clu_sigla])
-    clube_vermelho = relationship("Clube", foreign_keys=[clg_vermelho_clube_clu_sigla])
-    clube_amarelo = relationship("Clube", foreign_keys=[clg_amarelo_clube_clu_sigla])
 
     def __init__(self, clg_serie, clg_ano, clg_pontos, clg_vitorias, clg_saldo_gols, clg_gols_pro, 
-                 clg_confronto_direto, clg_vermelho_clube_clu_sigla, clg_amarelo_clube_clu_sigla, 
-                 clube_clu_sigla, clg_qtd_jogou=None, clg_qtd_empates=None, clg_qtd_derrotas=None, 
-                 clg_gols_contra=None):
+                 clg_confronto_direto, clube_clu_sigla, clg_qtd_jogou=None, clg_qtd_empates=None, 
+                 clg_qtd_derrotas=None, clg_gols_contra=None):
         self.clg_serie = clg_serie
         self.clg_ano = clg_ano
         self.clg_pontos = clg_pontos
@@ -38,8 +33,6 @@ class ClassificacaoGeral(Base):
         self.clg_saldo_gols = clg_saldo_gols
         self.clg_gols_pro = clg_gols_pro
         self.clg_confronto_direto = clg_confronto_direto
-        self.clg_vermelho_clube_clu_sigla = clg_vermelho_clube_clu_sigla
-        self.clg_amarelo_clube_clu_sigla = clg_amarelo_clube_clu_sigla
         self.clube_clu_sigla = clube_clu_sigla
         self.clg_qtd_jogou = clg_qtd_jogou
         self.clg_qtd_empates = clg_qtd_empates
@@ -56,8 +49,6 @@ class ClassificacaoGeral(Base):
             "clg_saldo_gols": self.clg_saldo_gols,
             "clg_gols_pro": self.clg_gols_pro,
             "clg_confronto_direto": self.clg_confronto_direto,
-            "clg_vermelho_clube_clu_sigla": self.clg_vermelho_clube_clu_sigla,
-            "clg_amarelo_clube_clu_sigla": self.clg_amarelo_clube_clu_sigla,
             "clube_clu_sigla": self.clube_clu_sigla,
             "clg_qtd_jogou": self.clg_qtd_jogou,
             "clg_qtd_empates": self.clg_qtd_empates,

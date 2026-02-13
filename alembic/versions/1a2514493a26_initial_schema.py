@@ -1,8 +1,8 @@
 """Initial schema
 
-Revision ID: e71ea39b41f5
+Revision ID: 1a2514493a26
 Revises: 
-Create Date: 2026-01-28 17:07:53.777023
+Create Date: 2026-02-04 10:40:47.088863
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'e71ea39b41f5'
+revision: str = '1a2514493a26'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -70,15 +70,11 @@ def upgrade() -> None:
     sa.Column('clg_saldo_gols', sa.Integer(), nullable=False),
     sa.Column('clg_gols_pro', sa.Integer(), nullable=False),
     sa.Column('clg_confronto_direto', sa.Integer(), nullable=False),
-    sa.Column('clg_vermelho_clube_clu_sigla', sa.CHAR(length=3), nullable=False),
-    sa.Column('clg_amarelo_clube_clu_sigla', sa.CHAR(length=3), nullable=False),
     sa.Column('clube_clu_sigla', sa.CHAR(length=3), nullable=False),
     sa.Column('clg_qtd_jogou', sa.Integer(), nullable=True),
     sa.Column('clg_qtd_empates', sa.Integer(), nullable=True),
     sa.Column('clg_qtd_derrotas', sa.Integer(), nullable=True),
     sa.Column('clg_gols_contra', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['clg_amarelo_clube_clu_sigla'], ['clube.clu_sigla'], ),
-    sa.ForeignKeyConstraint(['clg_vermelho_clube_clu_sigla'], ['clube.clu_sigla'], ),
     sa.ForeignKeyConstraint(['clube_clu_sigla'], ['clube.clu_sigla'], ),
     sa.PrimaryKeyConstraint('clg_id')
     )
@@ -92,15 +88,11 @@ def upgrade() -> None:
     sa.Column('clr_saldo_gols', sa.Integer(), nullable=False),
     sa.Column('clr_gols_pro', sa.Integer(), nullable=False),
     sa.Column('clr_confronto_direto', sa.Integer(), nullable=False),
-    sa.Column('clr_vermelho_clube_clu_sigla', sa.CHAR(length=3), nullable=False),
-    sa.Column('clr_amarelo_clube_clu_sigla', sa.CHAR(length=3), nullable=False),
     sa.Column('clube_clu_sigla', sa.CHAR(length=3), nullable=False),
     sa.Column('clr_qtd_jogou', sa.Integer(), nullable=True),
     sa.Column('clr_qtd_empates', sa.Integer(), nullable=True),
     sa.Column('clr_qtd_derrotas', sa.Integer(), nullable=True),
     sa.Column('clr_gols_contra', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['clr_amarelo_clube_clu_sigla'], ['clube.clu_sigla'], ),
-    sa.ForeignKeyConstraint(['clr_vermelho_clube_clu_sigla'], ['clube.clu_sigla'], ),
     sa.ForeignKeyConstraint(['clube_clu_sigla'], ['clube.clu_sigla'], ),
     sa.PrimaryKeyConstraint('clr_id')
     )
@@ -117,7 +109,7 @@ def upgrade() -> None:
     sa.Column('rod_pontos_mandante', sa.Integer(), nullable=True),
     sa.Column('rod_pontos_visitante', sa.Integer(), nullable=True),
     sa.Column('rod_calculou_classificacao', sa.CHAR(length=1), nullable=True),
-    sa.Column('rod_partida_finalidaza', sa.CHAR(length=1), nullable=True),
+    sa.Column('rod_partida_finalizada', sa.CHAR(length=1), nullable=True),
     sa.Column('estadio_est_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['clube_clu_sigla_mandante'], ['clube.clu_sigla'], ),
     sa.ForeignKeyConstraint(['clube_clu_sigla_visitante'], ['clube.clu_sigla'], ),

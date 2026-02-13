@@ -12,8 +12,6 @@ class ClassificacaoRodadaBaseSchema(BaseModel):
     clr_saldo_gols: int
     clr_gols_pro: int
     clr_confronto_direto: int
-    clr_vermelho_clube_clu_sigla: str
-    clr_amarelo_clube_clu_sigla: str
     clube_clu_sigla: str
 
 
@@ -26,8 +24,6 @@ class CriarClassificacaoRodadaSchema(BaseModel):
     clr_saldo_gols: int
     clr_gols_pro: int
     clr_confronto_direto: int
-    clr_vermelho_clube_clu_sigla: str
-    clr_amarelo_clube_clu_sigla: str
     clube_clu_sigla: str
     clr_qtd_jogou: Optional[int] = None
     clr_qtd_empates: Optional[int] = None
@@ -41,8 +37,6 @@ class AtualizarClassificacaoRodadaSchema(BaseModel):
     clr_saldo_gols: Optional[int] = None
     clr_gols_pro: Optional[int] = None
     clr_confronto_direto: Optional[int] = None
-    clr_vermelho_clube_clu_sigla: Optional[str] = None
-    clr_amarelo_clube_clu_sigla: Optional[str] = None
     clr_qtd_jogou: Optional[int] = None
     clr_qtd_empates: Optional[int] = None
     clr_qtd_derrotas: Optional[int] = None

@@ -7,18 +7,17 @@ from app.services.clube_service import buscar_clube_sigla, consiste_serie, consi
 from typing import List, Optional
 import re
 from app.schemas.rodada_schema import (
-    RodadaBaseSchema,
+    RodadaSchema,
     CriarRodadaSchema,
     AtualizarRodadaPlacarSchema,
     ResponseRodadaSchema,
     ResponseRodadasSchema,
 )
+from app.services.estadio_service import buscar_estadio_id
+from app.services.rodada_service import consiste_jogo_existe_rodada, consiste_sigla_clube_igual
 
 
 def criar_rodada(
-    db: Session,
-    rod_serie: str,
-    rod_ano: int,
     jogos_data: List[CriarRodadaSchema],
     session: Session
 ) -> ResponseRodadasSchema:
@@ -37,16 +36,9 @@ def criar_rodada(
     Raises:
         HTTPException: Erro de validação ou conflito ao criar a rodada.
     """
-    # 1. Validar os parâmetros principais
-    if not consiste_serie(rod_serie.upper()):
-        raise HTTPException(
-            status_code=400,
-            detail=f"Série '{rod_serie.upper()}' inválida. Use 'A' ou 'B'."
-        )
-
     if len(jogos_data) != 10:
         raise HTTPException(
-            status_code=400,
+            status_code=404,
             detail=f"A rodada deve conter exatamente 10 jogos. Recebido: {len(jogos_data)}."
         )
 
@@ -54,99 +46,56 @@ def criar_rodada(
     seq_set = set(j.rod_sequencia for j in jogos_data)
     if len(seq_set) != 10:
         raise HTTPException(
-            status_code=400,
+            status_code=404,
             detail="A lista de jogos contém sequências duplicadas."
         )
 
     # 2. Validar os jogos na rodada
     for jogo in jogos_data:
-        if jogo.rod_serie.upper() != rod_serie.upper() or jogo.rod_ano != rod_ano:
+        consiste_serie(jogo.rod_serie.upper())
+        consiste_sigla(jogo.clube_clu_sigla_mandante.upper())
+        consiste_sigla(jogo.clube_clu_sigla_visitante.upper())
+        consiste_sigla_clube_igual(jogo.clube_clu_sigla_mandante, jogo.clube_clu_sigla_visitante)
+        buscar_clube_sigla(True, jogo.clube_clu_sigla_mandante.upper(), session) # Validar se o clube existe
+        buscar_clube_sigla(True, jogo.clube_clu_sigla_visitante.upper(), session) # Validar se o clube existe
+        buscar_estadio_id(True, jogo.estadio_est_id, session) # Validar estádio
+        consiste_jogo_existe_rodada(jogo, session) # Verificar se o jogo já existe no banco
+    
+        if jogo.rod_serie.upper() != jogos_data[0].rod_serie.upper() or jogo.rod_ano != jogos_data[0].rod_ano:
             raise HTTPException(
                 status_code=400,
                 detail=f"Jogo com sequência {jogo.rod_sequencia} não possui série ou ano correspondentes: "
                        f"Série: {jogo.rod_serie.upper()}, Ano: {jogo.rod_ano}."
             )
 
-        # Validar clubes
-        if not consiste_sigla(jogo.clube_clu_sigla_mandante.upper()) or not consiste_sigla(jogo.clube_clu_sigla_visitante.upper()):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Siglas de clubes inválidas no jogo {jogo.rod_sequencia}."
-            )
-
-        if jogo.clube_clu_sigla_mandante.upper() == jogo.clube_clu_sigla_visitante.upper():
-            raise HTTPException(
-                status_code=400,
-                detail=f"Clube mandante e visitante são iguais no jogo {jogo.rod_sequencia}."
-            )
-
-        # Validar se os clubes existem
-        mandante = buscar_clube_sigla(False, jogo.clube_clu_sigla_mandante.upper(), session)
-        # retorna_exception: bool, clube_sigla: str, session: Session
-        if not mandante:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Clube mandante com sigla '{jogo.clube_clu_sigla_mandante.upper()}' não encontrado."
-            )
-
-        visitante = buscar_clube_sigla(False, jogo.clube_clu_sigla_visitante.upper(), session)
-        if not visitante:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Clube visitante com sigla '{jogo.clube_clu_sigla_visitante.upper()}' não encontrado."
-            )
-
-        # Validar estádio
-        estadio = db.query(Estadio).filter(Estadio.est_id == jogo.estadio_est_id).first()
-        if not estadio:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Estádio com ID '{jogo.estadio_est_id}' não encontrado para o jogo {jogo.rod_sequencia}."
-            )
-
-        # Verificar se o jogo já existe no banco
-        jogo_existente = db.query(Rodada).filter(
-            Rodada.__table__.c.rod_serie == rod_serie.upper(),
-            Rodada.__table__.c.rod_ano == rod_ano,
-            Rodada.__table__.c.rod_rodada == jogo.rod_rodada,
-            Rodada.__table__.c.rod_sequencia == jogo.rod_sequencia
-        ).first()
-
-        if jogo_existente:
-            raise HTTPException(
-                status_code=409,
-                detail=f"Jogo com sequência '{jogo.rod_sequencia}', série '{rod_serie.upper()}', rodada '{jogo.rod_rodada}', "
-                       f"ano '{rod_ano}' já existe."
-            )
-
-    # 3. Adicionar os jogos no banco
+    #Adicionar os jogos no banco
     rodadas = []
     try:
         for jogo in jogos_data:
             nova_rodada = Rodada(
-                rod_serie=rod_serie.upper(),
-                rod_ano=rod_ano,
+                rod_serie=jogo.rod_serie.upper(),
+                rod_ano=jogo.rod_ano,
                 rod_rodada=jogo.rod_rodada,
                 rod_sequencia=jogo.rod_sequencia,
                 rod_data=jogo.rod_data,
                 clube_clu_sigla_mandante=jogo.clube_clu_sigla_mandante.upper(),
                 clube_clu_sigla_visitante=jogo.clube_clu_sigla_visitante.upper(),
                 rod_calculou_classificacao="N",
-                rod_partida_finalidaza="N",
+                rod_partida_finalizada="N",
                 estadio_est_id=jogo.estadio_est_id,
             )
-            db.add(nova_rodada)
+            session.add(nova_rodada)
             rodadas.append(nova_rodada)
 
         # Commitar todas as alterações no banco
-        db.commit()
+        session.commit()
 
         # Garantir que os objetos estão atualizados com a sessão
         for rodada in rodadas:
-            db.refresh(rodada)
+            session.refresh(rodada)
 
     except Exception as e:
-        db.rollback()
+        session.rollback()
         raise HTTPException(
             status_code=500,
             detail=f"Ocorreu um erro ao salvar a rodada: {str(e)}"

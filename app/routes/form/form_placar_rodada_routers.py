@@ -6,9 +6,9 @@ from app.core.dependencies import pegar_sessao, verificar_token
 from app.models.usuario_models import Usuario
 from app.schemas.cartao_schema import ResponseCartaoClubeSchema
 from app.schemas.rodada_schema import ListaJogosRodadaFormPlacarResponse, AtualizarRodadaPlacarSchema
-from app.services.form.form_placar_rodada import calcular_classificacao_brasileirao, rodada_lista, atualizar_placares_rodada
 from app.services.cartao_service import listar_cartoes_paginados
-
+from app.schemas.classificacao_geral_schema import ResponseClassificacaoGeralListaSchema
+from app.services.form.form_placar_rodada_service import calcular_classificacao_brasileirao, rodada_lista, atualizar_placares_rodada, lista_classificacao_geral
 
 router_placar_rodada = APIRouter(tags=["placar rodada"])
 
@@ -24,8 +24,8 @@ def get_rodada_lista(
     rodada: int,
     carrega_nao_realizados: bool = Query(
         default=False,
-        alias="carrega_jogos_nao_realizados",
-        description="Quando verdadeiro, inclui jogos não realizados de rodadas anteriores."
+        alias="carrega_jogos",
+        description="Quando verdadeiro, inclui jogos de rodadas anteriores."
     ),
     session: Session = Depends(pegar_sessao),
     usuario: Usuario = Depends(verificar_token)
@@ -132,3 +132,29 @@ async def calcular_classificacao(
         raise HTTPException(status_code=404, detail=log_erro)
     finally:
         session.close()
+
+
+@router_placar_rodada.get(
+    "/classificacao-geral",
+    response_model=List[ResponseClassificacaoGeralListaSchema],
+    summary="Lista a classificação geral do Brasileirão"
+)
+def obter_classificacao_geral(serie: str, 
+                              ano: int, 
+                              session: Session = Depends(pegar_sessao),
+                              usuario: Usuario = Depends(verificar_token)):
+    """
+    Retorna a classificação geral de uma série e ano especificados.
+
+    Args:
+        serie (str): Série (ex.: 'A' ou 'B').
+        ano (int): Ano da competição.
+        db (Session): Sessão de banco de dados injetada automaticamente pelo FastAPI.
+
+    Returns:
+        List[ResponseClassificacaoGeralListaSchema]: Lista de classificações.
+    """
+    try:
+        return lista_classificacao_geral(db=session, serie=serie, ano=ano)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Erro ao obter a classificação geral. Detalhe: " + str(e))

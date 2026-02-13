@@ -180,10 +180,11 @@ def criar_cartoes_para_clubes(serie: str, ano: int, session: Session) -> dict:
     return {"message": f"Registros de cartões criados com sucesso para a série '{serie.upper()}' e ano '{ano}'."}
 
 
-def atualizar_cartao(car_serie: str, car_ano: int, clube_clu_sigla: str, dados: CartaoSchema, session: Session) -> CartaoSchema:
+def atualizar_cartao(altera_qtd_menor: bool, car_serie: str, car_ano: int, clube_clu_sigla: str, dados: CartaoSchema, session: Session) -> CartaoSchema:
     """Atualiza um registro de cartão existente.
 
     Args:
+        altera_qtd_menor (bool): Indica se deve diminuir a quantidade de cartões.
         car_serie (str): Série do cartão.
         car_ano (int): Ano da competição.
         clube_clu_sigla (str): Sigla do clube associado ao cartão.
@@ -198,6 +199,14 @@ def atualizar_cartao(car_serie: str, car_ano: int, clube_clu_sigla: str, dados: 
     """
     consiste_serie(car_serie.upper())
     consiste_sigla(clube_clu_sigla.upper())
+
+    if not altera_qtd_menor:
+        cartao_qtd = buscar_cartao_sigla(False, clube_clu_sigla.upper(), session)
+        if cartao_qtd:  
+            if dados.car_qtd_vermelho is not None and cartao_qtd.car_qtd_vermelho is not None and dados.car_qtd_vermelho < cartao_qtd.car_qtd_vermelho:
+                raise HTTPException(status_code=400, detail="A quantidade de cartões vermelhos informada não pode ser menor do que a quantidade atual.")
+            if dados.car_qtd_amarelo is not None and cartao_qtd.car_qtd_amarelo is not None and dados.car_qtd_amarelo < cartao_qtd.car_qtd_amarelo:
+                raise HTTPException(status_code=400, detail="A quantidade de cartões amarelos informada não pode ser menor do que a quantidade atual.")
 
     # Busca o cartão no banco
     cartao = session.query(Cartao).filter(

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Body, HTTPException, Depends
 from app.schemas.cartao_schema import ResponseCartaoSchema, CartaoSchema, ResponseCartaoClubeSchema
 from app.core.dependencies import pegar_sessao, verificar_token
 from app.models.usuario_models import Usuario
@@ -101,6 +101,7 @@ async def atualizar_cartao_por_serie_ano_sigla(
     ano: int,
     clu_sigla: str,
     cartao_atualizado: CartaoSchema,
+    altera_qtd_menor: bool = Query(False, description="Indica se deve diminuir a quantidade de cartões"),
     session: Session = Depends(pegar_sessao),
     usuario: Usuario = Depends(verificar_token)):
     """
@@ -122,7 +123,7 @@ async def atualizar_cartao_por_serie_ano_sigla(
     CartaoSchema: Cartão atualizado.
     """
     try:
-        return atualizar_cartao(serie, ano, clu_sigla, cartao_atualizado, session)
+        return atualizar_cartao(altera_qtd_menor, serie, ano, clu_sigla, cartao_atualizado, session)
     except HTTPException as ex:
         log_erro = (f"{ex.detail}")
         raise HTTPException(status_code=404, detail=log_erro) 

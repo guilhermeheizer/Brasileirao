@@ -13,10 +13,9 @@ rodada_form_router = APIRouter(tags=["cadastra rodada"])
 
 @rodada_form_router.post("/cria-rodada", response_model=ResponseRodadasSchema)
 async def criar_rodadas(
-    rod_serie: str,
-    rod_ano: int,
     jogos_data: List[CriarRodadaSchema],
     session: Session = Depends(pegar_sessao),
+    usuario: Usuario = Depends(verificar_token)
 ):
     """
     Cria uma rodada completa com base na série, ano, e uma lista de 10 jogos.
@@ -32,7 +31,7 @@ async def criar_rodadas(
         ResponseRodadasSchema: Retorna os dados das rodadas criadas.
     """
     try:
-        return criar_rodada(db=session, rod_serie=rod_serie, rod_ano=rod_ano, jogos_data=jogos_data, session=session)
+        return criar_rodada(jogos_data, session)
     except HTTPException as ex:
         log_erro = f"Erro: {ex.detail}"
         raise HTTPException(status_code=ex.status_code, detail=log_erro)

@@ -17,7 +17,11 @@ clube_router = APIRouter(tags=["clube"])
 
 
 @clube_router.get("/listar", response_model=ResponseClubeSchema)
-async def listar_clubes(session: Session = Depends(pegar_sessao)):
+async def listar_clubes(    
+    serie: Optional[str] = Query(None, description="Filtro opcional pela série do clube (A, B, C ou D)"),
+    nome: Optional[str] = Query(None, description="Busca parcial pelo nome da clube"),
+    session: Session = Depends(pegar_sessao)
+    ):
     """
     Lista todos os clubes cadastrados.
 
@@ -34,7 +38,7 @@ async def listar_clubes(session: Session = Depends(pegar_sessao)):
     que contém uma lista de clube no formato especificado por `ClubeSchema`.
     """
     try:
-        return listar_todos_clubes(session)
+        return listar_todos_clubes(serie, nome, session)
     except HTTPException as ex:
         log_erro = (f"{ex.detail}")
         raise HTTPException(status_code=404, detail=log_erro)    
@@ -130,6 +134,7 @@ async def deletar_clube_por_sigla(
     
 @clube_router.get("/listar-paginado", response_model=ResponseClubeCidadeSchema)
 async def listar_clubes_paginacao(
+    serie: Optional[str] = Query(None, description="Filtro opcional pela série do clube (A, B, C ou D)"),
     nome: Optional[str] = Query(None, description="Busca parcial pelo nome da clube"),
     pagina: int = Query(1, description="Número da página", ge=1),
     tamanho_pagina: int = Query(10, description="Tamanho da página", ge=1),
@@ -138,6 +143,7 @@ async def listar_clubes_paginacao(
 
     Args:
         nome (Optional[str], optional): Defaults to Query(None, description="Busca parcial pelo nome do clube").
+        serie (Optional[str], optional): Defaults to Query(None, description="Filtro opcional pela série do clube (A, B, C ou D)").
         pagina (int, optional): Defaults to Query(1, description="Número da página", ge=1).
         tamanho_pagina (int, optional): Defaults to Query(10, description="Tamanho da página", ge=1).   
         session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI   
@@ -150,7 +156,7 @@ async def listar_clubes_paginacao(
              que contém uma lista de clubes no formato especificado por `ClubeSchema`.
     """
     try:
-        return listar_clubes_paginadas(nome, pagina, tamanho_pagina, session)
+        return listar_clubes_paginadas(serie, nome, pagina, tamanho_pagina, session)
     except HTTPException as ex:
         log_erro = (f"{ex.detail}")
         raise HTTPException(status_code=404, detail=log_erro)

@@ -11,8 +11,6 @@ class ClassificacaoGeralBaseSchema(BaseModel):
     clg_saldo_gols: int
     clg_gols_pro: int
     clg_confronto_direto: int
-    clg_vermelho_clube_clu_sigla: str
-    clg_amarelo_clube_clu_sigla: str
     clube_clu_sigla: str
 
 
@@ -24,8 +22,6 @@ class CriarClassificacaoGeralSchema(BaseModel):
     clg_saldo_gols: int
     clg_gols_pro: int
     clg_confronto_direto: int
-    clg_vermelho_clube_clu_sigla: str
-    clg_amarelo_clube_clu_sigla: str
     clube_clu_sigla: str
     clg_qtd_jogou: Optional[int] = None
     clg_qtd_empates: Optional[int] = None
@@ -39,8 +35,6 @@ class AtualizarClassificacaoGeralSchema(BaseModel):
     clg_saldo_gols: Optional[int] = None
     clg_gols_pro: Optional[int] = None
     clg_confronto_direto: Optional[int] = None
-    clg_vermelho_clube_clu_sigla: Optional[str] = None
-    clg_amarelo_clube_clu_sigla: Optional[str] = None
     clg_qtd_jogou: Optional[int] = None
     clg_qtd_empates: Optional[int] = None
     clg_qtd_derrotas: Optional[int] = None
@@ -59,6 +53,26 @@ class ResponseClassificacaoGeralSchema(ClassificacaoGeralBaseSchema):
 
 class ResponseClassificacoesGeraisSchema(BaseModel):
     classificacoes: List[ResponseClassificacaoGeralSchema]
+
+    class Config:
+        from_attributes = True
+
+
+class ResponseClassificacaoGeralListaSchema(BaseModel):
+    ordem_classificacao: int
+    clube_clu_sigla: str
+    clu_nome: str
+    clu_link_escudo: str
+    clg_pontos: int
+    clg_qtd_jogou: int
+    clg_vitorias: int
+    clg_qtd_empates: int
+    clg_qtd_derrotas: int
+    clg_gols_pro: int
+    clg_gols_contra: int
+    clg_saldo_gols: int
+    car_qtd_amarelo: int
+    car_qtd_vermelho: int
 
     class Config:
         from_attributes = True

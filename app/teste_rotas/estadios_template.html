@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Estádios do Brasileirão {{ ano }}</title>
+</head>
+<body>
+    <h1>Estádios do Brasileirão {{ ano }}</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Cidade</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for estadio in estadios %}
+            <tr>
+                <td>{{ estadio.est_id }}</td>
+                <td>{{ estadio.est_nome }}</td>
+                <td>{{ estadio.cidade_nome }}</td>
+                <td>{{ estadio.cidade_uf }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

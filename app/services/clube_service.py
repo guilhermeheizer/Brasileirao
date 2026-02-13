@@ -10,10 +10,12 @@ from typing import Optional
 import re
 
 
-def listar_todos_clubes(session: Session) -> ResponseClubeSchema:
+def listar_todos_clubes(serie: Optional[str], nome: Optional[str], session: Session) -> ResponseClubeSchema:
     """Lista todos os clubes
 
     Args:
+        serie (Optional[str]): Série do clube a ser filtrado (opcional).
+        nome (Optional[str]): Nome do clube a ser filtrado (opcional).
         session (Session): Sessão ativa do SQLAlchemy para conectar ao banco.
 
     Raises:
@@ -22,7 +24,20 @@ def listar_todos_clubes(session: Session) -> ResponseClubeSchema:
     Returns:
         ResponseClubeSchema: Representação dos clubes encontrados.
     """
-    clubes = session.query(Clube).order_by(Clube.__table__.c.clu_nome).all()
+    if serie:
+        consiste_serie(serie)  # Verifica se a série é válida
+
+    query = session.query(Clube).order_by(Clube.__table__.c.clu_nome)
+
+        # Filtro opcional pelo nome do clube
+    if nome:
+        query = query.filter(Clube.__table__.c.clu_nome.ilike(f"%{nome}%"))
+
+    if serie:
+        query = query.filter(Clube.__table__.c.clu_serie == serie.upper())
+        
+    clubes = query.all()
+
     if not clubes:
         raise HTTPException(status_code=404, detail="Nenhum clube encontrado.")
     
@@ -205,10 +220,11 @@ def consiste_sigla(sigla: str) -> bool:
     
     return bool(True)
 
-def listar_clubes_paginadas(nome: Optional[str], pagina: int, tamanho_pagina: int, session: Session) -> ResponseClubeCidadeSchema:
+def listar_clubes_paginadas(serie: Optional[str], nome: Optional[str], pagina: int, tamanho_pagina: int, session: Session) -> ResponseClubeCidadeSchema:
     """Listar os clubes pelo nome da clube (opcional) com paginação
 
     Args:
+        serie (Optional[str]): Série do clube a ser filtrado (opcional).
         nome (Optional[str]): Nome do clube a ser filtrado (opcional).
         pagina (int): Número da página a ser retornada.
         tamanho_pagina (int): Tamanho da página a ser retornada.
@@ -220,6 +236,9 @@ def listar_clubes_paginadas(nome: Optional[str], pagina: int, tamanho_pagina: in
     Returns:
         ResponseClubesSchema: Lista de clubes no formato esperado na API.
     """
+    if serie:
+        consiste_serie(serie)  # Verifica se a série é válida
+    
     query = session.query(
         Clube.__table__.c.clu_sigla,
         Clube.__table__.c.clu_nome,
@@ -233,6 +252,9 @@ def listar_clubes_paginadas(nome: Optional[str], pagina: int, tamanho_pagina: in
     # Filtro opcional pelo nome do clube
     if nome:
         query = query.filter(Clube.__table__.c.clu_nome.ilike(f"%{nome}%"))
+
+    if serie:
+        query = query.filter(Clube.__table__.c.clu_serie == serie.upper())
 
     query = query.order_by(Clube.__table__.c.clu_nome)
 

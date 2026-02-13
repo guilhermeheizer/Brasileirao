@@ -3,7 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 
 
-class RodadaBaseSchema(BaseModel):
+class RodadaSchema(BaseModel):
     rod_serie: str
     rod_ano: int
     rod_rodada: int
@@ -17,10 +17,17 @@ class RodadaBaseSchema(BaseModel):
         from_attributes = True
 
 
-class CriarRodadaSchema(RodadaBaseSchema):
+class CriarRodadaSchema(RodadaSchema):
     rod_calculou_classificacao: Optional[str] = "N"
-    rod_partida_finalidaza: Optional[str] = "N"
+    rod_partida_finalizada: Optional[str] = "N"
 
+    class Config:
+        from_attributes = True
+
+class ResponseCriarRodadaSchema(CriarRodadaSchema):
+
+    class Config:
+        from_attributes = True
 
 class AtualizarRodadaPlacarSchema(BaseModel):
     rod_serie: str
@@ -29,7 +36,7 @@ class AtualizarRodadaPlacarSchema(BaseModel):
     rod_sequencia: int
     rod_gols_mandante: int
     rod_gols_visitante: int
-    rod_partida_finalidaza: str
+    rod_partida_finalizada: str
     
     class Config:
         from_attributes = True
@@ -65,15 +72,17 @@ class JogoFormPlacarSchema(BaseModel):
     clu_nome_mandante: str  # Nome completo do clube mandante
     clu_link_escudo_mandante: str  # URL do escudo do clube mandante
     rod_gols_mandante: Optional[int]  # Gols do mandante (pode ser nulo)
+    rod_pontos_mandante: Optional[int]  # Pontos do mandante (pode ser nulo)
     clube_clu_sigla_visitante: str  # Sigla do clube visitante
     clu_nome_visitante: str  # Nome completo do clube visitante
     clu_link_escudo_visitante: str  # URL do escudo do clube visitante
     rod_gols_visitante: Optional[int] # Gols do visitante (pode ser nulo)
+    rod_pontos_visitante: Optional[int]  # Pontos do visitante (pode ser nulo)
     car_qtd_vermelho_mandante: Optional[int] = 0 # Cartões vermelhos do mandante (pode ser nulo)
     car_qtd_amarelo_mandante: Optional[int] = 0 # Cartões amarelos do mandante (pode ser nulo)
     car_qtd_vermelho_visitante: Optional[int] = 0 # Cartões vermelhos do visitante (pode ser nulo)
     car_qtd_amarelo_visitante: Optional[int] = 0 # Cartões amarelos do visitante (pode ser nulo)
-    rod_partida_finalidaza: str  # Indica se a partida foi finalidaza ("S" ou "N")
+    rod_partida_finalizada: str  # Indica se a partida foi finalizada ("S" ou "N")
     rod_calculou_classificacao: str  # Indica se a classificação foi calculada ("S" ou "N")
 
 

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rodada {{ rodada_numero }} - {{ serie }} {{ ano }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .game {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .team {
+            flex: 1;
+            text-align: center;
+        }
+        .score {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ rodada_numero }}ª Rodada - Série {{ serie }} - {{ ano }}</h1>
+        {% for jogo in jogos %}
+        <div class="game">
+            <div class="header">
+    <p>Estádio: <strong>{{ jogo.est_nome or "Estádio Não Informado" }}</strong></p>
+    <p>Data/Hora: <strong>{{ jogo.rod_data.strftime('%d/%m/%Y %H:%M') if jogo.rod_data else "Data Não Informada" }}</strong></p>
+</div>
+            <div class="team home">
+                <p><strong>{{ jogo.clu_nome_mandante or "Time Não Informado" }}</strong></p>
+                <img src="{{ jogo.clu_link_escudo_mandante or '#' }}" alt="Escudo" style="height: 50px;">
+            </div>
+            <div class="score">
+                {{ jogo.rod_gols_mandante if jogo.rod_gols_mandante is not none else "-" }} 
+                x 
+                {{ jogo.rod_gols_visitante if jogo.rod_gols_visitante is not none else "-" }}
+            </div>
+            <div class="team away">
+                <p><strong>{{ jogo.clu_nome_visitante or "Time Não Informado" }}</strong></p>
+                <img src="{{ jogo.clu_link_escudo_visitante or '#' }}" alt="Escudo" style="height: 50px;">
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
