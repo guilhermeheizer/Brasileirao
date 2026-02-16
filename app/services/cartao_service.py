@@ -6,6 +6,8 @@ from app.models.cartao_models import Cartao
 from app.models.clube_models import Clube
 from app.services.clube_service import buscar_clube_sigla, consiste_serie, consiste_sigla
 from typing import Optional
+import requests
+from bs4 import BeautifulSoup
 import re
 from app.schemas.cartao_schema import (
     CartaoClubeSchema,
@@ -122,7 +124,7 @@ def criar_cartoes_para_clubes(serie: str, ano: int, session: Session) -> dict:
     
     if registros_existentes and registros_existentes > 0:
         raise HTTPException(
-            status_code=400,
+            status_code=404,
             detail=f"Já existem registros na tabela 'cartao' para a série '{serie.upper()}' e ano '{ano}'."
         )
     
@@ -204,9 +206,9 @@ def atualizar_cartao(altera_qtd_menor: bool, car_serie: str, car_ano: int, clube
         cartao_qtd = buscar_cartao_sigla(False, clube_clu_sigla.upper(), session)
         if cartao_qtd:  
             if dados.car_qtd_vermelho is not None and cartao_qtd.car_qtd_vermelho is not None and dados.car_qtd_vermelho < cartao_qtd.car_qtd_vermelho:
-                raise HTTPException(status_code=400, detail="A quantidade de cartões vermelhos informada não pode ser menor do que a quantidade atual.")
+                raise HTTPException(status_code=404, detail="A quantidade de cartões vermelhos informada não pode ser menor do que a quantidade atual.")
             if dados.car_qtd_amarelo is not None and cartao_qtd.car_qtd_amarelo is not None and dados.car_qtd_amarelo < cartao_qtd.car_qtd_amarelo:
-                raise HTTPException(status_code=400, detail="A quantidade de cartões amarelos informada não pode ser menor do que a quantidade atual.")
+                raise HTTPException(status_code=404, detail="A quantidade de cartões amarelos informada não pode ser menor do que a quantidade atual.")
 
     # Busca o cartão no banco
     cartao = session.query(Cartao).filter(
@@ -233,6 +235,155 @@ def atualizar_cartao(altera_qtd_menor: bool, car_serie: str, car_ano: int, clube
 
     return CartaoSchema(**cartao.as_dict())
 
+
+def obter_url_cbf(car_serie: str, car_ano: int) -> str:
+    """Retorna a URL correspondente à série e ano."""
+    if car_serie == "A":
+        return f"https://www.cbf.com.br/futebol-brasileiro/tabelas/campeonato-brasileiro/serie-a/{car_ano}"
+    elif car_serie == "B":
+        return f"https://www.cbf.com.br/futebol-brasileiro/tabelas/campeonato-brasileiro/serie-b/{car_ano}"
+    else:
+        raise HTTPException(status_code=404, detail="Série inválida. Use 'A' ou 'B' para a série.")
+
+
+def coletar_dados_cartoes(url: str) -> list[dict]:
+    """Faz o scraping no site da CBF e retorna os dados estruturados de cartões."""
+    response = requests.get(url)
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail=f"Falha ao acessar a página {url}.")
+    
+    html_content = response.text
+    soup = BeautifulSoup(html_content, "html.parser")
+    section = soup.find("section", class_="styles_container__L5dGB")
+    if not section:
+        raise HTTPException(status_code=500, detail="Seção da tabela não encontrada no site da CBF.")
+    tbody = section.find("tbody")
+    if not tbody:
+        raise HTTPException(status_code=500, detail="Tabela não encontrada no site da CBF.")
+    
+    resultados = []
+    for tr in tbody.find_all("tr"):
+        try:
+            td_nome_clube = tr.find("td", class_="styles_teamPosition__CFIvz")
+            if not td_nome_clube:
+                raise HTTPException(status_code=500, detail="Nome do clube não encontrado. Tag extraída: {td_nome_clube}")
+
+            nome_clube = td_nome_clube.find_all("strong")[1].text.strip()
+            cartoes_amarelos = int(tr.find_all("td")[9].text.strip())
+            cartoes_vermelhos = int(tr.find_all("td")[10].text.strip())
+
+            resultados.append({
+                "clube": nome_clube,
+                "cartoes_amarelos": cartoes_amarelos,
+                "cartoes_vermelhos": cartoes_vermelhos,
+            })
+        except Exception as e:
+            print(f"Erro ao processar uma linha: {e}")
+            continue
+
+    return resultados
+
+
+def normalizar_dados_clubes(resultados: list[dict]) -> list[dict]:
+    """Substitui nomes dos clubes por suas respectivas siglas."""
+    clubes_para_siglas = {
+        "Palmeiras": "PAL",
+        "São Paulo": "SAO",
+        "Fluminense": "FLU",
+        "Bahia": "BAH",
+        "Athletico Paranaense": "CAP",
+        "Red Bull Bragantino": "RBB",
+        "Chapecoense": "CHA",
+        "Mirassol": "MIR",
+        "Coritiba S.a.f.": "CFC",
+        "Flamengo": "FLA",
+        "Botafogo": "BOT",
+        "Corinthians": "COR",
+        "Grêmio": "GRE",
+        "Vitória": "VIT",
+        "Atlético Mineiro": "CAM",
+        "Remo": "REM",
+        "Vasco da Gama Saf": "VAS",
+        "Santos Fc": "SAN",
+        "Internacional": "INT",
+        "Cruzeiro": "CRU",
+    }
+
+    nova_lista = []
+    for item in resultados:
+        nome_clube = item["clube"]
+        sigla = clubes_para_siglas.get(nome_clube, "N/A")
+        nova_lista.append({
+            "clube": sigla,
+            "cartoes_amarelos": item["cartoes_amarelos"],
+            "cartoes_vermelhos": item["cartoes_vermelhos"],
+        })
+
+    return nova_lista
+
+
+def atualizar_dados_cartoes(nova_lista: list[dict], car_serie: str, car_ano: int, session: Session) -> list[CartaoSchema]:
+    """Atualiza os dados no banco de dados com base na lista normalizada."""
+    erros = []
+    cartoes_atualizados = []
+
+    for item in nova_lista:
+        try:
+            cartao = session.query(Cartao).filter(
+                Cartao.__table__.c.car_serie == car_serie,
+                Cartao.__table__.c.car_ano == car_ano,
+                Cartao.__table__.c.clube_clu_sigla == item["clube"],
+            ).first()
+
+            if not cartao:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Cartão para o clube '{item['clube']}' na série '{car_serie}' do ano {car_ano} não encontrado."
+                )
+
+            cartao.car_qtd_vermelho = item["cartoes_vermelhos"]
+            cartao.car_qtd_amarelo = item["cartoes_amarelos"]
+
+            session.commit()
+            session.refresh(cartao)
+
+            cartoes_atualizados.append(CartaoSchema(
+                car_serie=car_serie,
+                car_ano=car_ano,
+                clube_clu_sigla=item["clube"],
+                car_qtd_vermelho=item["cartoes_vermelhos"],
+                car_qtd_amarelo=item["cartoes_amarelos"],
+            ))
+
+        except HTTPException as http_error:
+            erros.append(f"Erro: {http_error.detail}. Clube: {item['clube']}")
+            session.rollback()
+        except Exception as e:
+            erros.append(f"Erro inesperado no clube {item['clube']}: {str(e)}")
+            session.rollback()
+
+    if erros:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Ocorreram erros durante a atualização dos cartões: {'; '.join(erros)}"
+        )
+
+    return cartoes_atualizados
+
+
+def atualizar_cartao_cbf(car_serie: str, car_ano: int, session: Session) -> list[CartaoSchema]:
+    """Função principal para atualizar os cartões."""
+    # 1. Valida a série e obtém a URL correspondente
+    url = obter_url_cbf(car_serie.upper(), car_ano)
+
+    # 2. Coleta os dados de cartões do site
+    resultados = coletar_dados_cartoes(url)
+
+    # 3. Normaliza os dados dos clubes para utilizar siglas
+    nova_lista = normalizar_dados_clubes(resultados)
+
+    # 4. Atualiza os dados no banco de dados
+    return atualizar_dados_cartoes(nova_lista, car_serie.upper(), car_ano, session)
 
 def deletar_cartao(car_serie: str, car_ano: int, clube_clu_sigla: str, session: Session):
     """Deleta um registro de cartão do banco.
@@ -288,9 +439,8 @@ def buscar_cartao_sigla(retorna_exception: bool, clube_clu_sigla: str, session: 
     # Busca pelo cartao no banco de dados
     cartao = session.query(Cartao).filter(Cartao.__table__.c.clube_clu_sigla == clube_clu_sigla).first()
 
-    if cartao:
-        if retorna_exception:
-            raise HTTPException(status_code=404, detail=f"Cartao.com sigla '{clube_clu_sigla}' já existe.")
+    if cartao and retorna_exception:
+        raise HTTPException(status_code=404, detail=f"Cartao.com sigla '{clube_clu_sigla}' já existe.")
         
     return CartaoSchema(**cartao.as_dict()) if cartao else None
 

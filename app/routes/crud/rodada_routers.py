@@ -23,4 +23,4 @@ async def criar_rodada_endpoint(
         nova_rodada = criar_rodada(rodada, session)
         return nova_rodada
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e))

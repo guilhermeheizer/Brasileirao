@@ -12,6 +12,7 @@ from app.services.cartao_service import (
     deletar_cartao,
     listar_cartoes_paginados,
     criar_cartoes_para_clubes,
+    atualizar_cartao_cbf,
 )
 
 cartao_router = APIRouter(tags=["cartao"])
@@ -124,6 +125,37 @@ async def atualizar_cartao_por_serie_ano_sigla(
     """
     try:
         return atualizar_cartao(altera_qtd_menor, serie, ano, clu_sigla, cartao_atualizado, session)
+    except HTTPException as ex:
+        log_erro = (f"{ex.detail}")
+        raise HTTPException(status_code=404, detail=log_erro) 
+    finally:
+        session.close()
+
+
+@cartao_router.post("/atualiza_cartao_cbf/{serie}/{ano}", response_model=list[CartaoSchema])
+async def atualizar_cartao_por_serie_ano(
+    serie: str,
+    ano: int,
+    session: Session = Depends(pegar_sessao),
+    usuario: Usuario = Depends(verificar_token)):
+    """
+    Atualiza os cartões de uma determinada série e ano com base em dados do CBF.
+
+    Args:
+    serie (str): Informe a série do cartão a ser atualizado.
+    ano (int): Informe o ano do cartão a ser atualizado.
+    session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI   
+                                 via dependência de injeção (Depends(pegar_sessao)).
+    usuario (Usuario, optional): Defaults to Depends(verificar_token).
+
+    Raises:
+    HTTPException: Lançada se ocorrer um erro durante a atualização do cartao.
+
+    Returns:
+    CartaoSchema: Cartão atualizado.
+    """
+    try:
+        return atualizar_cartao_cbf(serie, ano, session)
     except HTTPException as ex:
         log_erro = (f"{ex.detail}")
         raise HTTPException(status_code=404, detail=log_erro) 

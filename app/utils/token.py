@@ -29,10 +29,10 @@ def criar_token(id_usuario: int, duracao_token=timedelta(minutes=settings.ACCESS
     chave_secreta = settings.SECRET_KEY
 
     if not isinstance(chave_secreta, str) or not chave_secreta:
-        raise ValueError("SECRET_KEY esta vazio ou não é uma string válida")
+        raise HTTPException(status_code=401, detail="Abra config.py e veja SECRET_KEY esta vazio ou não é uma string válida")
 
     if not isinstance(settings.ALGORITHM, str) or not settings.ALGORITHM:
-        raise ValueError("ALGORITHM esta vazio ou não é uma string válida")
+        raise HTTPException(status_code=401, detail="Abra config.py e veja ALGORITHM esta vazio ou não é uma string válida")
 
     dic_info = {"sub": str(id_usuario), "exp": data_expiracao} # Informação do token de acordo com o padrão JWT: https://www.jwt.io/
     token = jwt.encode(dic_info, chave_secreta, algorithm=settings.ALGORITHM)
@@ -55,7 +55,7 @@ def verificar_token(token: str = Depends(oauth2_scheme), session: Session = Depe
         usuario: Retorna o usuário associado ao token válido.
     """
     if settings.SECRET_KEY is None:        
-        raise HTTPException(status_code=500, detail="Chave secreta não configurada!")
+        raise HTTPException(status_code=500, detail="Abra config.py e veja SECRET_KEY esta vazio ou não é uma string válida")
     try:
         dic_info = jwt.decode(token, settings.SECRET_KEY, settings.ALGORITHM)
         id_usuario = dic_info.get("sub")

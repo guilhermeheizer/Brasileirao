@@ -42,7 +42,7 @@ def criar_cidade(cidade: CidadesSchema, session: Session) -> CidadesSchema:
         CidadesSchema: Dados da cidade criada.
     """
     if buscar_cidade_nome(False, cidade.cid_nome, session):  # Verifica se a cidade já existe
-        raise HTTPException(status_code=400, detail=f"Cidade {cidade.cid_nome.title()} já cadastrada.")
+        raise HTTPException(status_code=404, detail=f"Cidade {cidade.cid_nome.title()} já cadastrada.")
     
     consiste_uf(cidade.cid_uf)  # Verifica se a UF é válida
 
@@ -235,4 +235,4 @@ def consiste_uf (uf: str) -> bool:
     if uf.upper() in ufs_validas:
         return True
     else:
-        raise HTTPException(status_code=400, detail=f"UF {uf} inválida.")
+        raise HTTPException(status_code=404, detail=f"UF {uf} inválida.")

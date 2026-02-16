@@ -90,7 +90,7 @@ def criar_rodada(rodada: CriarRodadaSchema, session: Session):
         session.refresh(nova_rodada)
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e))
    
     return ResponseCriarRodadaSchema(**nova_rodada.as_dict())
 

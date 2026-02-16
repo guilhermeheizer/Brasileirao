@@ -63,20 +63,22 @@ def criar_rodada(
     
         if jogo.rod_serie.upper() != jogos_data[0].rod_serie.upper() or jogo.rod_ano != jogos_data[0].rod_ano:
             raise HTTPException(
-                status_code=400,
+                status_code=404,
                 detail=f"Jogo com sequência {jogo.rod_sequencia} não possui série ou ano correspondentes: "
                        f"Série: {jogo.rod_serie.upper()}, Ano: {jogo.rod_ano}."
             )
 
     #Adicionar os jogos no banco
     rodadas = []
+    sequencia = 0
     try:
         for jogo in jogos_data:
+            sequencia += 10
             nova_rodada = Rodada(
                 rod_serie=jogo.rod_serie.upper(),
                 rod_ano=jogo.rod_ano,
                 rod_rodada=jogo.rod_rodada,
-                rod_sequencia=jogo.rod_sequencia,
+                rod_sequencia=sequencia,
                 rod_data=jogo.rod_data,
                 clube_clu_sigla_mandante=jogo.clube_clu_sigla_mandante.upper(),
                 clube_clu_sigla_visitante=jogo.clube_clu_sigla_visitante.upper(),

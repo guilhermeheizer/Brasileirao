@@ -21,7 +21,7 @@ def criar_usuario_service(usuario_schema: UsuarioSchema, session: Session = Depe
     # Verifica se o email já está registrado
     usuario = session.query(Usuario).filter(getattr(Usuario, "email") == usuario_schema.email).first()
     if usuario:
-        raise HTTPException(status_code=400, detail="Email já cadastrado!")
+        raise HTTPException(status_code=404, detail="Email já cadastrado!")
 
     # Cria uma instância de usuário
     hash_senha = sha256(usuario_schema.senha.encode()).hexdigest()

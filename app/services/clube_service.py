@@ -188,7 +188,7 @@ def consiste_serie(serie: str) -> bool:
         serie (str): Série a ser validada.
 
     Raises:
-        HTTPException: erro: 400 - Série inválida. Deve ser A, B, C ou D.
+        HTTPException: erro: 404 - Série inválida. Deve ser A, B, C ou D.
 
     Returns:
         bool: True se a série for válida.
@@ -208,7 +208,7 @@ def consiste_sigla(sigla: str) -> bool:
         sigla (str): Sigla a ser validada.
 
     Raises:
-        HTTPException: erro: 400 - Sigla inválida. Deve conter exatamente 3 letras maiúsculas.
+        HTTPException: erro: 404 - Sigla inválida. Deve conter exatamente 3 letras maiúsculas.
 
     Returns:
         bool: True se a sigla for válida.

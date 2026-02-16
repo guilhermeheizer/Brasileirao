@@ -21,12 +21,12 @@ def autenticar_usuario(session: Session, email: str, senha: str) -> Usuario:
         Usuario: Usuário autenticado se as credenciais estiverem corretas.
 
     Raises:
-        HTTPException: Erro 400 - Login inválido ou senha!
+        HTTPException: Erro 404 - Login inválido ou senha!
     """
     usuario = session.query(Usuario).filter(getattr(Usuario, "email") == email).first()
     
     if not usuario or getattr(usuario, "senha", None) != sha256(senha.encode()).hexdigest():
-        raise HTTPException(status_code=400, detail="Login inválido ou senha!")
+        raise HTTPException(status_code=404, detail="Login inválido ou senha!")
     # else:
     #     access_token = criar_token(getattr(usuario, "id"))
     #     return {

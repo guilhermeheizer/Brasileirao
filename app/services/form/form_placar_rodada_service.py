@@ -36,7 +36,7 @@ def rodada_lista(
     # Validar a série
     if serie_upper not in ["A", "B"]:
         raise HTTPException(
-            status_code=400,
+            status_code=404,
             detail=f"Série '{serie_upper}' inválida. Use 'A' ou 'B'."
         )
    
@@ -459,7 +459,7 @@ def lista_classificacao_geral(db: Session, serie: str, ano: int) -> list:
     # Validar entrada da série
     if serie_upper not in ["A", "B"]:
         raise HTTPException(
-            status_code=400,
+            status_code=404,
             detail="Série inválida. Utilize 'A' ou 'B'."
         )
 
