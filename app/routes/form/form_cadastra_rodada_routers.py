@@ -11,7 +11,7 @@ from typing import List
 rodada_form_router = APIRouter(tags=["cadastra rodada"])
 
 
-@rodada_form_router.post("/cria-rodada", response_model=ResponseRodadasSchema)
+@rodada_form_router.post("/criar-rodada", response_model=ResponseRodadasSchema)
 async def criar_rodadas(
     jogos_data: List[CriarRodadaSchema],
     session: Session = Depends(pegar_sessao),

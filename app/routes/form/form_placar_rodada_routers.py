@@ -13,7 +13,7 @@ from app.services.form.form_placar_rodada_service import calcular_classificacao_
 router_placar_rodada = APIRouter(tags=["placar rodada"])
 
 @router_placar_rodada.get(
-    "/busca-placares/{serie}/{ano}/{rodada}",
+    "/buscar-placares/{serie}/{ano}/{rodada}",
     response_model=ListaJogosRodadaFormPlacarResponse,
     summary="Busca os jogos da rodada para preenchimento de placares",
     description="Retorna jogos de uma rodada específica ou jogos anteriores não realizados no formato esperado pelo front-end."
@@ -30,8 +30,14 @@ def get_rodada_lista(
     session: Session = Depends(pegar_sessao),
     usuario: Usuario = Depends(verificar_token)
 ):
-    """
-    Endpoint para buscar os jogos de uma rodada no formato desejado.
+    """Endpoint para buscar os jogos de uma rodada específica, ou jogos anteriores não realizados, para preenchimento de placares.
+    Args:
+        serie (str): Série do campeonato (ex.: 'A', 'B').
+        ano (int): Ano do campeonato.
+        rodada (int): Rodada a ser buscada (ex.: '1', '2', '3', etc.).
+        carrega_nao_realizados (bool, optional): Quando verdadeiro, inclui jogos de rodadas anteriores que ainda não foram realizados. Defaults to False.
+        session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI via dependência de injeção (Depends(pegar_sessao)).
+        usuario (Usuario, optional): Objeto do usuário autenticado, gerenciado pelo middleware `verificar_token`.   
     """
     try:
         return rodada_lista(
@@ -47,7 +53,7 @@ def get_rodada_lista(
     finally:
         session.close()
 
-@router_placar_rodada.put("/atualiza-placares")
+@router_placar_rodada.put("/atualizar-placares")
 async def atualizar_placares(
     jogos: List[AtualizarRodadaPlacarSchema],
     session: Session = Depends(pegar_sessao),
@@ -71,9 +77,7 @@ async def atualizar_placares(
         session.close()
 
 
-
-
-@router_placar_rodada.get("/lista-paginado", response_model=ResponseCartaoClubeSchema)
+@router_placar_rodada.get("/listar-paginado", response_model=ResponseCartaoClubeSchema)
 async def listar_cartoes_paginacao(
     nome: Optional[str] = Query(None, description="Busca parcial pelo nome da clube"),
     pagina: int = Query(1, description="Número da página", ge=1),

@@ -15,7 +15,7 @@ async def home():
     """
     return {"message": "acessou rota de autenticação", "autenticado": False} 
 
-@usuario_router.post("/criar_usuario")
+@usuario_router.post("/incluir", response_model=UsuarioSchema)
 async def criar_usuario(usuario_schema: UsuarioSchema, session=Depends(pegar_sessao)):
     """
     Esta função simula a criação de uma conta de usuário.

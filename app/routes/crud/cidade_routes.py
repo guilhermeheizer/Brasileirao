@@ -19,19 +19,19 @@ cidade_router = APIRouter(tags=["cidade"])
 @cidade_router.get("/listar", response_model=ResponseCidadesSchema)
 async def listar_cidades(session: Session = Depends(pegar_sessao)):
     """
-Lista todas as cidades cadastradas no banco de dados.
+    Lista todas as cidades cadastradas no banco de dados.
 
-Args:
-    session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI 
-    via dependência de injeção (Depends(pegar_sessao)).
+    Args:
+        session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI 
+        via dependência de injeção (Depends(pegar_sessao)).
 
-Raises:
-    HTTPException: Lançada se não houver cidades cadastradas no banco de dados 
-    (status 404).
+    Raises:
+        HTTPException: Lançada se não houver cidades cadastradas no banco de dados 
+        (status 404).
 
-Returns:
-    ResponseCidadesSchema: Uma resposta no formato do esquema Pydantic `ResponseCidadesSchema`, 
-    que contém uma lista de cidades no formato especificado por `CidadesSchema`.
+    Returns:
+        ResponseCidadesSchema: Uma resposta no formato do esquema Pydantic `ResponseCidadesSchema`, 
+        que contém uma lista de cidades no formato especificado por `CidadesSchema`.
     """
     try:
         return listar_todas_cidades(session)
@@ -41,7 +41,7 @@ Returns:
     finally:
         session.close()
 
-@cidade_router.post("/", response_model=CidadesSchema)
+@cidade_router.post("/incluir", response_model=CidadesSchema)
 async def criar_nova_cidade(cidade: CidadesSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     """Insere uma nova cidade no banco.
 
@@ -66,7 +66,7 @@ async def criar_nova_cidade(cidade: CidadesSchema, session: Session = Depends(pe
         session.close()
 
 
-@cidade_router.put("/{cidade_id}", response_model=CidadesSchema)
+@cidade_router.put("/alterar/{cidade_id}", response_model=CidadesSchema)
 async def atualizar_cidade_por_id(cidade_id: int, cidade_atualizada: CidadesSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     """Atualiza cidade
 
@@ -90,7 +90,7 @@ async def atualizar_cidade_por_id(cidade_id: int, cidade_atualizada: CidadesSche
     finally:
         session.close()
 
-@cidade_router.delete("/{cidade_id}")
+@cidade_router.delete("/deletar/{cidade_id}")
 async def deletar_cidade_por_id(cidade_id: int, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     """Deleção de uma cidade
 

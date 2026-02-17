@@ -13,7 +13,7 @@ from app.services.rodada_service import (
 
 rodada_router = APIRouter(tags=["rodada"])
 
-@rodada_router.post("/criar-rodada", response_model=ResponseCriarRodadaSchema)
+@rodada_router.post("/incluir", response_model=ResponseCriarRodadaSchema)
 async def criar_rodada_endpoint(
     rodada: CriarRodadaSchema,
     session: Session = Depends(pegar_sessao),

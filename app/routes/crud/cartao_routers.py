@@ -44,7 +44,7 @@ async def listar_cartoes(session: Session = Depends(pegar_sessao)):
         session.close()
 
 
-@cartao_router.post("/", response_model=CartaoSchema)
+@cartao_router.post("/incluir", response_model=CartaoSchema)
 async def criar_novo_cartao(cartao: CartaoSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     """
     Cria um novo cartão no banco de dados.
@@ -70,14 +70,14 @@ async def criar_novo_cartao(cartao: CartaoSchema, session: Session = Depends(peg
         session.close()
 
 
-@cartao_router.post("/cria-todos-cartoes")
+@cartao_router.post("/criar-cartoes")
 async def criar_cartoes(
     serie: str = Query(description="Série do campeonato ('A' ou 'B')"),
     ano: int = Query(description="Ano do campeonato"),
     session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)
 ):
     """
-    Endpoint para criar registros na tabela 'cartao' para todos os clubes de determinada série e ano.
+    Criar todos os registros na tabela 'cartao' para todos os clubes de determinada série e ano.
     
     Args:
         serie (str): Série do campeonato ('A' ou 'B').
@@ -96,13 +96,13 @@ async def criar_cartoes(
         session.close()
 
 
-@cartao_router.put("/{serie}/{ano}/{clu_sigla}", response_model=CartaoSchema)
+@cartao_router.put("/atualizar/{serie}/{ano}/{clu_sigla}", response_model=CartaoSchema)
 async def atualizar_cartao_por_serie_ano_sigla(
     serie: str,
     ano: int,
     clu_sigla: str,
     cartao_atualizado: CartaoSchema,
-    altera_qtd_menor: bool = Query(False, description="Indica se deve diminuir a quantidade de cartões"),
+    altera_qtd_menor: bool = Query(False, description="Permite diminuir a quantidade de cartões?"),
     session: Session = Depends(pegar_sessao),
     usuario: Usuario = Depends(verificar_token)):
     """
@@ -132,14 +132,14 @@ async def atualizar_cartao_por_serie_ano_sigla(
         session.close()
 
 
-@cartao_router.post("/atualiza_cartao_cbf/{serie}/{ano}", response_model=list[CartaoSchema])
+@cartao_router.post("/atualizar/dados-cbf/{serie}/{ano}", response_model=list[CartaoSchema])
 async def atualizar_cartao_por_serie_ano(
     serie: str,
     ano: int,
     session: Session = Depends(pegar_sessao),
     usuario: Usuario = Depends(verificar_token)):
     """
-    Atualiza os cartões de uma determinada série e ano com base em dados do CBF.
+    Atualiza a quantidade de cartões de amarelos e vermelhos acessando o site da CBF.
 
     Args:
     serie (str): Informe a série do cartão a ser atualizado.
@@ -163,7 +163,7 @@ async def atualizar_cartao_por_serie_ano(
         session.close()
 
 
-@cartao_router.delete("/{serie}/{ano}/{clu_sigla}")
+@cartao_router.delete("/deletar/{serie}/{ano}/{clu_sigla}")
 async def deletar_cartao_por_sigla(
     serie: str,
     ano: int,
@@ -197,7 +197,7 @@ async def deletar_cartao_por_sigla(
         session.close()
 
     
-@cartao_router.get("/lista-paginado", response_model=ResponseCartaoClubeSchema)
+@cartao_router.get("/listar-paginado", response_model=ResponseCartaoClubeSchema)
 async def listar_cartoes_paginacao(
     nome: Optional[str] = Query(None, description="Busca parcial pelo nome da clube"),
     pagina: int = Query(1, description="Número da página", ge=1),

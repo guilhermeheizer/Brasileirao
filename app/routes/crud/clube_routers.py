@@ -46,7 +46,7 @@ async def listar_clubes(
         session.close()
 
 
-@clube_router.post("/", response_model=ClubeSchema)
+@clube_router.post("/incluir/", response_model=ClubeSchema)
 async def criar_novo_clube(clube: ClubeSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     """
     Cria um novo clube no banco de dados.
@@ -72,7 +72,7 @@ async def criar_novo_clube(clube: ClubeSchema, session: Session = Depends(pegar_
         session.close()
 
 
-@clube_router.put("/{clu_sigla}", response_model=ClubeSchema)
+@clube_router.put("/alterar/{clu_sigla}", response_model=ClubeSchema)
 async def atualizar_clube_por_sigla(
     clu_sigla: str,
     clube_atualizado: ClubeSchema,
@@ -103,7 +103,7 @@ async def atualizar_clube_por_sigla(
         session.close()
 
 
-@clube_router.delete("/{clu_sigla}")
+@clube_router.delete("/deletar/{clu_sigla}")
 async def deletar_clube_por_sigla(
     clu_sigla: str,
     session: Session = Depends(pegar_sessao),

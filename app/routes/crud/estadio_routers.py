@@ -42,7 +42,7 @@ async def listar_estadios(session: Session = Depends(pegar_sessao)):
         session.close()
 
 
-@estadio_router.post("/", response_model=EstadioSchema)
+@estadio_router.post("/incluir/", response_model=EstadioSchema)
 async def criar_novo_estadio(estadio: EstadioSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     """
     Cria um novo estadio no banco de dados.
@@ -68,7 +68,7 @@ async def criar_novo_estadio(estadio: EstadioSchema, session: Session = Depends(
         session.close()
 
 
-@estadio_router.put("/{est_id}", response_model=EstadioSchema)
+@estadio_router.put("/alterar/{est_id}", response_model=EstadioSchema)
 def atualizar_estadio_por_sigla(
     est_id: int,
     estadio_atualizado: EstadioSchema,
@@ -99,7 +99,7 @@ def atualizar_estadio_por_sigla(
         session.close()
 
 
-@estadio_router.delete("/{est_id}")
+@estadio_router.delete("/deletar/{est_id}")
 async def deletar_estadio_por_id(
     est_id: int,
     session: Session = Depends(pegar_sessao),
