@@ -1,3 +1,14 @@
+"""
+form_cadastra_rodada_routers.py
+
+Este módulo define a rota da API para cadastro de rodadas completas do Campeonato Brasileiro.
+Utiliza FastAPI para expor endpoint de criação de rodada, recebendo uma lista de jogos.
+
+Funcionalidade principal:
+- Criar uma rodada completa (10 jogos) a partir de dados enviados pelo front-end
+
+O endpoint utiliza injeção de dependências para sessão do banco e autenticação de usuário.
+"""
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from app.core.dependencies import pegar_sessao, verificar_token

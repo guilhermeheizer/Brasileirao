@@ -1,3 +1,23 @@
+"""
+rodada_service.py
+
+Este módulo implementa as regras de negócio e operações de serviço relacionadas às rodadas do Campeonato Brasileiro.
+Fornece funções para validação, criação, atualização, deleção e consulta de rodadas, além de validações específicas de clubes e estádios.
+
+Principais funcionalidades:
+- Validação de dados de rodada e clubes
+- Criação de rodadas no banco de dados
+- Funções utilitárias para consistência de dados
+- Estrutura para atualização, deleção e consulta de rodadas
+
+Funções principais:
+- consiste_sigla_clube_igual: Valida se mandante e visitante são diferentes
+- consiste_jogo_existe_rodada: Verifica duplicidade de jogo
+- criar_rodada: Cria uma nova rodada
+- atualizar_rodada: Atualiza uma rodada existente
+- deletar_rodada: Remove uma rodada
+- obter_rodada: Consulta detalhes de uma rodada
+"""
 from requests import session
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
@@ -95,13 +115,22 @@ def criar_rodada(rodada: CriarRodadaSchema, session: Session):
     return ResponseCriarRodadaSchema(**nova_rodada.as_dict())
 
 def atualizar_rodada(self):
-    # Lógica para atualizar os detalhes de uma rodada existente
+    """
+    Atualiza os detalhes de uma rodada existente.
+    (Implementação futura)
+    """
     pass
 
 def deletar_rodada(self):
-    # Lógica para deletar uma rodada
+    """
+    Deleta uma rodada do banco de dados.
+    (Implementação futura)
+    """
     pass
 
 def obter_rodada(self, rodada_id: int):
-    # Lógica para obter os detalhes de uma rodada específica
+    """
+    Obtém os detalhes de uma rodada específica pelo ID.
+    (Implementação futura)
+    """
     pass

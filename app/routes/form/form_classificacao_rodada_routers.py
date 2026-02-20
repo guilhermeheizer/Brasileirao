@@ -1,3 +1,14 @@
+"""
+form_classificacao_rodada_routers.py
+
+Este módulo define a rota da API para copiar a classificação geral de uma rodada específica do Campeonato Brasileiro.
+Utiliza FastAPI para expor endpoint de cópia da classificação ao final de cada rodada.
+
+Funcionalidade principal:
+- Copiar e salvar a classificação geral de uma rodada ao término de todos os jogos
+
+O endpoint utiliza injeção de dependências para sessão do banco e autenticação de usuário.
+"""
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db

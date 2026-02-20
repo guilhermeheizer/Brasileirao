@@ -1,3 +1,14 @@
+"""
+form_classificacao_rodada_service.py
+
+Este módulo implementa a lógica de serviço para copiar a classificação geral para a tabela de classificação por rodada.
+Fornece função para persistir o estado da classificação geral ao final de uma rodada específica.
+
+Funcionalidade principal:
+- Copiar e salvar a classificação geral de uma rodada, preservando o histórico da competição
+
+Utiliza SQLAlchemy para execução de SQL direto e persistência dos dados.
+"""
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 

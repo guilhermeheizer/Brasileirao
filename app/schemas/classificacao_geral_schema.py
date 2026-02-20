@@ -1,3 +1,17 @@
+"""
+classificacao_geral_schema.py
+
+Este módulo define os schemas Pydantic para operações relacionadas à classificação geral do Campeonato Brasileiro.
+Os schemas são utilizados para validação, serialização e documentação automática das rotas FastAPI.
+
+Principais schemas:
+- ClassificacaoGeralBaseSchema: Base para classificação geral
+- CriarClassificacaoGeralSchema: Para criação de classificação
+- AtualizarClassificacaoGeralSchema: Para atualização de classificação
+- ResponseClassificacaoGeralSchema: Resposta detalhada de classificação
+- ResponseClassificacoesGeraisSchema: Lista de classificações
+- ResponseClassificacaoGeralListaSchema: Estrutura para listagem ordenada
+"""
 from pydantic import BaseModel
 from typing import Optional, List
 

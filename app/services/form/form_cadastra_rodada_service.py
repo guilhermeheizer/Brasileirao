@@ -1,3 +1,14 @@
+"""
+form_cadastra_rodada_service.py
+
+Este módulo implementa a lógica de serviço para cadastro de rodadas completas do Campeonato Brasileiro.
+Fornece função para validação e inserção de uma lista de jogos (rodada) no banco de dados.
+
+Funcionalidade principal:
+- Validar e criar uma rodada completa (10 jogos) a partir de dados recebidos do front-end
+
+Utiliza SQLAlchemy para persistência e validações de integridade.
+"""
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.models.rodada_models import Rodada

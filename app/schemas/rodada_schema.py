@@ -3,7 +3,36 @@ from typing import List, Optional
 from datetime import datetime
 
 
+"""
+rodada_schema.py
+
+Este módulo define os schemas Pydantic para operações relacionadas às rodadas do Campeonato Brasileiro.
+
+Os schemas representam as estruturas de dados utilizadas para:
+- Cadastro de rodadas
+- Atualização de placar
+- Respostas de API para rodadas e jogos
+- Formulários de placar
+
+Cada schema é utilizado para validação, serialização e documentação automática das rotas FastAPI.
+
+Classes principais:
+- RodadaSchema: Base para dados de uma rodada
+- CriarRodadaSchema: Para criação de rodada
+- AtualizarRodadaPlacarSchema: Para atualização de placar
+- ResponseRodadaSchema: Resposta detalhada de uma rodada
+- ResponseRodadasSchema: Lista de rodadas
+- JogoFormPlacarSchema: Detalhes de um jogo
+- ListaJogosRodadaFormPlacarResponse: Lista de jogos de uma rodada
+"""
+from pydantic import BaseModel
+from typing import List, Optional
+from datetime import datetime
 class RodadaSchema(BaseModel):
+    """
+    Schema base para dados de uma rodada do campeonato.
+    Inclui informações como série, ano, rodada, clubes e estádio.
+    """
     rod_serie: str
     rod_ano: int
     rod_rodada: int
@@ -18,6 +47,10 @@ class RodadaSchema(BaseModel):
 
 
 class CriarRodadaSchema(RodadaSchema):
+    """
+    Schema para criação de uma rodada.
+    Adiciona campos para controle de classificação e finalização da partida.
+    """
     rod_calculou_classificacao: Optional[str] = "N"
     rod_partida_finalizada: Optional[str] = "N"
 
@@ -26,10 +59,18 @@ class CriarRodadaSchema(RodadaSchema):
 
 class ResponseCriarRodadaSchema(CriarRodadaSchema):
 
+    """
+    Schema de resposta para criação de rodada.
+    Herda todos os campos de CriarRodadaSchema.
+    """
     class Config:
         from_attributes = True
 
 class AtualizarRodadaPlacarSchema(BaseModel):
+    """
+    Schema para atualização do placar de uma rodada.
+    Inclui gols, finalização e identificação da rodada.
+    """
     rod_serie: str
     rod_ano: int
     rod_rodada: int
@@ -43,6 +84,10 @@ class AtualizarRodadaPlacarSchema(BaseModel):
 
 
 class ResponseRodadaSchema(AtualizarRodadaPlacarSchema):
+    """
+    Schema de resposta detalhada de uma rodada.
+    Inclui links de escudo e informações do estádio.
+    """
     clu_link_escudo_mandante: Optional[str]
     clu_link_escudo_visitante: Optional[str]
     est_id: int
@@ -53,6 +98,10 @@ class ResponseRodadaSchema(AtualizarRodadaPlacarSchema):
 
 
 class ResponseRodadasSchema(BaseModel):
+    """
+    Schema de resposta para lista de rodadas.
+    Contém uma lista de ResponseRodadaSchema.
+    """
     rodadas: List[ResponseRodadaSchema]
 
     class Config:
@@ -61,6 +110,10 @@ class ResponseRodadasSchema(BaseModel):
 
 # Schema para representar os detalhes de um único jogo
 class JogoFormPlacarSchema(BaseModel):
+    """
+    Schema para representar os detalhes de um único jogo.
+    Utilizado em formulários de placar.
+    """
     rod_serie: str  # Série do campeonato (A ou B)
     rod_ano: int  # Ano do campeonato
     rod_rodada: int  # Número da rodada
@@ -88,6 +141,10 @@ class JogoFormPlacarSchema(BaseModel):
 
 # Schema para a resposta que contém a lista de jogos de uma rodada
 class ListaJogosRodadaFormPlacarResponse(BaseModel):
+    """
+    Schema para resposta contendo a lista de jogos de uma rodada.
+    Utilizado para exibir todos os jogos de uma rodada específica.
+    """
     serie: str  # Série do campeonato (A ou B)
     ano: int  # Ano da competição
     rodada: int  # Número da rodada

@@ -1,3 +1,18 @@
+"""
+cidade_routes.py
+
+Este módulo define as rotas da API relacionadas às operações de cidade no contexto do Campeonato Brasileiro.
+Utiliza FastAPI para expor endpoints de listagem, inclusão, alteração, deleção e paginação de cidades.
+
+Principais funcionalidades:
+- Listar todas as cidades
+- Incluir nova cidade
+- Alterar cidade existente
+- Deletar cidade
+- Listar cidades com paginação e busca parcial por nome
+
+Todos os endpoints utilizam injeção de dependências para sessão do banco e autenticação de usuário quando necessário.
+"""
 from fastapi import APIRouter, HTTPException, Depends
 from app.schemas.cidade_schema import ResponseCidadesSchema, CidadesSchema 
 from app.core.dependencies import pegar_sessao, verificar_token

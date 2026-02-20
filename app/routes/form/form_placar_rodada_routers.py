@@ -1,3 +1,18 @@
+"""
+form_placar_rodada_routers.py
+
+Este módulo define as rotas da API para operações de formulário de placar de rodada do Campeonato Brasileiro.
+Utiliza FastAPI para expor endpoints de busca, atualização de placares, listagem de cartões, cálculo e consulta de classificação geral.
+
+Principais funcionalidades:
+- Buscar jogos de uma rodada para preenchimento de placares
+- Atualizar placares de jogos
+- Listar cartões com paginação
+- Calcular classificação geral
+- Consultar classificação geral
+
+Todos os endpoints utilizam injeção de dependências para sessão do banco e autenticação de usuário.
+"""
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List

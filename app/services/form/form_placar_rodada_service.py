@@ -1,3 +1,16 @@
+"""
+form_placar_rodada_service.py
+
+Este módulo implementa a lógica de serviço para operações de placar de rodada do Campeonato Brasileiro.
+Fornece funções para:
+- Listar jogos de uma rodada para preenchimento de placares
+- Atualizar placares e status de jogos
+- Calcular e atualizar a classificação geral
+- Processar e atualizar dados de clubes na classificação
+- Listar classificação geral detalhada
+
+Utiliza SQLAlchemy para persistência, queries customizadas e integrações com modelos e schemas do projeto.
+"""
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
