@@ -13,7 +13,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from app.core.dependencies import pegar_sessao, verificar_token
 from app.models.usuario_models import Usuario
-from app.schemas.rodada_schema import CriarRodadaSchema, ResponseRodadasSchema
+from app.schemas.rodada_schema import CriarRodadaSchema, ResponseCriarRodadaSchema
 from app.services.cartao_service import listar_cartoes_paginados
 from app.services.form.form_cadastra_rodada_service import criar_rodada
 from typing import List
@@ -22,7 +22,7 @@ from typing import List
 rodada_form_router = APIRouter(tags=["cadastra rodada"])
 
 
-@rodada_form_router.post("/criar-rodada", response_model=ResponseRodadasSchema)
+@rodada_form_router.post("/criar-rodada", response_model=List[ResponseCriarRodadaSchema])
 async def criar_rodadas(
     jogos_data: List[CriarRodadaSchema],
     session: Session = Depends(pegar_sessao),
@@ -39,7 +39,7 @@ async def criar_rodadas(
         usuario (Usuario): Objeto do usuário autenticado, gerenciado pelo middleware `verificar_token`.
 
     Returns:
-        ResponseRodadasSchema: Retorna os dados das rodadas criadas.
+        ResponseCriarRodadaSchema: Retorna os dados das rodadas criadas.
     """
     try:
         return criar_rodada(jogos_data, session)

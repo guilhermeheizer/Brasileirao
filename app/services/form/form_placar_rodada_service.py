@@ -15,12 +15,9 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from typing import List
-from app.models.rodada_models import Rodada
-from app.models.clube_models import Clube
-from app.models.estadio_models import Estadio
-from app.models.cartao_models import Cartao
 from app.schemas.rodada_schema import ListaJogosRodadaFormPlacarResponse, JogoFormPlacarSchema, AtualizarRodadaPlacarSchema
 from app.schemas.classificacao_geral_schema import ResponseClassificacaoGeralListaSchema
+from app.services.clube_service import consiste_serie
 
 def rodada_lista(
     db: Session,
@@ -361,24 +358,7 @@ def processar_time(
         venceu (bool): Indicador se venceu a partida.
         empatou (bool): Indicador se empatou a partida.
     """
-    # Buscar quantidade de cartões
-    # cartoes = db.execute(
-    #     text("""
-    #         SELECT car_qtd_vermelho, car_qtd_amarelo
-    #         FROM cartao
-    #         WHERE car_serie = :serie 
-    #           and car_ano = :ano
-    #           and clube_clu_sigla = :sigla
-    #     """),
-    #     {"sigla": sigla, "serie": serie, "ano": ano}
-    # ).fetchone()
-
-    # # Valores iniciais
-    # qtd_vermelho = cartoes.car_qtd_vermelho if cartoes else 0
-    # qtd_amarelo = cartoes.car_qtd_amarelo if cartoes else 0
-
-    # Verificar se o clube já está na tabela classificacao_geral
-    
+    # Verificar se o clube já está na tabela classificacao_geral  
     classificacao = db.execute(
         text("""
             SELECT * FROM classificacao_geral
@@ -390,7 +370,6 @@ def processar_time(
     ).fetchone()
 
     if classificacao:
-        print (f"UPDATE: Série {serie}, Ano {ano}, Sigla {sigla}, Pontos {pontos}, Gols Pro {gols_pro}, Gols Contra {gols_contra}, Venceu {venceu}, Empatou {empatou}")
         # Atualizar os valores
         db.execute(
             text("""
@@ -422,8 +401,7 @@ def processar_time(
             }
         )
     else:
-        # Inserir novo registro
-        print (f"INSERT: Série {serie}, Ano {ano}, Sigla {sigla}, Pontos {pontos}, Gols Pro {gols_pro}, Gols Contra {gols_contra}, Venceu {venceu}, Empatou {empatou}")
+        # Inserir novo registro para o clube
         db.execute(
             text("""
                 INSERT INTO classificacao_geral (
@@ -466,15 +444,9 @@ def lista_classificacao_geral(db: Session, serie: str, ano: int) -> list:
     Returns:
         list: Lista de classificações ordenada segundo os critérios definidos.
     """
-    # Garantir que a série está em caixa alta
+    # Garantir que a série está em maiúsculo
     serie_upper = serie.upper()
-
-    # Validar entrada da série
-    if serie_upper not in ["A", "B"]:
-        raise HTTPException(
-            status_code=404,
-            detail="Série inválida. Utilize 'A' ou 'B'."
-        )
+    consiste_serie(serie.upper())
 
     # Executar a query SQL para extrair os dados de classificação
     sql_query = """

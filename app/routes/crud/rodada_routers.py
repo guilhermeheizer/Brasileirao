@@ -51,3 +51,37 @@ async def criar_rodada_endpoint(
         return nova_rodada
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
+    
+@rodada_router.delete("/deletar/{serie}/{ano}/{rodada_numero}/{sequencia}")
+async def deletar_rodada_endpoint(
+    serie: str,
+    ano: int,
+    rodada_numero: int,
+    sequencia: int,
+    session: Session = Depends(pegar_sessao),
+    usuario: Usuario = Depends(verificar_token)):
+    """
+    Remove uma rodada com base na série, ano, número da rodada e sequência.
+
+    Args:
+    series (str): Informe a série da rodada a ser deletada.
+    ano (int): Informe o ano da rodada a ser deletada.
+    rodada_numero (int): Informe o número da rodada a ser deletada.
+    sequencia (int): Informe a sequência da rodada a ser deletada.
+    session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI   
+                                 via dependência de injeção (Depends(pegar_sessao)).
+    usuario (Usuario, optional): Defaults to Depends(verificar_token).
+
+    Raises:
+    HTTPException: Lançada se ocorrer um erro durante a exclusão da rodada.
+
+    Returns:
+    ResponseCriarRodadaSchema: A rodada excluída.
+    """
+    try:
+        return deletar_rodada(serie, ano, rodada_numero, sequencia, session)
+    except HTTPException as ex:
+        log_erro = (f"{ex.detail}")
+        raise HTTPException(status_code=404, detail=log_erro) 
+    finally:
+        session.close()
