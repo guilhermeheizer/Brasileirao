@@ -46,7 +46,7 @@ def criar_rodada(
         )
 
     for jogo in jogos_data:
-        validar_rodada(jogo, session)
+        validar_rodada("I", jogo, session)
 
     #Adicionar os jogos no banco
     rodadas = []

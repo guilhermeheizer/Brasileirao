@@ -1,0 +1,213 @@
+A estrutura do projeto Brasileirao em Python utilizando o FastApi é:
+
+Brasileirao/  
+├─ app/  
+│   ├─ _init_.py  
+│   ├─ core/  
+│   │   ├─ _init_.py  
+│   │   ├─ config.py         # Configurações principais, como database, CORS, etc.  
+│   │   ├─ database.py       # Configuração e inicialização do banco de dados  
+│   │   ├─ dependencies.py   # Dependências para autenticação e acesso ao banco de dados   
+│   ├─ models/   
+│   │   ├─ cartao_models.py                # Modelo para a tabela de cartao  
+│   │   ├─ cidade_models.py                # Modelo para a tabela de cidades  
+│   │   ├─ estado_models.py                # Modelo para a tabela de estados  
+│   │   ├─ clube_models.py                 # Modelo para a tabela de clubes  
+│   │   ├─ rodada_models.py                # Modelo para a tabela de rodadas  
+│   │   ├─ classificacao_geral_models.py   # Modelo para a tabela de classificações  
+│   │   ├─ classificacao_rodada_models.py  # Modelo para a tabela de rodada  
+│   │   ├─ usuario_models.py               # Modelo para a tabela de usuários  
+│   ├─ routes/  
+│   │   ├─ _init_.py  
+│   │   ├─ crud/  
+│   │   │   ├─ _init_.py   
+│   │   │   ├─ cartao_routes.py     # CRUD de cidade  
+│   │   │   ├─ cidade_routes.py     # CRUD de cidade  
+│   │   │   ├─ estado_routes.py     # CRUD de estado  
+│   │   │   ├─ clube_routes.py      # CRUD de clube  
+│   │   │   ├─ rodada_routes.py     # CRUD de rodada  
+│   │   │   ├─ usuario_routes.py    # CRUD de usuário  
+│   │   ├─ form/  
+│   │       ├─ _init_.py  
+│   │       ├─ form_cadastra_rodada_routers.py       # Endpoint tela para cadastrar rodada  
+│   │       ├─ form_classificacao_rodada_routers.py  # Endpoint copiar classificação geral por rodada  
+│   │       ├─ login_routes.py                       # Endpoint específico para tela de login  
+│   │       ├─ form_placar_rodada_routes.py          # Endpoint tela calculo da classificacao  
+│   ├─ services/  
+│   │   ├─ _init_.py  
+│   │   ├─ cartao_service.py  # Regras de negócios para cartao  
+│   │   ├─ cidade_service.py  # Regras de negócios para cidade  
+│   │   ├─ estado_service.py  # Regras de negócios para estado  
+│   │   ├─ clube_service.py   # Regras de negócios para clube  
+│   │   ├─ rodada_service.py  # Regras de negócios para rodada  
+│   │   ├─ usuario_service.py # Regras de negócios para usuário  
+│   │   ├─ login_service.py   # Regras de negócios para login  
+│   │   ├─ form/  
+│   │       ├─ _init_.py  
+│   │       ├─ form_cadastra_rodada_service.py       # Regra negócio cadastrar rodada  
+│   │       ├─ form_classificacao_rodada_service.py  # Regra negócio classificação geral por rodada  
+│   │       ├─ form_placar_rodada_service.py         # Regra negócio calculo da classificacao  
+│   ├─ schema/  
+│   │   ├─ _init_.py  
+│   │   ├─ cartao_schema.py         
+│   │   ├─ cidade_schema.py       
+│   │   ├─ classificacao_geral_schema.py  
+│   │   ├─ classificacao_rodada_schema.py   
+│   │   ├─ estadio_schema.py         
+│   │   ├─ clube_schema.py    
+│   │   ├─ from_login_schema.py      
+│   │   ├─ rodada_schema.py         
+│   │   ├─ classificacao_schema.py  
+│   │   ├─ usuario_schema.py        
+│   ├─ utils/  
+│   │   ├─ _init_.py  
+│   │   ├─ token.py          # Lógica para geração/validação de tokens JWT  
+├─ teste_rotas/  
+│   ├─ lista_classificacao_geral.py        # Testes relacionados a cidade  
+├─ .env                      # Variáveis de ambiente (ex. DATABASE_URL)  
+├─ .gitignore                # Arquivos ignorados pelo controle de versão  
+├─ main.py                   # Arquivo principal para executar o servidor  
+├─ brasileirao.db            # Banco de dados SQLite  
+├─ requirements.txt          # Dependências do projeto  
+└─ README.md                 # Documentação do projeto  
+
+
+Explicação da Estrutura
+
+app/core:
+
+config.py: Arquivo para definir configurações globais, como banco de dados e CORS. 
+database.py: Criação do Session e inicialização do banco usando SQLAlchemy.
+
+
+app/models:
+
+Contém os modelos SQLAlchemy relacionados às tabelas no banco. Cada tabela é definida em um arquivo separado para organização e manutenibilidade.
+
+
+app/routes/crud:
+
+Rotas específicas para as operações CRUD relacionadas às tabelas.
+Estruturado em arquivos separados para cada entidade.
+
+
+app/routes/endpoints:
+
+Rotas especializadas por funcionalidade/tela. Por exemplo, login.py cuida apenas do login, enquanto cadastro.py pode centralizar os endpoints de diversos cadastros.
+
+
+app/services:
+
+Camada separada para regras de negócio. Aqui você implementa funcionalidades complexas ou validações além das rotas simples.
+Exemplo: Verificação se um clube já existe antes de criar um novo registro.
+
+
+app/schema:
+
+schema Pydantic para validação e serialização de dados nos endpoints. Exemplo: validação de entrada de dados de usuários ou cidades.
+
+
+app/utils:
+
+Funções utilitárias, como:Hash de senhas usando bcrypt (ex. hashing.py).
+Gerenciamento de JWT para autenticação (ex. token.py).
+
+
+Endpoint para informar o placar dos jogos da rodada
+
+exemplo:
+
+No exemplo, tenho que considerar a possibilidde de tb informar jogos atrasados das rodadas.
+
+# Endpoint para Criar os Jogos da Rodada
+@app.post("/rodadas/{rod_serie}/{rod_ano}/{rod_rodada}")
+async def criar_jogos(
+    rod_serie: str = Path(..., description="Série do Campeonato ('A' ou 'B')"),
+    rod_ano: int = Path(..., description="Ano da Competição"),
+    rod_rodada: int = Path(..., description="Número da Rodada (1 a 38)"),
+    request: List[RodadaRequest] = []
+):
+    chave_rodada = f"{rod_serie}-{rod_ano}-{rod_rodada}"
+
+    if chave_rodada in rodadas_db:
+        raise HTTPException(status_code=400, detail="A rodada já foi cadastrada.")
+
+    rodadas_db[chave_rodada] = [{
+        "rod_sequencia": r.rod_sequencia,
+        "rod_data": r.rod_data,
+        "clube_clu_sigla_mandante": r.clube_clu_sigla_mandante,
+        "clube_clu_sigla_visitante": r.clube_clu_sigla_visitante,
+        "rod_calculou_classificacao": 'N',
+        "rod_partida_finalidaza": 'N',
+        "estadio_est_id": r.estadio_est_id,
+        "placar_time_mandante": 0,
+        "placar_time_visitante": 0
+    } for r in request]
+
+    return {"message": "Jogos criados com sucesso.", "rodada": chave_rodada}
+	
+
+{
+   "1":[
+      {
+         "time_mandante_sigla":"GOI",
+         "placar_time_mandante 0,
+         "time_visitante_sigla":"AMA",
+         "placar_time_visitante":0
+      },
+      {
+         "time_mandante_sigla":"PAY",
+         "placar_time_mandante 0,
+         "time_visitante_sigla":"CAP",
+         "placar_time_visitante":0
+      },
+      {
+         "time_mandante_sigla":"CRI",
+         "placar_time_mandante 0,
+         "time_visitante_sigla":"OPE",
+         "placar_time_visitante":0
+      },
+      {
+         "time_mandante_sigla":"CFC",
+         "placar_time_mandante 0,
+         "time_visitante_sigla":"VNO",
+         "placar_time_visitante":0
+      },
+      {
+         "time_mandante_sigla":"CRB",
+         "placar_time_mandante 0,
+         "time_visitante_sigla":"CHA",
+         "placar_time_visitante":0
+      },
+      {
+         "time_mandante_sigla":"AME",
+         "placar_time_mandante 0,
+         "time_visitante_sigla":"BSP",
+         "placar_time_visitante":0
+      },
+      {
+         "time_mandante_sigla":"AFE",
+         "placar_time_mandante 0,
+         "time_visitante_sigla":"REM",
+         "placar_time_visitante 0
+      },
+      {
+         "time_mandante_sigla":"VRE",
+         "placar_time_mandante":0,
+         "time_visitante_sigla":"CUI",
+         "placar_time_visitante 0
+      },
+      {
+         "time_mandante_sigla":"AVA",
+         "placar_time_mandante 0,
+         "time_visitante_sigla":"NOV",
+         "placar_time_visitante 0
+      },
+      {
+         "time_mandante_sigla":"ACG",
+         "placar_time_mandante": 0,
+         "time_visitante_sigla":"ATH",
+         "placar_time_visitante": 0
+      }
+   ]
+}

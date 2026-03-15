@@ -18,14 +18,17 @@ Funções principais:
 - deletar_rodada: Remove uma rodada
 - obter_rodada: Consulta detalhes de uma rodada
 """
+from unittest import result
+
 from requests import session
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
+from sqlalchemy.sql import text
 from typing import Union
 import re
 from app.models.rodada_models import Rodada
 from app.models.estadio_models import Estadio
-from app.schemas.rodada_schema import CriarRodadaSchema, ResponseCriarRodadaSchema
+from app.schemas.rodada_schema import CriarRodadaSchema, ResponseCriarRodadaSchema, ResponseAlterarRodadaSchema, AlterarJogoRodadaSchema
 from app.services.clube_service import buscar_clube_sigla, consiste_serie, consiste_sigla
 from app.services.estadio_service import buscar_estadio_id
 
@@ -102,17 +105,19 @@ def consiste_jogo_existe_rodada_siglas(rodada: CriarRodadaSchema, session: Sessi
                     f"série '{rodada.rod_serie.upper()}', rodada '{rodada.rod_rodada}', ano '{rodada.rod_ano}' já existe."
         )
     
-def validar_rodada(jogos_data: CriarRodadaSchema, session: Session):
+def validar_rodada(inc_alt: str, jogos_data: CriarRodadaSchema, session: Session):
     """
     Valida os dados de uma rodada antes de sua criação.
 
     Args:
+        inc_alt (str): Indica se é inclusão ("I") ou alteração ("A").
         jogos_data (CriarRodadaSchema): Dados da rodada a ser validada.
         session (Session): Sessão ativa do banco de dados.
 
     Raises:
         HTTPException: Erro de validação caso algum dado seja inválido.
     """
+    print("Validando rodada com os seguintes dados:", jogos_data)  # Log para depuração
     consiste_serie(jogos_data.rod_serie.upper())
     consiste_sigla(jogos_data.clube_clu_sigla_mandante.upper())
     consiste_sigla(jogos_data.clube_clu_sigla_visitante.upper())
@@ -138,9 +143,9 @@ def validar_rodada(jogos_data: CriarRodadaSchema, session: Session):
             status_code=404,
             detail=f"Estádio com ID '{jogos_data.estadio_est_id}' não encontrado para o jogo {jogos_data.rod_sequencia}."
         )
-    
-    consiste_jogo_existe_rodada_sequencia(session,jogos_data, None, None, None, None)
-    consiste_jogo_existe_rodada_siglas(jogos_data, session)
+    if inc_alt == "I":
+        consiste_jogo_existe_rodada_sequencia(session,jogos_data, None, None, None, None)
+        consiste_jogo_existe_rodada_siglas(jogos_data, session)
 
 
 def criar_rodada(rodada: CriarRodadaSchema, session: Session):
@@ -160,7 +165,8 @@ def criar_rodada(rodada: CriarRodadaSchema, session: Session):
     Returns:
         ResponseCriarRodadaSchema: Representação da rodada criada.
     """
-    validar_rodada(rodada, session)
+    print("Validando rodada com os dados:", rodada)  # Log para depuração
+    validar_rodada("I", rodada, session)
 
     try:
         nova_rodada = Rodada(
@@ -184,14 +190,157 @@ def criar_rodada(rodada: CriarRodadaSchema, session: Session):
    
     return ResponseCriarRodadaSchema(**nova_rodada.as_dict())
 
-def atualizar_rodada(self):
+def atualizar_jogo_rodada(serie: str, ano: int, rodada_numero: int, sequencia: int, jogo: AlterarJogoRodadaSchema, session: Session):
     """
-    Atualiza os detalhes de uma rodada existente.
-    (Implementação futura)
+    Atualiza os dados de um jogo específico em uma rodada.
+    Args:
+        serie (str): Série do campeonato (A ou B).
+        ano (int): Ano do campeonato.
+        rodada_numero (int): Número da rodada.
+        sequencia (int): Sequência do jogo na rodada.
+        jogo (AlterarJogoRodadaSchema): Dados atualizados do jogo.
+        session (Session): Sessão ativa do SQLAlchemy para conectar ao banco.
+    Raises:        HTTPException: Erro: 404:
+        - Verifica se a série é válida.
+        - Verifica se as siglas dos clubes são válidas.
+        - Jogo com a mesma sequência, série, rodada e ano já existe.    
+        - Clube mandante e visitante são iguais.
+        - Rodada não encontrada.
+        - Clube mandante ou visitante não existe.
+        - Estádio não existe.
+    Returns:
+        ResponseCriarRodadaSchema: Representação da rodada atualizada.
     """
-    pass
+    jogos_data: CriarRodadaSchema = CriarRodadaSchema(
+        rod_serie=serie,
+        rod_ano=ano,
+        rod_rodada=rodada_numero,
+        rod_sequencia=sequencia,
+        rod_data=jogo.rod_data,
+        clube_clu_sigla_mandante=jogo.clube_clu_sigla_mandante,
+        clube_clu_sigla_visitante=jogo.clube_clu_sigla_visitante,
+        estadio_est_id=jogo.estadio_est_id
+    )
+    validar_rodada("A", jogos_data, session)
 
-# Deletar um jogo específico da rodada, ou a rodada inteira, dependendo dos requisitos do sistema.
+    query = """
+        SELECT 1
+        FROM rodada
+        WHERE 
+            rod_serie = :serie AND
+            rod_ano = :ano AND
+            rod_rodada = :rodada_numero AND
+            rod_sequencia = :sequencia
+    """
+
+    # Executando a query
+    result = session.execute(
+        text(query),
+        {
+            "serie": serie.upper(),
+            "ano": ano,
+            "rodada_numero": rodada_numero,
+            "sequencia": sequencia
+        }
+    ).fetchone()
+
+    if not result:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Rodada com série '{serie.upper()}', ano '{ano}', rodada '{rodada_numero}' e sequência '{sequencia}' não encontrada."
+        )
+
+    update_fields = []
+    params = {
+        "serie": serie.upper(),
+        "ano": ano,
+        "rodada_numero": rodada_numero,
+        "sequencia": sequencia
+    }
+
+    if jogo.rod_data is not None:
+        update_fields.append("rod_data = :rod_data")
+        params["rod_data"] = jogo.rod_data
+    if jogo.clube_clu_sigla_mandante is not None:
+        update_fields.append("clube_clu_sigla_mandante = :clube_clu_sigla_mandante")
+        params["clube_clu_sigla_mandante"] = jogo.clube_clu_sigla_mandante.upper()
+    if jogo.rod_gols_mandante is not None:
+        update_fields.append("rod_gols_mandante = :rod_gols_mandante")
+        params["rod_gols_mandante"] = jogo.rod_gols_mandante
+    if jogo.clube_clu_sigla_visitante is not None:
+        update_fields.append("clube_clu_sigla_visitante = :clube_clu_sigla_visitante")
+        params["clube_clu_sigla_visitante"] = jogo.clube_clu_sigla_visitante.upper()
+    if jogo.rod_gols_visitante is not None:
+        update_fields.append("rod_gols_visitante = :rod_gols_visitante")
+        params["rod_gols_visitante"] = jogo.rod_gols_visitante
+    if jogo.rod_pontos_mandante is not None:
+        update_fields.append("rod_pontos_mandante = :rod_pontos_mandante")
+        params["rod_pontos_mandante"] = jogo.rod_pontos_mandante
+    if jogo.rod_pontos_visitante is not None:
+        update_fields.append("rod_pontos_visitante = :rod_pontos_visitante")
+        params["rod_pontos_visitante"] = jogo.rod_pontos_visitante
+    if jogo.rod_calculou_classificacao is not None:
+        update_fields.append("rod_calculou_classificacao = :rod_calculou_classificacao")
+        params["rod_calculou_classificacao"] = jogo.rod_calculou_classificacao
+    if jogo.rod_partida_finalizada is not None:
+        update_fields.append("rod_partida_finalizada = :rod_partida_finalizada")
+        params["rod_partida_finalizada"] = jogo.rod_partida_finalizada
+    if jogo.estadio_est_id is not None:
+        update_fields.append("estadio_est_id = :estadio_est_id")
+        params["estadio_est_id"] = jogo.estadio_est_id
+
+    # Gerar a query final
+    if update_fields:
+        update_query = f"""
+            UPDATE rodada
+            SET {", ".join(update_fields)}
+            WHERE 
+                rod_serie = :serie AND
+                rod_ano = :ano AND
+                rod_rodada = :rodada_numero AND
+                rod_sequencia = :sequencia
+        """
+        # Executar a query
+        try:
+            session.execute(text(update_query), params)
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            raise HTTPException(status_code=500, detail=f"Erro ao atualizar rodada: {str(e)}")
+
+    # Retornar os dados atualizados
+    rodada_atualizada = session.execute(
+        text(query),
+        {
+            "serie": serie.upper(),
+            "ano": ano,
+            "rodada_numero": rodada_numero,
+            "sequencia": sequencia
+        }
+    ).fetchone()
+
+    if not rodada_atualizada:
+        raise HTTPException(status_code=500, detail="Erro ao recuperar a rodada após a atualização.")
+    
+    retorna_rodada: ResponseAlterarRodadaSchema = ResponseAlterarRodadaSchema(
+        rod_serie=serie.upper(),
+        rod_ano=ano,
+        rod_rodada=rodada_numero,
+        rod_sequencia=sequencia,
+        rod_data=jogo.rod_data,
+        clube_clu_sigla_mandante=jogo.clube_clu_sigla_mandante,
+        rod_gols_mandante=jogo.rod_gols_mandante,
+        clube_clu_sigla_visitante=jogo.clube_clu_sigla_visitante,
+        rod_gols_visitante=jogo.rod_gols_visitante,
+        rod_pontos_mandante=jogo.rod_pontos_mandante,
+        rod_pontos_visitante=jogo.rod_pontos_visitante,
+        rod_calculou_classificacao=jogo.rod_calculou_classificacao,
+        rod_partida_finalizada=jogo.rod_partida_finalizada,
+        estadio_est_id=jogo.estadio_est_id
+    )
+
+    return retorna_rodada
+
 def deletar_rodada(serie: str, ano: int, rodada_numero: int, sequencia: int, session: Session):
     """Deleta da tabela de rodada uma sequencia
 
@@ -222,10 +371,3 @@ def deletar_rodada(serie: str, ano: int, rodada_numero: int, sequencia: int, ses
         raise HTTPException(status_code=404, detail=str(e))
 
     return "Jogo excluído com sucesso"    
-
-def obter_rodada(self, rodada_id: int):
-    """
-    Obtém os detalhes de uma rodada específica pelo ID.
-    (Implementação futura)
-    """
-    pass

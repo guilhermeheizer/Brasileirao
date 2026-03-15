@@ -24,6 +24,7 @@ Classes principais:
 - ResponseRodadasSchema: Lista de rodadas
 - JogoFormPlacarSchema: Detalhes de um jogo
 - ListaJogosRodadaFormPlacarResponse: Lista de jogos de uma rodada
+- AlterarJogoRodadaSchema: Para alteração de dados de um jogo em uma rodada
 """
 from pydantic import BaseModel
 from typing import List, Optional
@@ -152,4 +153,36 @@ class ListaJogosRodadaFormPlacarResponse(BaseModel):
 
     class Config:
         # Configuração para uso direto com objetos SQLAlchemy (opcional)
+        from_attributes = True
+
+class AlterarJogoRodadaSchema(BaseModel):
+    """
+    Schema para alteração de dados de um jogo em uma rodada.
+    Inclui campos para identificação do jogo e novos valores.
+    """
+    rod_serie: str
+    rod_ano: int
+    rod_rodada: int
+    rod_sequencia: int
+    rod_data: datetime
+    clube_clu_sigla_mandante: str
+    rod_gols_mandante: Optional[int] = None
+    clube_clu_sigla_visitante: str
+    rod_gols_visitante: Optional[int] = None
+    rod_pontos_mandante: Optional[int] = None
+    rod_pontos_visitante: Optional[int] = None
+    rod_calculou_classificacao: str
+    rod_partida_finalizada: str
+    estadio_est_id: int
+
+    class Config:
+        # Configuração para uso direto com objetos SQLAlchemy (opcional)
+        from_attributes = True
+
+class ResponseAlterarRodadaSchema(AlterarJogoRodadaSchema):
+    """
+    Schema de resposta para alteração de dados de um jogo em uma rodada.
+    Herda todos os campos de AlterarJogoRodadaSchema.
+    """
+    class Config:
         from_attributes = True

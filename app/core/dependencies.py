@@ -7,7 +7,10 @@ from app.core.database import get_db
 from sqlalchemy.orm import Session
 from app.models.usuario_models import Usuario
 
-# Usamos diretamente o get_db para obter a sessão
+''' Módulo de dependências para autenticação e acesso ao banco de dados 
+   Define as dependências para obter a sessão do banco de dados e verificar o token de autenticação.
+   A função 'verificar_token' decodifica o token JWT, extrai o ID do usuário e verifica se o usuário existe no banco de dados.
+   Se o token for inválido ou o usuário não existir, uma exceção HTTP é levantada.'''
 pegar_sessao = get_db
 
 auth2_scheme = OAuth2PasswordBearer(tokenUrl="login/login-form")

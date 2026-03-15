@@ -6,3 +6,4 @@ ENV/
 .venv/
 alembic/versions/
 alembic/__pycache__/
+anotacao/

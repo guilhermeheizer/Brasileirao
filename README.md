@@ -1,0 +1,233 @@
+
+# Projeto Brasileirão Séries A e B
+
+### Índice
+1. Como surgiu a ídeia - ok
+2. Como foi o processo de criação dos prompts - ok
+3. Como é a estrutura do projeto
+4. Como baixar e instalar o projeto
+5. Como executar os endpoints do Brasileirão
+6. Acesse os prompts do ChatPGP utilizados para solicitar a geração de código Python
+
+## 1. Como surgiu a ídeia
+
+A empresa Hashtag disponibiliza no YouTube um curso de Python com o framework FasAPI – Rest API https://www.youtube.com/playlist?list=PLpdAy0tYrnKy3TvpCT-x7kGqMQ5grk1Xq 
+
+A partir deste curso idealizei o projeto backend em Python do Brasileirão, com base nos sites:
+- Globo Esporte: https://ge.globo.com/futebol/brasileirao-serie-a/
+- CBF: https://www.cbf.com.br/futebol-brasileiro/tabelas/campeonato-brasileiro/serie-a/2026
+
+Para a construção do projeto Brasileirão decidi que a IA faria a geração dos códigos Python, ou seja a IA foi o **"programador"**, utilizado o editor VSCode, configurado para acessar o Copilot e o ChatGPT (do site da Adapta). 
+
+O objetivo é gerar a classificação do campeonato Brasileiro das séries A e B a partir dos jogos finalizados das rodadas do campeonato Brasileiro.
+
+## 2. Como foi o processo de criação dos prompts
+
+A minha abordagem inicial para a criação dos models das tabelas foi a partir dos comandos SQL para criação das tabelas no banco SQLite e o exemplo do model em Python foi da tabela de usuário do curso que fiz da Hashtag. Segue a descrição do prompt.
+
+**Então o 1º prompt com a IA GPT4o** formatei da seguinte maneira:
+O projeto Python back-end será construido com FastApi e SQLAlchemy.
+Criei através do MySql Workbench o EER Diagram e a partir dele exportei para uma query que contém os comandos de criação do banco “brasileirao”.
+
+Segue os comandos:
+Neste ponto colei os comandos de criação das tabelas do banco brasileirao, gerado pelo MySql Workbench.
+
+Vamos utilizar o SQLite para a criação do brasileirao.db, para isto usar o Alembic para criar as migrations.
+
+Para cada tabela, criar um arquivo <nome_tabela>_models.py.
+Colei o exemplo do model de usuário do curso da Hashtag.
+
+Criar os arquivos Python para as tabelas a seguir, acrescentar para cada tabela "def int ( … ):
+cartao, cidade, classificacao_geral, classificacao_rodada, clube, estádio, rodada e usuário.
+
+**A resposta ao meu prompt**, foi a criação dos models, para cada uma das tabelas gerou:
+Arquivo: cartão_models.py e as linhas de código os atributos, indicando o tipo (se int, str, date, ...), nullable ou não, a chave primária, chave estrangeira e o init da tabela.
+
+**Fiz o 2º prompt**, com a seguinte pergunta:
+Como fica as pastas dos arquivos .py?
+
+**A resposta ao meu prompt foi**:
+Nesta situação, ao organizar um projeto Python backend com FastAPI e SQLAlchemy, é importante criar uma estrutura de pastas bem organizada para facilitar a manutenção e o entendimento do sistema. Abaixo, proponho uma estrutura de diretórios e arquivos para incluir os modelos que você mencionou, bem como organizar o projeto como um todo.
+A IA retornou todas as estruturas de pasta e a explicação de cada uma, o que deverá conter nas mesmas.
+
+Acatei a sugestão da IA GPT4o dos models e a da estrutura de pastas e nomes dos arquivos .py, e com o VSCode criei o projeto braseileirao, com base com projeto de FastAPI da Hashtag.
+
+Neste ponto é fundamental o **olhar do analista de sistemas / desenvolvedor**, pois realizei vários ajustes na proposta do GPT4o, tanto nos models quanto na estrutura de pastas. Mas vale destacar que o total linhas de códigos dos models é de *390 linhas geradas* a partir de um prompt do GPT4o e sem erros. Agora imagine digitando tudo, com certeza mandaria um bom tempo e ainda realizando várias correções de erros de grafía e erros de compilação.
+
+A estrutura de pastas do Brasileirão é diferente da estrutura do curso de FastAPI da Hashtag e o GPT4o ajudou muito nos ajustes, mas o GPT4o sugeriu muitas soluções que simplesmente não funcionaram, para buscar as correções acessei o Stack Overflow, documentação oficial do Python, assisti vídeos no YouTube, até que o primeiro endpoint para listar as cidades funcionou. **Tudo que o GPT4o propõem é importante questionar, validar e se a solução proposta atende**. 
+
+Resumi algumas boas práticas na preparação de prompt, sugere que prompt tenha:
+- **Definição do Contexto**: Descrever o cenário e o esperado do modelo.
+- **Objetivo ou Instruções Principais**: Declarar a tarefa que o modelo deve realizar.
+- **Detalhes ou Requisitos Técnicos**: Listar os detalhes técnicos, como um exemplo código para seguir.
+- **Exemplos de códigos**
+- **Especificação do Formato de Saída**: Como será a saída da funcionalidade.
+- **Restrições e Limitações**: O que não deve ser feito ou as condições específicas.
+- **Sempre repita o que deseja e não simplifique**: Exemplo: Quero que grave a tabela de cidade obtendo os dados da entrada do endpoint, depois faça o insert *“na mesma”*. Não coloque *“na mesma”*, pois estamos *“conversando”* com IA, substitua *“na mesma”* por *“na tabela de cidade”*.
+
+O VSCode com o Copilot trás uma velocidade durante a digitação do código, porque vai sugerindo as novas linhas de código, achei fantástico este recurso. Também é muito eficaz na correção dos erros de compilação. Outra inteligência do Copilot é gerar um código a partir do comentário no programa, por exemplo, se já estiver pronto a função para a inclusão e consistência de uma tabela, quando no comentário da próxima função você descrever que a função será de alteração, o Copilot gera todo o código da função. Neste ponto o **“olhar do analista de sistemas / desenvolvedor”** tem que avaliar se o código gerado atende os propósitos do que deseja, se está de acordo com as boas práticas de Designer Patterns.
+
+Uma das tarefas do **analista de sistemas / desenvolvedor** que sempre pratiquei quando outro profissional executaria a codificação do programa, é descrever a **“definição do programa”**, contém os requisitos de como o programa deve funcionar. Com o GPT4o segui a mesma linha de raciocínio, pois o **GPT4o é o meu “programador”**.
+
+Uma boa definição de um programa, deve conter:
+- Objetivo do programa bem claros e sucintos
+- Explicação quais são os parâmetros de entrada, as tabelas a serem idas, as tabelas que terão inclusão ou alteração ou exclusão, se teremos um relatório ou um json ou arquivo texto como resultado do processamento.
+- Detalhamento de como o programa vai funcionar, quais tabelas serão lidas para obter parâmetros que serão utilizados na lógica principal. Qual é a tabela principal a ser lida, se fará loop até o fim ou outra condição de termino do loop. Quais as leituras secundárias. Explicar como proceder nas exceções e explicar as regras do processo.
+- Se tiver tela, obrigatoriamente tem que ter o desenho da tela e a explicação de como funciona a tela, as consistências de cada campo da tela, e para cada clique indicar quais endpoints a serem chamados ou uma tela de popup.
+- Se tiver relatório, arquivo de sáida, xml ou json, é importante ter um “desenho ou exemplo” e explicar de onde vem cada campo do relatório, quebras e totalização. 
+
+Exemplificando, na função do Brasileirão para calcular a classificação geral do campeonato, construir a definição da seguinte forma. Observe que inseri *“---”* para destacar que termina uma explicação e começa outra e colocando linhas em branco após os 3 traços, isto é muito importante para separar os assuntos.
+
+No projeto Brasileirao em Python com FastApi e SQLAchemic. Tenho:
+
+\---
+
+rodada_models.py: (inclui o código)
+
+\---
+
+cartao_models.py: (inclui o código)
+
+\---
+
+Classificação_geral_models.py: (inclui o código Python de exemplo)
+
+\---
+
+Criar uma função para calcular a classificação do Brasileirao a partir da tabela rodada e inserir ou update na tabela classificacao_geral. 
+
+Parametro de entrada: serie, ano, rodada e carrega jogos nao realizados de rodadas anteriores (true = carrega e false = não carrega).
+
+Ler a tabela de rodada de acordo com os parametros acima.
+
+Considerar somente os registros que possuem os atributos rod_partida_finalizada = "S" e rod_calculou_classificacao = "N"  
+Para cada registro lido da tabela rodada, considerar o seguinte:  
+Temos para o "clube_clu_sigla_mandante": rod_gols_mandante, rod_pontos_mandante (que pode ser 0, 1 ou 3 pontos)  
+Temos para o "clube_clu_sigla_visitante": rod_gols_visitante, rod_pontos_visitante (que pode ser 0, 1 ou 3 pontos)
+
+Então cada de registro lido da tabela rodada teremos para o time mandante um insert ou update na tabela classificacao_geral e para o time visitante um insert ou update na tabela classificacao_geral.  
+Como atualizar os atributos da tabela classificacao_geral, terá dois processamentos um para o time mandante e outro para o time visitante:  
+clg_pontos: incrementar - rod_pontos_mandante ou rod_pontos_visitante  
+clg_vitorias: incrementar - Se ganhou a partida, ou seja, rod_gols_visitante maior rod_pontos_mandante e depois o mesmo para o time visitante  
+clg_saldo_gols: incrementar - rod_gols_visitante menos rod_pontos_mandante e depois o mesmo para o time visitante  
+clg_gols_pro: incrementar - rod_gols_visitante e depois o mesmo para o time visitante
+clg_confronto_direto: gravar zero  
+clg_vermelho_clube_clu_sigla: Ler a tabela cartao para car_qtd_vermelho e atualizar o valor, fazer o mesmo para o time visitante  
+clg_amarelo_clube_clu_sigla: Ler a tabela cartao para car_qtd_amarelo e atualizar o valor, fazer o mesmo para o time visitante  
+clube_clu_sigla: Pegar da rodada - clube_clu_sigla_mandante e depois o mesmo para o time visitante  
+clg_qtd_empates: incrementar - se o placar ou rod_gols_mandante > rod_gols_visitante e depois o mesmo para o time visitante  
+clg_qtd_derrotas: incrementar - se o placar ou rod_gols_visitante rod_gols_mandante e depois o mesmo para o time visitante  
+clg_qtd_empates: incrementar - se o placar ou rod_gols_mandante = rod_gols_visitante e depois o mesmo para o time visitante  
+clg_gols_contra: incrementar - rod_gols_visitante e e depois o mesmo para o time visitante rod_gols_mandante  
+
+Criar a rota que vou inserir form_placar_rodada_routers.py
+
+**A resposta ao meu prompt foi a criação form_placar_rodada_routers.py e form_placar_rodada_service.py**
+
+O resultado foi muito bom, o código gerado foi perfeito e fiz intervenções. A classificação geral ficou correta e de acordo com os sites do Globo Esporte e da CBF.
+
+Para cada código gerado pelo GPT4o é obrigatório realizar os testes unitários, passando por todas as condições do programa (os “if”, as exceções), verificar no banco de dados se a gravação / alteração / exclusão estão corretas, conferir as saídas, verificar o português e a clareza das mensagens.  
+*Parece obvio “realizar testes unitários”, mas muitos profissionais não possuem este cuidado.*
+
+Realizados os testes unitários passamos para os testes funcionais, validam o que o sistema faz (funcionalidades, regras de negócio), verificando se cada recurso entrega o resultado esperado, comumente via testes de unidade e aceitação.
+
+Conclusão sobre a geração de código pelo GPT4o e o Copilot.
+
+A experiência de uso combinando GPT4o e Copilot demonstrou que ambos aceleram significativamente o desenvolvimento backend em Python com FastAPI, SQLAlchemy e organização de projetos. A IA ajudou tanto na criação inicial do projeto quanto na refatoração, documentação, geração de modelos e definição de pastas e por fim a minha curva de aprendizagem foi muita eficaz.
+
+## 3. Como é a estrutura do projeto
+
+A estrutura do projeto Brasileirao em Python utilizando o FastApi é:
+
+Brasileirao/  
+├─ app/  
+│   ├─ _init_.py  
+│   ├─ core/  
+│   │   ├─ _init_.py  
+│   │   ├─ config.py         # Configurações principais, como database, CORS, etc.  
+│   │   ├─ database.py       # Configuração e inicialização do banco de dados  
+│   │   ├─ dependencies.py   # Dependências para autenticação e acesso ao banco de dados   
+│   ├─ models/   
+│   │   ├─ cartao_models.py                # Modelo para a tabela de cartao  
+│   │   ├─ cidade_models.py                # Modelo para a tabela de cidades  
+│   │   ├─ estado_models.py                # Modelo para a tabela de estados  
+│   │   ├─ clube_models.py                 # Modelo para a tabela de clubes  
+│   │   ├─ rodada_models.py                # Modelo para a tabela de rodadas  
+│   │   ├─ classificacao_geral_models.py   # Modelo para a tabela de classificações  
+│   │   ├─ classificacao_rodada_models.py  # Modelo para a tabela de rodada  
+│   │   ├─ usuario_models.py               # Modelo para a tabela de usuários  
+│   ├─ routes/  
+│   │   ├─ _init_.py  
+│   │   ├─ crud/  
+│   │   │   ├─ _init_.py   
+│   │   │   ├─ cartao_routes.py     # CRUD de cidade  
+│   │   │   ├─ cidade_routes.py     # CRUD de cidade  
+│   │   │   ├─ estado_routes.py     # CRUD de estado  
+│   │   │   ├─ clube_routes.py      # CRUD de clube  
+│   │   │   ├─ rodada_routes.py     # CRUD de rodada  
+│   │   │   ├─ usuario_routes.py    # CRUD de usuário  
+│   │   ├─ form/  
+│   │       ├─ _init_.py  
+│   │       ├─ form_cadastra_rodada_routers.py       # Endpoint tela para cadastrar rodada  
+│   │       ├─ form_classificacao_rodada_routers.py  # Endpoint copiar classificação geral por rodada  
+│   │       ├─ login_routes.py                       # Endpoint específico para tela de login  
+│   │       ├─ form_placar_rodada_routes.py          # Endpoint tela calculo da classificacao  
+│   ├─ services/  
+│   │   ├─ _init_.py  
+│   │   ├─ cartao_service.py  # Regras de negócios para cartao  
+│   │   ├─ cidade_service.py  # Regras de negócios para cidade  
+│   │   ├─ estado_service.py  # Regras de negócios para estado  
+│   │   ├─ clube_service.py   # Regras de negócios para clube  
+│   │   ├─ rodada_service.py  # Regras de negócios para rodada  
+│   │   ├─ usuario_service.py # Regras de negócios para usuário  
+│   │   ├─ login_service.py   # Regras de negócios para login  
+│   │   ├─ form/  
+│   │       ├─ _init_.py  
+│   │       ├─ form_cadastra_rodada_service.py       # Regra negócio cadastrar rodada  
+│   │       ├─ form_classificacao_rodada_service.py  # Regra negócio classificação geral por rodada  
+│   │       ├─ form_placar_rodada_service.py         # Regra negócio calculo da classificacao  
+│   ├─ schema/  
+│   │   ├─ _init_.py  
+│   │   ├─ cartao_schema.py         
+│   │   ├─ cidade_schema.py       
+│   │   ├─ classificacao_geral_schema.py  
+│   │   ├─ classificacao_rodada_schema.py   
+│   │   ├─ estadio_schema.py         
+│   │   ├─ clube_schema.py    
+│   │   ├─ from_login_schema.py      
+│   │   ├─ rodada_schema.py         
+│   │   ├─ classificacao_schema.py  
+│   │   ├─ usuario_schema.py        
+│   ├─ utils/  
+│   │   ├─ _init_.py  
+│   │   ├─ token.py          # Lógica para geração/validação de tokens JWT  
+├─ teste_rotas/  
+│   ├─ lista_classificacao_geral.py        # Testes relacionados a cidade  
+├─ .env                      # Variáveis de ambiente (ex. DATABASE_URL)  
+├─ .gitignore                # Arquivos ignorados pelo controle de versão  
+├─ main.py                   # Arquivo principal para executar o servidor  
+├─ brasileirao.db            # Banco de dados SQLite  
+├─ requirements.txt          # Dependências do projeto  
+└─ README.md                 # Documentação do projeto  
+
+ 
+```
+O projeto esta disponível no github: https://github.com/guilhermeheizer/DesafioKeevo
+```
+
+## Agradecimentos
+Cooperaram com meu projeto e agradeço pela ajuda:
+
+- João Paulo Rodrigues de Lira - Sócio e Professor da Hashtag Treinamentos. Fiz o curso de Python com framework FastApi disponível no YouTube: https://www.youtube.com/playlist?list=PLpdAy0tYrnKy3TvpCT-x7kGqMQ5grk1Xq
+- Jaime Nogueira da Gama - Executive Partner Garther. Grande incentivador do meu projeto. Com a IA Manus criou a apresentação em PowerPoint
+
+
+
+
+
+
+
+## Autor
+
+- [@guilhermeheizer](https://www.github.com/guilhermeheizer)
+

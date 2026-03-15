@@ -16,7 +16,7 @@ from app.models.usuario_models import Usuario
 from app.schemas.rodada_schema import CriarRodadaSchema, ResponseCriarRodadaSchema
 from app.services.cartao_service import listar_cartoes_paginados
 from app.services.form.form_cadastra_rodada_service import criar_rodada
-from typing import List
+from typing import List, Annotated
 
 # Instância do APIRouter para organizar as rotas relacionadas ao formulário de cadastro de rodadas
 rodada_form_router = APIRouter(tags=["cadastra rodada"])
@@ -25,8 +25,8 @@ rodada_form_router = APIRouter(tags=["cadastra rodada"])
 @rodada_form_router.post("/criar-rodada", response_model=List[ResponseCriarRodadaSchema])
 async def criar_rodadas(
     jogos_data: List[CriarRodadaSchema],
-    session: Session = Depends(pegar_sessao),
-    usuario: Usuario = Depends(verificar_token)
+    session: Annotated[Session, Depends(pegar_sessao)],
+    usuario: Annotated[Usuario, Depends(verificar_token)]
 ):
     """
     Cria uma rodada completa com base na série, ano, e uma lista de 10 jogos.

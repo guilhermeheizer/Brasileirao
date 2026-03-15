@@ -132,8 +132,9 @@ def listar_rodada():
     """
     session: Session = next(get_db())
     try:
-        rodada_numero = int(input(f"Digite o número da rodada ({SERIE} - {ANO}): ").strip())
-        dados_rodada = rodada_lista(session, SERIE, ANO, rodada_numero)
+        serie = input(f"Digite a série ( {ANO}): ").upper().strip()
+        rodada_numero = int(input(f"Digite o número da rodada ({serie} - {ANO}): ").strip())
+        dados_rodada = rodada_lista(session, serie, ANO, rodada_numero, False)
 
         gerar_html_rodada(dados_rodada)
     except Exception as e:

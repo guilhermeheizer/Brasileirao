@@ -295,7 +295,7 @@ def normalizar_dados_clubes(resultados: list[dict]) -> list[dict]:
         "Red Bull Bragantino": "RBB",
         "Chapecoense": "CHA",
         "Mirassol": "MIR",
-        "Coritiba S.a.f.": "CFC",
+        "Coritiba SAF": "CFC",
         "Flamengo": "FLA",
         "Botafogo": "BOT",
         "Corinthians": "COR",
@@ -313,6 +313,7 @@ def normalizar_dados_clubes(resultados: list[dict]) -> list[dict]:
     for item in resultados:
         nome_clube = item["clube"]
         sigla = clubes_para_siglas.get(nome_clube, "N/A")
+        print(f"cartao_service.py - coletar_dados_cartoes - Nome do clube: {nome_clube}, Sigla: {sigla}")
         nova_lista.append({
             "clube": sigla,
             "cartoes_amarelos": item["cartoes_amarelos"],
