@@ -210,24 +210,15 @@ Brasileirao/
 ├─ requirements.txt          # Dependências do projeto  
 └─ README.md                 # Documentação do projeto  
 
- 
-```
-O projeto esta disponível no github: https://github.com/guilhermeheizer/DesafioKeevo
-```
+**EER do Brasileirão**
+
+![Tabelas do Brasileirão.](/imagens_readme/eer.png "Brasileirão")
 
 ## Agradecimentos
 Cooperaram com meu projeto e agradeço pela ajuda:
 
 - João Paulo Rodrigues de Lira - Sócio e Professor da Hashtag Treinamentos. Fiz o curso de Python com framework FastApi disponível no YouTube: https://www.youtube.com/playlist?list=PLpdAy0tYrnKy3TvpCT-x7kGqMQ5grk1Xq
-- Jaime Nogueira da Gama - Executive Partner Garther. Grande incentivador do meu projeto. Com a IA Manus criou a apresentação em PowerPoint
-
-
-
-
-
-
+- Jaime Nogueira da Gama - Grande incentivador do meu projeto. Ajudou na narrativa do projeto, e com a IA Manus gerou a apresentação em PowerPoint: Geração_da_Tabela_do_Brasileirão_com_Código_IA.pptx 
 
 ## Autor
-
 - [@guilhermeheizer](https://www.github.com/guilhermeheizer)
-
