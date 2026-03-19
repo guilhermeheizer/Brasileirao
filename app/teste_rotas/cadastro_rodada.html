@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Cadastrar Rodada</title>
+
+<!-- PyScript para chamar funções Python diretamente -->
+<link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+<script defer src="https://pyscript.net/latest/pyscript.js"></script>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #999;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.form-header {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.form-header input {
+    padding: 8px;
+    width: 130px;
+}
+
+.jogo-card {
+    padding: 15px;
+    background: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.jogo-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+select, input[type="datetime-local"] {
+    padding: 8px;
+    width: 100%;
+}
+
+button {
+    padding: 12px 20px;
+    font-size: 16px;
+    border: none;
+    background: #0077cc;
+    color: white;
+    cursor: pointer;
+    border-radius: 6px;
+    display: block;
+    margin: 25px auto;
+}
+button:hover {
+    background: #005fa3;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Cadastro de Rodada</h1>
+
+    <!-- Cabeçalho -->
+    <div class="form-header">
+        <label>Série:
+            <input id="inpSerie" maxlength="1" placeholder="A/B">
+        </label>
+
+        <label>Ano:
+            <input id="inpAno" type="number" placeholder="2026">
+        </label>
+
+        <label>Rodada:
+            <input id="inpRodada" type="number" min="1" max="38">
+        </label>
+    </div>
+
+    <!-- JOGOS -->
+    <div id="jogosContainer"></div>
+
+    <button onclick="salvarRodada()">Salvar Rodada</button>
+</div>
+
+<!-- Código Python carregado pelo PyScript -->
+<py-script src="cadastro_rodada_service_py.js"></py-script>
+
+<script>
+// -------------------------------------------------------
+// MONTAR INTERFACE DOS 10 JOGOS
+// -------------------------------------------------------
+function criarLinhaJogo(num) {
+    return `
+    <div class="jogo-card">
+        <h3>Jogo ${num}</h3>
+        <div class="jogo-grid">
+            
+            <div>
+                <label>Estádio</label>
+                <select id="estadio_${num}">
+                    <option value="">Carregando...</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Data / Hora</label>
+                <input id="data_${num}" type="datetime-local">
+            </div>
+
+            <div>
+                <label>Mandante</label>
+                <select id="mandante_${num}">
+                    <option value="">Carregando...</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Visitante</label>
+                <select id="visitante_${num}">
+                    <option value="">Carregando...</option>
+                </select>
+            </div>
+
+        </div>
+    </div>`;
+}
+
+document.getElementById("jogosContainer").innerHTML =
+    Array.from({length: 10}, (_, i) => criarLinhaJogo(i+1)).join("");
+
+
+// -------------------------------------------------------
+// CARREGAR COMBOS SEM ENDPOINTS → CHAMANDO FUNÇÕES PYTHON
+// -------------------------------------------------------
+async function carregarDadosIniciais() {
+
+    const estadios = await pyscript.runtime.globals.get("js_listar_todos_estadios")();
+    const clubesA = await pyscript.runtime.globals.get("js_listar_todos_clubes")("");
+    const clubesB = await pyscript.runtime.globals.get("js_listar_todos_clubes")("B");
+
+    const todosClubes = [...clubesA, ...clubesB];
+
+    for (let i = 1; i <= 10; i++) {
+
+        // Estádios
+        const cbEst = document.getElementById(`estadio_${i}`);
+        cbEst.innerHTML = "<option value=''>Selecione...</option>";
+        estadios.forEach(est => {
+            cbEst.innerHTML += `<option value="${est.est_id}">${est.est_nome}</option>`;
+        });
+
+        // Mandante
+        const cbMan = document.getElementById(`mandante_${i}`);
+        cbMan.innerHTML = "<option value=''>Selecione...</option>";
+        todosClubes.forEach(cl => {
+            cbMan.innerHTML += `<option value="${cl.clu_sigla}">${cl.clu_sigla} - ${cl.clu_nome}</option>`;
+        });
+
+        // Visitante
+        const cbVis = document.getElementById(`visitante_${i}`);
+        cbVis.innerHTML = "<option value=''>Selecione...</option>";
+        todosClubes.forEach(cl => {
+            cbVis.innerHTML += `<option value="${cl.clu_sigla}">${cl.clu_sigla} - ${cl.clu_nome}</option>`;
+        });
+    }
+}
+
+carregarDadosIniciais();
+
+
+// -------------------------------------------------------
+// MONTAR JSON FINAL E ENVIAR PARA PYTHON → criar_rodada()
+// -------------------------------------------------------
+async function salvarRodada() {
+
+    const serie = document.getElementById("inpSerie").value.toUpperCase();
+    const ano = parseInt(document.getElementById("inpAno").value);
+    const rodada = parseInt(document.getElementById("inpRodada").value);
+
+    const jogos = [];
+
+    for (let i = 1; i <= 10; i++) {
+
+        jogos.push({
+            rod_serie: serie,
+            rod_ano: ano,
+            rod_rodada: rodada,
+            rod_sequencia: i,
+            rod_data: document.getElementById(`data_${i}`).value,
+            clube_clu_sigla_mandante: document.getElementById(`mandante_${i}`).value,
+            clube_clu_sigla_visitante: document.getElementById(`visitante_${i}`).value,
+            estadio_est_id: parseInt(document.getElementById(`estadio_${i}`).value),
+            rod_calculou_classificacao: "N",
+            rod_partida_finalizada: "N"
+        });
+    }
+
+    const criarRodada = await pyscript.runtime.globals.get("js_criar_rodada");
+    const resultado = await criarRodada(jogos);
+
+    alert("Rodada salva com sucesso!");
+}
+
+</script>
+</body>
+</html>

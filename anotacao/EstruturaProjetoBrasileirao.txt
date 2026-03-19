@@ -11,7 +11,7 @@ Brasileirao/
 │   ├─ models/   
 │   │   ├─ cartao_models.py                # Modelo para a tabela de cartao  
 │   │   ├─ cidade_models.py                # Modelo para a tabela de cidades  
-│   │   ├─ estado_models.py                # Modelo para a tabela de estados  
+│   │   ├─ estadio_models.py                # Modelo para a tabela de estadios  
 │   │   ├─ clube_models.py                 # Modelo para a tabela de clubes  
 │   │   ├─ rodada_models.py                # Modelo para a tabela de rodadas  
 │   │   ├─ classificacao_geral_models.py   # Modelo para a tabela de classificações  
@@ -23,7 +23,7 @@ Brasileirao/
 │   │   │   ├─ _init_.py   
 │   │   │   ├─ cartao_routes.py     # CRUD de cidade  
 │   │   │   ├─ cidade_routes.py     # CRUD de cidade  
-│   │   │   ├─ estado_routes.py     # CRUD de estado  
+│   │   │   ├─ estadio_routes.py     # CRUD de estadio  
 │   │   │   ├─ clube_routes.py      # CRUD de clube  
 │   │   │   ├─ rodada_routes.py     # CRUD de rodada  
 │   │   │   ├─ usuario_routes.py    # CRUD de usuário  
@@ -37,7 +37,7 @@ Brasileirao/
 │   │   ├─ _init_.py  
 │   │   ├─ cartao_service.py  # Regras de negócios para cartao  
 │   │   ├─ cidade_service.py  # Regras de negócios para cidade  
-│   │   ├─ estado_service.py  # Regras de negócios para estado  
+│   │   ├─ estadio_service.py  # Regras de negócios para estadio  
 │   │   ├─ clube_service.py   # Regras de negócios para clube  
 │   │   ├─ rodada_service.py  # Regras de negócios para rodada  
 │   │   ├─ usuario_service.py # Regras de negócios para usuário  

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Cadastrar Rodada</title>
+
+<style>
+    body {
+        background: #f4f6f9;
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0;
+        padding: 20px;
+    }
+
+    h1 {
+        text-align: center;
+        color: #003366;
+        margin-bottom: 30px;
+    }
+
+    .container {
+        width: 95%;
+        max-width: 1200px;
+        margin: auto;
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0px 0px 10px #bbbbbb;
+    }
+
+    .linha-jogo {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 6px;
+        background: #fafafa;
+    }
+
+    .linha-jogo h3 {
+        margin-top: 0;
+        color: #0066cc;
+    }
+
+    label {
+        font-weight: bold;
+        margin-top: 10px;
+    }
+
+    select, input[type=text], input[type=datetime-local] {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        border-radius: 4px;
+        border: 1px solid #aaa;
+    }
+
+    .grid-4 {
+        display: grid;
+        grid-template-columns: 30% 20% 25% 25%;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    button {
+        background: #007BFF;
+        padding: 12px 23px;
+        border: none;
+        color: white;
+        font-size: 18px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.2s;
+        width: 100%;
+    }
+
+    button:hover {
+        background: #005bb5;
+    }
+
+    .topo-grid {
+        display: grid;
+        grid-template-columns: 20% 20% 20%;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+</style>
+
+<script>
+
+// CARREGAR ESTÁDIOS
+async function buscarEstadios(filtro) {
+    const resp = await fetch(`/cadastra-rodada/pesquisar-estadios`);
+    const dados = await resp.json();
+    return dados.estadios.filter(e =>
+        e.est_nome.toUpperCase().includes(filtro.toUpperCase())
+    );
+}
+
+// CARREGAR CLUBES
+async function buscarClubes(filtro) {
+    const resp = await fetch(`/cadastra-rodada/pesquisar-clubes?nome=${filtro}`);
+    const dados = await resp.json();
+    return dados.clubes;
+}
+
+// INSERIR ITENS NO COMBO
+function preencherCombo(combo, itens, campoValor, campoTexto) {
+    combo.innerHTML = "";
+    itens.forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item[campoValor];
+        opt.textContent = `${item[campoTexto]}`;
+        combo.appendChild(opt);
+    });
+}
+
+// EXECUTADO AO ABRIR
+window.onload = function () {
+
+    for (let i = 1; i <= 10; i++) {
+
+        // ESTÁDIOS
+        document.getElementById(`estadio_txt_${i}`).addEventListener("keyup", async (e) => {
+            const lista = await buscarEstadios(e.target.value);
+            preencherCombo(
+                document.getElementById(`estadio_${i}`),
+                lista,
+                "est_id",
+                "est_nome"
+            );
+        });
+
+        // MANDANTE
+        document.getElementById(`mandante_txt_${i}`).addEventListener("keyup", async (e) => {
+            const lista = await buscarClubes(e.target.value);
+            preencherCombo(
+                document.getElementById(`mandante_${i}`),
+                lista,
+                "clu_sigla",
+                "clu_nome"
+            );
+        });
+
+        // VISITANTE
+        document.getElementById(`visitante_txt_${i}`).addEventListener("keyup", async (e) => {
+            const lista = await buscarClubes(e.target.value);
+            preencherCombo(
+                document.getElementById(`visitante_${i}`),
+                lista,
+                "clu_sigla",
+                "clu_nome"
+            );
+        });
+
+    }
+
+};
+
+async function salvar() {
+
+    const serie = document.getElementById("serie").value.toUpperCase();
+    const ano = parseInt(document.getElementById("ano").value);
+    const rodada = parseInt(document.getElementById("rodada").value);
+
+    const jogos = [];
+
+    for (let i = 1; i <= 10; i++) {
+
+        jogos.push({
+            rod_serie: serie,
+            rod_ano: ano,
+            rod_rodada: rodada,
+            rod_sequencia: i,
+            rod_data: document.getElementById(`data_${i}`).value,
+            clube_clu_sigla_mandante: document.getElementById(`mandante_${i}`).value,
+            clube_clu_sigla_visitante: document.getElementById(`visitante_${i}`).value,
+            estadio_est_id: parseInt(document.getElementById(`estadio_${i}`).value),
+            rod_calculou_classificacao: "N",
+            rod_partida_finalizada: "N"
+        });
+    }
+
+    const resp = await fetch("/cadastra-rodada/criar-rodada", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(jogos)
+    });
+
+    const dados = await resp.json();
+
+    alert("Rodada cadastrada com sucesso!");
+}
+
+</script>
+
+</head>
+
+<body>
+
+    <h1>Cadastro de Rodada - Brasileirão</h1>
+
+    <div class="container">
+
+        <div class="topo-grid">
+            <div>
+                <label>Série</label>
+                <input type="text" id="serie" maxlength="1">
+            </div>
+
+            <div>
+                <label>Ano</label>
+                <input type="number" id="ano">
+            </div>
+
+            <div>
+                <label>Rodada</label>
+                <input type="number" id="rodada" min="1" max="38">
+            </div>
+        </div>
+
+        <hr>
+
+        {% for i in range(1, 11) %}
+
+        <div class="linha-jogo">
+
+            <h3>Jogo {{ i }}</h3>
+
+            <div class="grid-4">
+
+                <div>
+                    <label>Estádio</label>
+                    <input type="text" id="estadio_txt_{{ i }}" placeholder="digite o nome do estádio">
+                    <select id="estadio_{{ i }}"></select>
+                </div>
+
+                <div>
+                    <label>Data / Hora</label>
+                    <input type="datetime-local" id="data_{{ i }}">
+                </div>
+
+                <div>
+                    <label>Mandante</label>
+                    <input type="text" id="mandante_txt_{{ i }}" placeholder="digite o nome do clube">
+                    <select id="mandante_{{ i }}"></select>
+                </div>
+
+                <div>
+                    <label>Visitante</label>
+                    <input type="text" id="visitante_txt_{{ i }}" placeholder="digite o nome do clube">
+                    <select id="visitante_{{ i }}"></select>
+                </div>
+
+            </div>
+        </div>
+
+        {% endfor %}
+
+        <button onclick="salvar()">Salvar Rodada</button>
+
+    </div>
+
+</body>
+</html>

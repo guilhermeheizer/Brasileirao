@@ -14,9 +14,15 @@ from sqlalchemy.orm import Session
 from app.core.dependencies import pegar_sessao, verificar_token
 from app.models.usuario_models import Usuario
 from app.schemas.rodada_schema import CriarRodadaSchema, ResponseCriarRodadaSchema
+from app.schemas.clube_schema import ResponseClubeSchema
+from app.schemas.estadio_schema import ResponseEstadioSchema
 from app.services.cartao_service import listar_cartoes_paginados
 from app.services.form.form_cadastra_rodada_service import criar_rodada
 from typing import List, Annotated
+from app.services.clube_service import listar_todos_clubes
+from app.services.estadio_service import listar_todos_estadios
+from typing import Optional
+from fastapi import Query
 
 # Instância do APIRouter para organizar as rotas relacionadas ao formulário de cadastro de rodadas
 rodada_form_router = APIRouter(tags=["cadastra rodada"])
@@ -49,5 +55,29 @@ async def criar_rodadas(
     except Exception as e:
         # Captura outros erros inesperados e gera um erro 500
         raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
+    finally:
+        session.close()
+
+
+@rodada_form_router.get("/pesquisar-clubes", response_model=ResponseClubeSchema)
+async def pesquisar_clubes(
+    serie: Optional[str] = Query(None),
+    nome: Optional[str] = Query(None),
+    session: Session = Depends(pegar_sessao),
+    usuario: Usuario = Depends(verificar_token)
+):
+    try:
+        return listar_todos_clubes(serie, nome, session)
+    finally:
+        session.close()
+
+
+@rodada_form_router.get("/pesquisar-estadios", response_model=ResponseEstadioSchema)
+async def pesquisar_estadios(
+    session: Session = Depends(pegar_sessao),
+    usuario: Usuario = Depends(verificar_token)
+):
+    try:
+        return listar_todos_estadios(session)
     finally:
         session.close()

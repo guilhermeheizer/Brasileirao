@@ -4,9 +4,9 @@
 ### Índice
 1. Como surgiu a ídeia - ok
 2. Como foi o processo de criação dos prompts - ok
-3. Como é a estrutura do projeto
-4. Como baixar e instalar o projeto
-5. Como executar os endpoints do Brasileirão
+3. Como é a estrutura do projeto - ok
+4. Como baixar, instalar o projeto e executar - ok
+5. Como executar os endpoints do Brasileirão - ok
 6. Acesse os prompts do ChatPGP utilizados para solicitar a geração de código Python
 
 ## 1. Como surgiu a ídeia
@@ -25,7 +25,7 @@ O objetivo é gerar a classificação do campeonato Brasileiro das séries A e B
 
 A minha abordagem inicial para a criação dos models das tabelas foi a partir dos comandos SQL para criação das tabelas no banco SQLite e o exemplo do model em Python foi da tabela de usuário do curso que fiz da Hashtag. Segue a descrição do prompt.
 
-**Então o 1º prompt com a IA GPT4o** formatei da seguinte maneira:
+**Então o 1º prompt com a IA GPT4o** formatei da seguinte maneira:  
 O projeto Python back-end será construido com FastApi e SQLAlchemy.
 Criei através do MySql Workbench o EER Diagram e a partir dele exportei para uma query que contém os comandos de criação do banco “brasileirao”.
 
@@ -214,11 +214,79 @@ Brasileirao/
 
 ![Tabelas do Brasileirão.](/imagens_readme/eer.png "Brasileirão")
 
+## 4. Como baixar, instalar o projeto e executar
+
+Acesse o repositório do GitHub https://github.com/guilhermeheizer/Brasileirao e faça um **Fork**.  
+
+Após realizado o fork e como o projeto no computador, configue o ambiente virtual. Siga os passos:   
+* Verificar se o Python está instalado  
+    No PowerShell ou Prompt de Comando, execute: python --version  
+    Se aparecer a versão, está tudo OK
+* Criar o ambiente virtual  
+    No termial do VSCode, vá até a pasta do Brasileirão:  
+    cd <caminho_do_projeto>
+    Digite: python -m venv venv  
+    Este comando cria uma pasta venv dentro do projeto  
+* Ativar o ambiente virtual. No terminal:venv\Scripts\activateAo ativar, o terminal vai mostrar algo assim:(venv) C:\seuprojeto>
+* Configurar o VSCode para usar o venv automaticamenteNo VSCode:
+Pressione Ctrl + Shift + P
+Digite: Python: Select Interpreter
+Selecione o interpretador dentro da venv:
+.\venv\Scripts\python.exe  
+Agora o VSCode usará esse ambiente virtual para rodar o projeto.
+* Instalar dependências dentro do venv. Tudo que instalar, agora irá somente para o ambiente virtual:  
+pip install fastapi  
+pip install uvicorn  
+pip install sqlalchemy  
+* Para desativar o venvBasta executar:deactivate
+* Rodar seu projeto com o venv ativoExemplo:uvicorn main:app --reload
+
+Toda vez que abrir o projeto Brasileirão no VSCode executar os dois passos:  
+- No terminal, ativar o ambiente virtual digitando: **venv\Scripts\activate**  
+- Selecione o interpretador pressionando **Ctrl + Shift + P**, escolha o interpretador associado ao seu ambiente virtual (geralmente terá o caminho do seu projeto seguido de venv).  
+
+Um ponto importante é o **requirements.txt**, contém todas as dependências do projeto Python — especialmente importante em projetos FastAPI, SQLAlchemy dentre outras bibliotecas.  Garante que qualquer pessoa (ou servidor) consiga instalar exatamente as mesmas versões usadas por você, evitando erros de incompatibilidade.   
+O comando **pip freeze > requirements.txt**  gera a lista completa dos pacotes instalados.  
+Após baixar o projeto Brasileirão execute o comando:  
+**pip install -r requirements.txt** irá instalar as bibliotecas.
+
+
+
+## 5. Como executar os endpoints do Brasileirão
+
+Executando no terminal **uvicorn main:app --reload** irá colocar o sistema no ar ou Swagger.    
+
+INFO:     Will watch for changes in these directories: ['D:\\PythonMeusProjetos\\Brasileirao']  
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)  
+INFO:     Started reloader process [10568] using StatReload  
+INFO:     Started server process [5808]  
+INFO:     Waiting for application startup.  
+INFO:     Application startup complete.  
+
+Clicando no link http://127.0.0.1:8000 irá carregar no navegador o Swagger.  
+
+![Swagger](/imagens_readme/swagger_01.png)  
+
+No navegador http://127.0.0.1:8000/docs irá carregar os endpoints do Brasileirão
+
+![Swagger](/imagens_readme/swagger_02.png)
+
+```
+O projeto esta disponível no github: https://github.com/guilhermeheizer/DesafioKeevo
+```
+
 ## Agradecimentos
-Cooperaram com meu projeto e agradeço pela ajuda:
+Contribuíram com meu projeto e agradeço pela ajuda:
 
 - João Paulo Rodrigues de Lira - Sócio e Professor da Hashtag Treinamentos. Fiz o curso de Python com framework FastApi disponível no YouTube: https://www.youtube.com/playlist?list=PLpdAy0tYrnKy3TvpCT-x7kGqMQ5grk1Xq
 - Jaime Nogueira da Gama - Grande incentivador do meu projeto. Ajudou na narrativa do projeto, e com a IA Manus gerou a apresentação em PowerPoint: Geração_da_Tabela_do_Brasileirão_com_Código_IA.pptx 
+
+
+
+
+
+
+
 
 ## Autor
 - [@guilhermeheizer](https://www.github.com/guilhermeheizer)

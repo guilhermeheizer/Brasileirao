@@ -81,7 +81,8 @@ def menu_principal():
         print("1. CG - Classificação Geral")
         print("2. ES - Estádios")
         print("3. RO - Lista Rodada")
-        print("4. S - Sair")
+        print("4. CR - Cadastrar Rodada")
+        print("5. S - Sair")
         opcao = input("Escolha uma opção: ").strip().upper()
 
         if opcao == "CG":
@@ -90,6 +91,8 @@ def menu_principal():
             listar_estadios()
         elif opcao == "RO":
             listar_rodada()
+        elif opcao == "CR":
+            cadastrar_rodada()
         elif opcao == "S":
             print("Saindo do programa...")
             break
@@ -141,6 +144,23 @@ def listar_rodada():
         print(f"Erro ao listar Rodada: {e}")
     finally:
         session.close()
+
+def cadastrar_rodada():
+    """
+    Gera a tela HTML para cadastrar uma rodada com 10 jogos.
+    Tela construída com base no JPG fornecido.
+    """
+    env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
+    template = env.get_template("cadastra_rodada_template.html")
+
+    html_content = template.render()
+
+    output_path = os.path.join(TEMPLATE_DIR, "tela_cadastrar_rodada.html")
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(html_content)
+
+    print(f"Tela de cadastro de rodada gerada com sucesso em: {output_path}")
 
 if __name__ == "__main__":
     menu_principal()

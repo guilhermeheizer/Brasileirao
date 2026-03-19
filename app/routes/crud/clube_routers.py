@@ -16,9 +16,9 @@ from app.services.clube_service import (
 clube_router = APIRouter(tags=["clube"])
 
 
-@clube_router.get("/listar", response_model=ResponseClubeSchema)
+@clube_router.get("/listar/", response_model=ResponseClubeSchema)
 async def listar_clubes(    
-    serie: Optional[str] = Query(None, description="Filtro opcional pela série do clube (A, B, C ou D)"),
+    serie: Optional[str] = Query(None, description="Filtro opcional pela série do clube (A ou B"),
     nome: Optional[str] = Query(None, description="Busca parcial pelo nome da clube"),
     session: Session = Depends(pegar_sessao)
     ):
