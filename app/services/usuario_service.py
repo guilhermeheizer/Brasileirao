@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException
 from app.models.usuario_models import Usuario
-from app.schemas.usuario_schema import UsuarioSchema
+from app.schemas.usuario_schema import ResponseUsuarioSchema, UsuarioSchema
 from app.core.dependencies import pegar_sessao
 from hashlib import sha256
 
@@ -37,7 +37,7 @@ def criar_usuario_service(usuario_schema: UsuarioSchema, session: Session = Depe
     try:
         session.add(novo_usuario)
         session.commit()
-        return {"mensagem": "Usuário criado com sucesso!"}
+        return ResponseUsuarioSchema.model_validate(novo_usuario)
     except Exception as e:
         session.rollback()
         raise HTTPException(status_code=500, detail=f"Erro ao criar usuário: {str(e)}")

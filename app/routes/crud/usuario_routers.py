@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from app.schemas.usuario_schema import UsuarioSchema 
+from app.schemas.usuario_schema import ResponseUsuarioSchema, UsuarioSchema 
 from app.core.dependencies import pegar_sessao
 from app.services.usuario_service import criar_usuario_service
 
@@ -15,7 +15,7 @@ async def home():
     """
     return {"message": "acessou rota de autenticação", "autenticado": False} 
 
-@usuario_router.post("/incluir", response_model=UsuarioSchema)
+@usuario_router.post("/incluir", response_model=ResponseUsuarioSchema)
 async def criar_usuario(usuario_schema: UsuarioSchema, session=Depends(pegar_sessao)):
     """
     Esta função simula a criação de uma conta de usuário.

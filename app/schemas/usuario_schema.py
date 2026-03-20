@@ -11,3 +11,13 @@ class UsuarioSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ResponseUsuarioSchema(BaseModel):
+    id: int
+    nome: str
+    email: str
+    ativo: bool
+    admin: bool
+    
+    class Config:
+        from_attributes = True

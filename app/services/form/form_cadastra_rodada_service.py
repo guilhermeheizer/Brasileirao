@@ -82,7 +82,6 @@ def criar_rodada(
             status_code=500,
             detail=f"Ocorreu um erro ao salvar a rodada: {str(e)}"
         )
-    print ("Rodada salva no banco, preparando resposta...")
 
     rodadas_pyd = [
     ResponseCriarRodadaSchema.model_validate(jogo, from_attributes=True) for jogo in rodadas
