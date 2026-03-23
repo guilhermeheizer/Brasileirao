@@ -71,11 +71,11 @@ def criar_rodada(
 
         # Commitar todas as alterações no banco
         session.commit()
-        print (f"Rodada criada com sucesso: Série {jogos_data[0].rod_serie.upper()}, Ano {jogos_data[0].rod_ano}, Rodada {jogos_data[0].rod_rodada}.")
+        
         # Garantir que os objetos estão atualizados com a sessão
         for rodada in rodadas:
             session.refresh(rodada)
-        print ("Limpou a sessão após criar a rodada.")
+            
     except Exception as e:
         session.rollback()
         raise HTTPException(

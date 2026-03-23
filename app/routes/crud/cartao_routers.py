@@ -38,8 +38,11 @@ async def listar_cartoes(session: Session = Depends(pegar_sessao)):
     try:
         return listar_todos_cartoes(session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro)    
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}") 
     finally:
         session.close()
 
@@ -64,8 +67,11 @@ async def criar_novo_cartao(cartao: CartaoSchema, session: Session = Depends(peg
     try:
         return criar_cartao(cartao, session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro) 
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 
@@ -90,8 +96,11 @@ async def criar_cartoes(
     try:
         return criar_cartoes_para_clubes(serie, ano, session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro) 
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 
@@ -126,8 +135,11 @@ async def atualizar_cartao_por_serie_ano_sigla(
     try:
         return atualizar_cartao(altera_qtd_menor, serie, ano, clu_sigla, cartao_atualizado, session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro) 
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 
@@ -157,8 +169,11 @@ async def atualizar_cartao_por_serie_ano(
     try:
         return atualizar_cartao_cbf(serie, ano, session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro) 
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 
@@ -191,8 +206,11 @@ async def deletar_cartao_por_sigla(
     try:
         return deletar_cartao(serie, ano, clu_sigla, session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro) 
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 
@@ -221,7 +239,10 @@ async def listar_cartoes_paginacao(
     try:
         return listar_cartoes_paginados(nome, pagina, tamanho_pagina, session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro)
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()

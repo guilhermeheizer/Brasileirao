@@ -63,8 +63,12 @@ def get_rodada_lista(
             carrega_nao_realizados=carrega_nao_realizados
             
     )
-    except Exception as ex:
-        raise HTTPException(status_code=500, detail=f"Erro ao buscar jogos da rodada: {str(ex)}")
+    except HTTPException as ex:
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 
@@ -86,8 +90,12 @@ async def atualizar_placares(
     """
     try:
         return atualizar_placares_rodada(session, jogos)
-    except Exception as ex:
-        raise HTTPException(status_code=500, detail=f"Erro ao atualizar placares: {str(ex)}")
+    except HTTPException as ex:
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 
@@ -116,8 +124,11 @@ async def listar_cartoes_paginacao(
     try:
         return listar_cartoes_paginados(nome, pagina, tamanho_pagina, session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro)
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 
@@ -147,8 +158,11 @@ async def calcular_classificacao(
             rodada=rodada,
             carrega_nao_realizados=carrega_jogos_nao_realizados)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro)
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 
@@ -175,5 +189,9 @@ def obter_classificacao_geral(serie: str,
     """
     try:
         return lista_classificacao_geral(db=session, serie=serie, ano=ano)
+    except HTTPException as ex:
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Erro ao obter a classificação geral. Detalhe: " + str(e))
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")

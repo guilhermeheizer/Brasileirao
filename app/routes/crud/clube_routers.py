@@ -40,8 +40,11 @@ async def listar_clubes(
     try:
         return listar_todos_clubes(serie, nome, session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro)    
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")  
     finally:
         session.close()
 
@@ -66,8 +69,11 @@ async def criar_novo_clube(clube: ClubeSchema, session: Session = Depends(pegar_
     try:
         return criar_clube(clube, session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro) 
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 
@@ -97,8 +103,11 @@ async def atualizar_clube_por_sigla(
     try:
         return atualizar_clube(clu_sigla, clube_atualizado, session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro) 
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 
@@ -126,8 +135,11 @@ async def deletar_clube_por_sigla(
     try:
         return deletar_clube(clu_sigla, session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro) 
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 
@@ -158,7 +170,10 @@ async def listar_clubes_paginacao(
     try:
         return listar_clubes_paginadas(serie, nome, pagina, tamanho_pagina, session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro)
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()

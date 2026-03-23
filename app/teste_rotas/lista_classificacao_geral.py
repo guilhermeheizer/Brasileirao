@@ -18,21 +18,28 @@ TEMPLATE_CLASSIFICACAO = "classificacao_template.html"
 TEMPLATE_ESTADIOS = "estadios_template.html"
 TEMPLATE_RODADA = "rodada_template.html"
 
-def gerar_html_classificacao(dados_classificacao):
+def gerar_html_classificacao(dados_classificacao, serie, ano):
     """
     Gera um arquivo HTML com base nos dados de classificação geral.
     """
+    # o nome do arquivo HTML é construído com base na série e ano para facilitar a identificação
     env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
     template = env.get_template(TEMPLATE_CLASSIFICACAO)
     html_content = template.render(
-        serie=SERIE,
-        ano=ANO,
+        serie=serie,
+        ano=ano,
         classificacao=dados_classificacao
     )
 
-    with open(OUTPUT_HTML_FILE, "w", encoding="utf-8") as html_file:
+    output_file_path = os.path.join(
+    TEMPLATE_DIR,
+    f"classificacao_geral_serie_{serie.lower()}_{ano}.html"
+    )
+    print(f"Gerando arquivo HTML de Classificação Geral em: {output_file_path}")
+
+    with open(output_file_path, "w", encoding="utf-8") as html_file:
         html_file.write(html_content)
-    print(f"Página HTML de Classificação Geral gerada com sucesso em: {OUTPUT_HTML_FILE}")
+    print(f"Página HTML de Classificação Geral gerada com sucesso em: {output_file_path}")
 
 def gerar_html_estadios(dados_estadios):
     """
@@ -105,8 +112,9 @@ def listar_classificacao_geral():
     """
     session: Session = next(get_db())
     try:
-        dados_classificacao = lista_classificacao_geral(session, SERIE, ANO)
-        gerar_html_classificacao(dados_classificacao)
+        serie = input(f"Digite a série ( {ANO}): ").upper().strip()
+        dados_classificacao = lista_classificacao_geral(session, serie, ANO)
+        gerar_html_classificacao(dados_classificacao, serie, ANO)
     except Exception as e:
         print(f"Erro ao listar Classificação Geral: {e}")
     finally:

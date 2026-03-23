@@ -1,0 +1,122 @@
+[
+  {
+    "rod_serie": "B",
+    "rod_ano": 2026,
+    "rod_rodada": 1,
+    "rod_sequencia": 1,
+    "rod_data": "2026-03-21T17:00:00.000Z",
+    "clube_clu_sigla_mandante": "VNO",
+    "clube_clu_sigla_visitante": "CRB",
+    "estadio_est_id": 23,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalizada": "N"
+  },
+  {
+    "rod_serie": "B",
+    "rod_ano": 2026,
+    "rod_rodada": 1,
+    "rod_sequencia": 2,
+    "rod_data": "2026-03-21T18:15:00.000Z",
+    "clube_clu_sigla_mandante": "CEA",
+    "clube_clu_sigla_visitante": "SBD",
+    "estadio_est_id": 22,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalizada": "N"
+  },
+  {
+    "rod_serie": "B",
+    "rod_ano": 2026,
+    "rod_rodada": 1,
+    "rod_sequencia": 3,
+    "rod_data": "2026-03-21T19:15:00.000Z",
+    "clube_clu_sigla_mandante": "OPE",
+    "clube_clu_sigla_visitante": "ACG",
+    "estadio_est_id": 24,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalizada": "N"
+  },
+   {
+    "rod_serie": "B",
+    "rod_ano": 2026,
+    "rod_rodada": 1,
+    "rod_sequencia": 9,
+    "rod_data": "2026-03-21T19:15:00.000Z",
+    "clube_clu_sigla_mandante": "BSP",
+    "clube_clu_sigla_visitante": "FOR",
+    "estadio_est_id": 25,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalizada": "N"
+  }, 
+  {
+    "rod_serie": "B",
+    "rod_ano": 2026,
+    "rod_rodada": 1,
+    "rod_sequencia": 4,
+    "rod_data": "2026-03-21T20:30:00.000Z",
+    "clube_clu_sigla_mandante": "CUI",
+    "clube_clu_sigla_visitante": "SPT",
+    "estadio_est_id": 26,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalizada": "N"
+  },
+  {
+    "rod_serie": "B",
+    "rod_ano": 2026,
+    "rod_rodada": 1,
+    "rod_sequencia": 5,
+    "rod_data": "2026-03-22T16:00:00.000Z",
+    "clube_clu_sigla_mandante": "AVA",
+    "clube_clu_sigla_visitante": "JUV",
+    "estadio_est_id": 27,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalizada": "N"
+  },
+  {
+    "rod_serie": "B",
+    "rod_ano": 2026,
+    "rod_rodada": 1,
+    "rod_sequencia": 6,
+    "rod_data": "2026-03-22T16:00:00.000Z",
+    "clube_clu_sigla_mandante": "NAU",
+    "clube_clu_sigla_visitante": "CRI",
+    "estadio_est_id": 28,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalizada": "N"
+  },
+  {
+    "rod_serie": "B",
+    "rod_ano": 2026,
+    "rod_rodada": 1,
+    "rod_sequencia": 7,
+    "rod_data": "2026-03-22T18:00:00.000Z",
+    "clube_clu_sigla_mandante": "ATH",
+    "clube_clu_sigla_visitante": "PON",
+    "estadio_est_id": 29,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalizada": "N"
+  },
+  {
+    "rod_serie": "B",
+    "rod_ano": 2026,
+    "rod_rodada": 1,
+    "rod_sequencia": 8,
+    "rod_data": "2026-03-22T18:00:00.000Z",
+    "clube_clu_sigla_mandante": "GOI",
+    "clube_clu_sigla_visitante": "AME",
+    "estadio_est_id": 30,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalizada": "N"
+  },
+  {
+    "rod_serie": "B",
+    "rod_ano": 2026,
+    "rod_rodada": 1,
+    "rod_sequencia": 10,
+    "rod_data": "2026-03-21T20:00:00.000Z",
+    "clube_clu_sigla_mandante": "NOV",
+    "clube_clu_sigla_visitante": "LEC",
+    "estadio_est_id": 31,
+    "rod_calculou_classificacao": "N",
+    "rod_partida_finalizada": "N"
+  }
+]

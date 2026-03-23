@@ -464,7 +464,7 @@ def lista_classificacao_geral(db: Session, serie: str, ano: int) -> list:
            cartao.car_qtd_amarelo,
            cartao.car_qtd_vermelho 
     FROM classificacao_geral cg 
-    JOIN cartao AS cartao ON
+    LEFT JOIN cartao AS cartao ON
         cg.clg_serie = cartao.car_serie AND
         cg.clg_ano = cartao.car_ano AND
         cg.clube_clu_sigla = cartao.clube_clu_sigla 

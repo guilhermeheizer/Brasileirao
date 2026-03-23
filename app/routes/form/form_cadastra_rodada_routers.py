@@ -16,7 +16,6 @@ from app.models.usuario_models import Usuario
 from app.schemas.rodada_schema import CriarRodadaSchema, ResponseCriarRodadaSchema
 from app.schemas.clube_schema import ResponseClubeSchema
 from app.schemas.estadio_schema import ResponseEstadioSchema
-from app.services.cartao_service import listar_cartoes_paginados
 from app.services.form.form_cadastra_rodada_service import criar_rodada
 from typing import List, Annotated
 from app.services.clube_service import listar_todos_clubes
@@ -68,6 +67,12 @@ async def pesquisar_clubes(
 ):
     try:
         return listar_todos_clubes(serie, nome, session)
+    except HTTPException as ex:
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 

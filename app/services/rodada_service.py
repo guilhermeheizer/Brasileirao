@@ -117,7 +117,6 @@ def validar_rodada(inc_alt: str, jogos_data: CriarRodadaSchema, session: Session
     Raises:
         HTTPException: Erro de validação caso algum dado seja inválido.
     """
-    print("Validando rodada com os seguintes dados:", jogos_data)  # Log para depuração
     consiste_serie(jogos_data.rod_serie.upper())
     consiste_sigla(jogos_data.clube_clu_sigla_mandante.upper())
     consiste_sigla(jogos_data.clube_clu_sigla_visitante.upper())
@@ -165,7 +164,6 @@ def criar_rodada(rodada: CriarRodadaSchema, session: Session):
     Returns:
         ResponseCriarRodadaSchema: Representação da rodada criada.
     """
-    print("Validando rodada com os dados:", rodada)  # Log para depuração
     validar_rodada("I", rodada, session)
 
     try:

@@ -51,8 +51,11 @@ async def listar_cidades(session: Session = Depends(pegar_sessao)):
     try:
         return listar_todas_cidades(session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=500, detail=log_erro)
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 
@@ -75,8 +78,11 @@ async def criar_nova_cidade(cidade: CidadesSchema, session: Session = Depends(pe
     try:
         return criar_cidade(cidade, session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro)
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 
@@ -100,8 +106,11 @@ async def atualizar_cidade_por_id(cidade_id: int, cidade_atualizada: CidadesSche
     try:
         return atualizar_cidade(cidade_id, cidade_atualizada, session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro)
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 
@@ -154,7 +163,10 @@ async def listar_cidades_paginacao(
     try:
         return listar_cidades_paginadas(nome, pagina, tamanho_pagina, session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro)
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()

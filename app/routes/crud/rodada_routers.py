@@ -48,8 +48,13 @@ async def criar_rodada_endpoint(
     try:
         nova_rodada = criar_rodada(rodada, session)
         return nova_rodada
+    except HTTPException as ex:
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
     except Exception as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
+    finally:        session.close()
     
 @rodada_router.put("/atualizar_jogo/{serie}/{ano}/{rodada_numero}/{sequencia}", response_model=ResponseAlterarRodadaSchema)
 async def atualizar_jogo_rodada_endpoint(
@@ -83,8 +88,11 @@ async def atualizar_jogo_rodada_endpoint(
         jogo_atualizado = atualizar_jogo_rodada(serie, ano, rodada_numero, sequencia, jogo_atualizado, session)
         return jogo_atualizado
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro) 
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
 
@@ -117,7 +125,10 @@ async def deletar_rodada_endpoint(
     try:
         return deletar_rodada(serie, ano, rodada_numero, sequencia, session)
     except HTTPException as ex:
-        log_erro = (f"{ex.detail}")
-        raise HTTPException(status_code=404, detail=log_erro) 
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:
         session.close()
