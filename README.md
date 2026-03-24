@@ -6,7 +6,7 @@
 2. Como foi o processo de criação dos prompts - ok
 3. Como é a estrutura do projeto - ok
 4. Como baixar, instalar o projeto e executar - ok
-5. Como executar os endpoints do Brasileirão - ok
+5. Como executar os endpoints do Brasileirão
 6. Acesse os prompts do ChatPGP utilizados para solicitar a geração de código Python
 
 ## 1. Como surgiu a ídeia
@@ -254,7 +254,7 @@ Após baixar o projeto Brasileirão execute o comando:
 
 ## 5. Como executar os endpoints do Brasileirão
 
-Executando no terminal **uvicorn main:app --reload** irá colocar o sistema no ar ou Swagger.    
+No terminal digite **uvicorn main:app --reload** para carregar o sistema.    
 
 INFO:     Will watch for changes in these directories: ['D:\\PythonMeusProjetos\\Brasileirao']  
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)  
@@ -263,7 +263,7 @@ INFO:     Started server process [5808]
 INFO:     Waiting for application startup.  
 INFO:     Application startup complete.  
 
-Clicando no link http://127.0.0.1:8000 irá carregar no navegador o Swagger.  
+Clicando no link http://127.0.0.1:8000 irá carregar no navegador uma página, veja abaixo.  
 
 ![Swagger](/imagens_readme/swagger_01.png)  
 
@@ -271,22 +271,25 @@ No navegador http://127.0.0.1:8000/docs irá carregar os endpoints do Brasileir�
 
 ![Swagger](/imagens_readme/swagger_02.png)
 
+Segue os passos para execução dos endpoints.
+
+### **Passo 01**: Usuário
+Caso não tenha usuário de login cadastrado, acessar a **tag usuario** 
+![Swagger - usuario](/imagens_readme/swagger_usuario.png)
+
+Em seguida, faça a inclusão de um usuário:
+![Swagger - usuario/incluir](/imagens_readme/swagger_usuario_incluir.png)
+Os usuários cadastrados são armazenados na tabela usuario.  
+As rotas para alterar, exclui, listar, alterar senha, esqueci minha senha dentre outras serão desenvolvidas posteriormente.
+
 ```
-O projeto esta disponível no github: https://github.com/guilhermeheizer/DesafioKeevo
+O projeto esta disponível no github: https://github.com/guilhermeheizer/Brasileirao
 ```
 
 ## Agradecimentos
 Contribuíram com meu projeto e agradeço pela ajuda:
 
-- João Paulo Rodrigues de Lira - Sócio e Professor da Hashtag Treinamentos. Fiz o curso de Python com framework FastApi disponível no YouTube: https://www.youtube.com/playlist?list=PLpdAy0tYrnKy3TvpCT-x7kGqMQ5grk1Xq
+- João Paulo Rodrigues de Lira - Sócio e Professor da Hashtag Treinamentos. Fiz o curso de Python do framework FastApi disponível no YouTube: https://www.youtube.com/playlist?list=PLpdAy0tYrnKy3TvpCT-x7kGqMQ5grk1Xq
 - Jaime Nogueira da Gama - Grande incentivador do meu projeto. Ajudou na narrativa do projeto, e com a IA Manus gerou a apresentação em PowerPoint: Geração_da_Tabela_do_Brasileirão_com_Código_IA.pptx 
-
-
-
-
-
-
-
-
 ## Autor
 - [@guilhermeheizer](https://www.github.com/guilhermeheizer)
