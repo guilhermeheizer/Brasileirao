@@ -284,16 +284,25 @@ As rotas para alterar, exclui, listar, alterar senha, esqueci minha senha dentre
 ### **Passo 02**: Login
 Todas as vezes que carregar a API do Brasileirão é necessário executar o login e realizar autenticação.
 ![Swagger - login/login](/imagens_readme/swagger_login.png)
-![Swagger - login/login execute](/imagens_readme/swagger_login_01.png)
-![Swagger - login/login response](/imagens_readme/swagger_login_02.png)
+![Swagger - login/login execute](/imagens_readme/swagger_login_login_01.png)
+![Swagger - login/login response](/imagens_readme/swagger_login_login_02.png)
 ![Swagger - login/form execute](/imagens_readme/swagger_login_form_01.png)
 ![Swagger - login/form response](/imagens_readme/swagger_login_form_02.png)
 ![Swagger - Authenticator botton](/imagens_readme/swagger_autorizacao_01.png)
 ![Swagger - Authenticator execute](/imagens_readme/swagger_autorizacao_02.png)
-![Swagger - Authenticator response](/imagens_readme/swagger_autorizacao_31.png)
+![Swagger - Authenticator response](/imagens_readme/swagger_autorizacao_03.png)
 ![Swagger - login/refresh](/imagens_readme/swagger_refresh.png)
 ### **Passo 03**: Cidade
+Os endpoints de cidade são os primeiros a serem executados quando inicia-se o Brasileirão, porque o código da cidade é chave estrangeira das tabelas de clube e estádio.
 ![Swagger - cidade](/imagens_readme/swagger_cidade.png)
+![Swagger - cidade](/imagens_readme/swagger_cidade_listar.png)
+![Swagger - cidade](/imagens_readme/swagger_cidade_incluir.png)
+![Swagger - cidade](/imagens_readme/swagger_cidade_alterar.png)
+![Swagger - cidade](/imagens_readme/swagger_cidade_deletar.png)
+![Swagger - cidade execute](/imagens_readme/swagger_cidade_listar_paginado_01.png)
+![Swagger - cidade response](/imagens_readme/swagger_cidade_listar_paginado_01.png)
+### **Passo 03**: Clube 
+
 ```
 O projeto esta disponível no github: https://github.com/guilhermeheizer/Brasileirao
 ```
@@ -302,6 +311,6 @@ O projeto esta disponível no github: https://github.com/guilhermeheizer/Brasile
 Contribuíram com meu projeto e agradeço pela ajuda:
 
 - João Paulo Rodrigues de Lira - Sócio e Professor da Hashtag Treinamentos. Fiz o curso de Python do framework FastApi disponível no YouTube: https://www.youtube.com/playlist?list=PLpdAy0tYrnKy3TvpCT-x7kGqMQ5grk1Xq
-- Jaime Nogueira da Gama - Grande incentivador do meu projeto. Ajudou na narrativa do projeto, e com a IA Manus gerou a apresentação em PowerPoint: Geração_da_Tabela_do_Brasileirão_com_Código_IA.pptx ei
+- Jaime Nogueira da Gama - Grande incentivador do meu projeto. Ajudou na narrativa do projeto, e com a IA Manus gerou a apresentação em PowerPoint: Geração_da_Tabela_do_Brasileirão_com_Código_IA.pptx
 ## Autor
 - [@guilhermeheizer](https://www.github.com/guilhermeheizer)
