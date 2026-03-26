@@ -21,6 +21,8 @@ Para a construção do projeto Brasileirão decidi que a IA faria a geração do
 
 O objetivo é gerar a classificação do campeonato Brasileiro das séries A e B a partir dos jogos finalizados das rodadas do campeonato Brasileiro.
 
+**É importante salientar que este projeto foi um estudo de como utilizar a IA para geração de código Python.**
+
 ## 2. Como foi o processo de criação dos prompts
 
 A minha abordagem inicial para a criação dos models das tabelas foi a partir dos comandos SQL para criação das tabelas no banco SQLite e o exemplo do model em Python foi da tabela de usuário do curso que fiz da Hashtag. Segue a descrição do prompt.
@@ -273,8 +275,15 @@ No navegador http://127.0.0.1:8000/docs irá carregar os endpoints do Brasileir�
 
 Segue os passos para execução dos endpoints.
 
+### Observação importante para o Frontend
+No frontend após o login do usuário deve-se selecionar a série e o ano para repassar para os demais formulários.  
+Este projeto aborda as séries A e B do Brasileirão, para o ano de 2026 em diante. As tabelas rodada, cartao, classificacao_geral e classificacao_rodada a série e o ano são parte da chave primária (PK) e a tabela clube possui a série dentre os atributos afim melhorar algumas queries.  
+
+**É importante salientar que este projeto foi um estudo de como utilizar a IA para geração de código Python.**  
+
+
 ### **Passo 01**: Usuário
-Caso não tenha usuário de login cadastrado, acessar a **tag usuario** 
+Caso não tenha usuário de login cadastrado, acessar a **tag usuario**  
 ![Swagger - usuario](/imagens_readme/swagger_usuario.png)
 
 Em seguida, faça a inclusão de um usuário:
@@ -311,13 +320,18 @@ O escudo do Cruzeiro no G1: https://s.sde.globo.com/media/organizations/2021/02/
 ![Swagger - clube](/imagens_readme/swagger_clube_deletar.png)
 ![Swagger - clube](/imagens_readme/swagger_clube_listar_paginado.png)
 ### **Passo 5**: Estádio
-O endpoint de incluir estádio deve ser cadastrado antes de incluir as primeiras rodadas.
+Executar o endpoint para incluir os estádios onde os jogos aconteceram, mas antes de cadastrar os jogos das primeiras rodadas. Acessar o site do Globo Esporte para consultar as rodadas, para cada jogo anote o nome do estádio e consulte qual é a cidade do estádio.  
 ![Swagger - estadio](/imagens_readme/swagger_estadio.png)
 ![Swagger - estadio](/imagens_readme/swagger_estadio_listar.png)
 ![Swagger - estadio](/imagens_readme/swagger_estadio_incluir.png)
 ![Swagger - estadio](/imagens_readme/swagger_estadio_alterar.png)
 ![Swagger - estadio](/imagens_readme/swagger_estadio_deletar.png)
 ![Swagger - estadio](/imagens_readme/swagger_estadio_listar_paginado.png)
+### **Passo 6**: Cadastra Rodada
+Os endpoints da **tag cadastra rodada** serão chamados pela tela form_manut_rodada
+![Swagger - cadastra rodada](/imagens_readme/swagger_cadastra_rodada_form_manut_rodada_criar_rodada.png)
+![Swagger - cadastra rodada](/imagens_readme/swagger_cadastra_rodada_form_manut_rodada_pesquisar_clubes.png)
+![Swagger - cadastra rodada](/imagens_readme/swagger_cadastra_rodada_form_manut_rodada_pesquisar_estadios.png)
 ```
 O projeto esta disponível no github: https://github.com/guilhermeheizer/Brasileirao
 ```
@@ -326,7 +340,7 @@ O projeto esta disponível no github: https://github.com/guilhermeheizer/Brasile
 Contribuíram com meu projeto e agradeço pela ajuda:
 
 - João Paulo Rodrigues de Lira - Sócio e Professor da Hashtag Treinamentos. Fiz o curso de Python do framework FastApi disponível no YouTube: https://www.youtube.com/playlist?list=PLpdAy0tYrnKy3TvpCT-x7kGqMQ5grk1Xq
-- Jaime Nogueira da Gama - Grande incentivador do meu projeto. Ajudou na narrativa do projeto, e com a IA Manus gerou a apresentação em PowerPoint: Geração_da_Tabela_do_Brasileirão_com_Código_IA.pptxincluir
+- Jaime Nogueira da Gama - Grande incentivador do meu projeto. Ajudou na narrativa do projeto, e com a IA Manus gerou a apresentação em PowerPoint: Geração_da_Tabela_do_Brasileirão_com_Código_IA.pptx
 ## Autor
 - [@guilhermeheizer](https://www.github.com/guilhermeheizer)
 - [@LinkedIn](www.linkedin.com/in/guilhermeheizernogueira/)
