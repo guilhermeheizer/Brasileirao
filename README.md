@@ -301,8 +301,23 @@ Os endpoints de cidade são os primeiros a serem executados quando inicia-se o B
 ![Swagger - cidade](/imagens_readme/swagger_cidade_deletar.png)
 ![Swagger - cidade execute](/imagens_readme/swagger_cidade_listar_paginado_01.png)
 ![Swagger - cidade response](/imagens_readme/swagger_cidade_listar_paginado_01.png)
-### **Passo 03**: Clube 
-
+### **Passo 04**: Clube 
+O endpoint para incluir clube solicita sigla, nome, série, link do escudo e o código da cidade do clube, tais informações considere obte-las do site "Globo Esporte" ou outro site que posso obter o link.  
+O escudo do Cruzeiro no G1: https://s.sde.globo.com/media/organizations/2021/02/13/cruzeiro_2021.svg
+![Swagger - clube](/imagens_readme/swagger_clube.png)
+![Swagger - clube](/imagens_readme/swagger_clube_listar.png)
+![Swagger - clube](/imagens_readme/swagger_clube_incluir.png)
+![Swagger - clube](/imagens_readme/swagger_clube_alterar.png)
+![Swagger - clube](/imagens_readme/swagger_clube_deletar.png)
+![Swagger - clube](/imagens_readme/swagger_clube_listar_paginado.png)
+### **Passo 5**: Estádio
+O endpoint de incluir estádio deve ser cadastrado antes de incluir as primeiras rodadas.
+![Swagger - estadio](/imagens_readme/swagger_estadio.png)
+![Swagger - estadio](/imagens_readme/swagger_estadio_listar.png)
+![Swagger - estadio](/imagens_readme/swagger_estadio_incluir.png)
+![Swagger - estadio](/imagens_readme/swagger_estadio_alterar.png)
+![Swagger - estadio](/imagens_readme/swagger_estadio_deletar.png)
+![Swagger - estadio](/imagens_readme/swagger_estadio_listar_paginado.png)
 ```
 O projeto esta disponível no github: https://github.com/guilhermeheizer/Brasileirao
 ```
@@ -311,6 +326,7 @@ O projeto esta disponível no github: https://github.com/guilhermeheizer/Brasile
 Contribuíram com meu projeto e agradeço pela ajuda:
 
 - João Paulo Rodrigues de Lira - Sócio e Professor da Hashtag Treinamentos. Fiz o curso de Python do framework FastApi disponível no YouTube: https://www.youtube.com/playlist?list=PLpdAy0tYrnKy3TvpCT-x7kGqMQ5grk1Xq
-- Jaime Nogueira da Gama - Grande incentivador do meu projeto. Ajudou na narrativa do projeto, e com a IA Manus gerou a apresentação em PowerPoint: Geração_da_Tabela_do_Brasileirão_com_Código_IA.pptx
+- Jaime Nogueira da Gama - Grande incentivador do meu projeto. Ajudou na narrativa do projeto, e com a IA Manus gerou a apresentação em PowerPoint: Geração_da_Tabela_do_Brasileirão_com_Código_IA.pptxincluir
 ## Autor
 - [@guilhermeheizer](https://www.github.com/guilhermeheizer)
+- [@LinkedIn](www.linkedin.com/in/guilhermeheizernogueira/)
