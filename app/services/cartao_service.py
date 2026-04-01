@@ -284,36 +284,60 @@ def coletar_dados_cartoes(url: str) -> list[dict]:
     return resultados
 
 
-def normalizar_dados_clubes(resultados: list[dict]) -> list[dict]:
+def normalizar_dados_clubes(serie: str, resultados: list[dict]) -> list[dict]:
     """Substitui nomes dos clubes por suas respectivas siglas."""
-    clubes_para_siglas = {
-        "Palmeiras": "PAL",
-        "São Paulo": "SAO",
-        "Fluminense": "FLU",
-        "Bahia": "BAH",
-        "Athletico Paranaense": "CAP",
-        "Red Bull Bragantino": "RBB",
-        "Chapecoense": "CHA",
-        "Mirassol": "MIR",
-        "Coritiba SAF": "CFC",
-        "Flamengo": "FLA",
-        "Botafogo": "BOT",
-        "Corinthians": "COR",
-        "Grêmio": "GRE",
-        "Vitória": "VIT",
-        "Atlético Mineiro": "CAM",
-        "Remo": "REM",
-        "Vasco da Gama Saf": "VAS",
-        "Santos Fc": "SAN",
-        "Internacional": "INT",
-        "Cruzeiro": "CRU",
-    }
+    if serie == "A":
+        clubes_para_siglas = {
+            "Palmeiras": "PAL",
+            "São Paulo": "SAO",
+            "Fluminense": "FLU",
+            "Bahia": "BAH",
+            "Athletico Paranaense": "CAP",
+            "Red Bull Bragantino": "RBB",
+            "Chapecoense": "CHA",
+            "Mirassol": "MIR",
+            "Coritiba SAF": "CFC",
+            "Flamengo": "FLA",
+            "Botafogo": "BOT",
+            "Corinthians": "COR",
+            "Grêmio": "GRE",
+            "Vitória": "VIT",
+            "Atlético Mineiro": "CAM",
+            "Remo": "REM",
+            "Vasco da Gama Saf": "VAS",
+            "Santos Fc": "SAN",
+            "Internacional": "INT",
+            "Cruzeiro": "CRU",
+        }
+    elif serie == "B":
+        clubes_para_siglas = {
+            "Botafogo": "BSP",
+            "Londrina SAF": "LEC",
+            "Goiás": "GOI",
+            "Avaí": "AVA",
+            "Athletic Club": "ATH",
+            "Operário": "OPE",
+            "Criciúma": "CRI",
+            "Crb": "CRB",
+            "Vila Nova": "VNO",
+            "Sao Bernardo": "SBD",
+            "Ceará": "CEA",
+            "Cuiabá Saf": "CUI",
+            "Sport Recife": "SPT",
+            "Ponte Preta": "PON",
+            "Atlético Goianiense Saf": "ACG",
+            "Náutico": "NAU",
+            "América": "AME",
+            "Gremio Novorizontino - Saf": "NOV",
+            "Juventude": "JUV",
+            "Fortaleza": "FOR",
+        }
 
     nova_lista = []
     for item in resultados:
         nome_clube = item["clube"]
         sigla = clubes_para_siglas.get(nome_clube, "N/A")
-        print(f"cartao_service.py - coletar_dados_cartoes - Nome do clube: {nome_clube}, Sigla: {sigla}")
+        # print(f"cartao_service.py - coletar_dados_cartoes - Nome do clube: {nome_clube}, Sigla: {sigla}")
         nova_lista.append({
             "clube": sigla,
             "cartoes_amarelos": item["cartoes_amarelos"],
@@ -381,7 +405,7 @@ def atualizar_cartao_cbf(car_serie: str, car_ano: int, session: Session) -> list
     resultados = coletar_dados_cartoes(url)
 
     # 3. Normaliza os dados dos clubes para utilizar siglas
-    nova_lista = normalizar_dados_clubes(resultados)
+    nova_lista = normalizar_dados_clubes(car_serie, resultados)
 
     # 4. Atualiza os dados no banco de dados
     return atualizar_dados_cartoes(nova_lista, car_serie.upper(), car_ano, session)

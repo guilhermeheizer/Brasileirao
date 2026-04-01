@@ -138,15 +138,15 @@ def buscar_clube_nome(retorna_exception: bool, nome: str, session: Session) -> O
     Busca uma clube pelo nome no banco de dados.
 
     Args:
-        retorna_exception (bool): Indica se deve lançar uma exceção caso a clube não seja encontrada.
-        nome (str): Nome da clube a ser buscada.
+        retorna_exception (bool): Indica se deve lançar uma exceção caso o clube não seja encontrado.
+        nome (str): Nome do clube a ser buscado.
         session (Session): Sessão ativa do SQLAlchemy para conectar ao banco.
 
     Raises:
-        HTTPException: Caso a clube não seja encontrada.
+        HTTPException: Caso o clube não seja encontrado.
 
     Returns:
-        Optional[ClubesSchema]: Representação da clube encontrada ou None se não encontrada.
+        Optional[ClubeSchema]: Representação do clube encontrado ou None se não encontrado.
     """
 
     # Busca pela clube no banco de dados (ignora case com ilike)
@@ -193,10 +193,10 @@ def consiste_serie(serie: str) -> bool:
     Returns:
         bool: True se a série for válida.
     """
-    padrao = r'^[ABCD]$'
+    padrao = r'^[AB]$'
 
     if not re.match(padrao, serie.upper()):
-        raise HTTPException(status_code=404, detail="Série inválida. Deve ser A, B, C ou D.")
+        raise HTTPException(status_code=404, detail=f"Série inválida: {serie}. Informar A ou B.")
     
     return bool(True)
 
@@ -216,7 +216,7 @@ def consiste_sigla(sigla: str) -> bool:
     padrao = r'^[A-Z]{3}$'
 
     if not re.match(padrao, sigla.upper()):
-        raise HTTPException(status_code=404, detail="Sigla inválida. Deve conter exatamente 3 letras maiúsculas.")
+        raise HTTPException(status_code=404, detail=f"Sigla inválida: {sigla}. Deve conter exatamente 3 letras maiúsculas.")
     
     return bool(True)
 
