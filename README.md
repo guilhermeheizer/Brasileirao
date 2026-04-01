@@ -319,7 +319,7 @@ O escudo do Cruzeiro no G1: https://s.sde.globo.com/media/organizations/2021/02/
 ![Swagger - clube](/imagens_readme/swagger_clube_alterar.png)
 ![Swagger - clube](/imagens_readme/swagger_clube_deletar.png)
 ![Swagger - clube](/imagens_readme/swagger_clube_listar_paginado.png)
-### **Passo 5**: Estádio
+### **Passoo 5**: Estádio
 Executar o endpoint para incluir os estádios onde os jogos aconteceram, mas antes de cadastrar os jogos das primeiras rodadas. Acessar o site do Globo Esporte para consultar as rodadas, para cada jogo anote o nome do estádio e consulte qual é a cidade do estádio.  
 ![Swagger - estadio](/imagens_readme/swagger_estadio.png)
 ![Swagger - estadio](/imagens_readme/swagger_estadio_listar.png)
@@ -327,11 +327,44 @@ Executar o endpoint para incluir os estádios onde os jogos aconteceram, mas ant
 ![Swagger - estadio](/imagens_readme/swagger_estadio_alterar.png)
 ![Swagger - estadio](/imagens_readme/swagger_estadio_deletar.png)
 ![Swagger - estadio](/imagens_readme/swagger_estadio_listar_paginado.png)
-### **Passo 6**: Cadastra Rodada
+### **Passo 06**: Cartão
+**Restrição do projeto**: A quantidade de cartões armazenada é por série / ano / clube, ou seja, um clube terá o total de cartões por campeonato e tais quantidades fazem parte dos critérios de desempate quando dois ou mais clubles possuem pontuações iguais. Não optei de gravar a quantidade por jogo, porque esta informação se encontra somente no documento do jogo no site da CBF e ficaria inviável abrir jogo por jogo, acessar o documento do jogo e visualmente contar a quantidade de amarelos e vermelhos.
+
+Os endpoints desta tag são para realizar manutenção nas quantidades de cartões amarelos e vermelhos dos clubes das séries A ou B do ano do campeonato.  
+O endpoint "**criar_cartoes**" é acionado após cadastrar os clubes da série A ou B, com objetivo de criar na tabela cartao todos os registros dos clubles que estão cadastrados na tabela clube.  
+
+O endpoint "**dados_cbf**" atualiza automaticamente a partir do site da CBF a quantidade de amarelos e vermelhos de cada clube da série/ano informados no parametro. É importante resaltar que a CBF atualiza a quantidade de cartões somente um dia após finalizados os jogos.  
+**Hard code no processo de busca dos cartões ns CBF:** Utilizo a biblioteca **BeautifulSoup** para acessar o site da CBF, esta biblioteca não carrega o site no Google Chrome, ou seja, abre em background. Procuro no site pelos nomes dos clubes (hard code) e um de-para para a sigla do clube de acordo com a sigla do time no Globe Esporte e obtem os cartões amarelos e vermelhos. Então, no Globo Esporte é "Vasco" e na CBF é "Vasco da Gama Saf", então a cada novo ano de campeonato é necessário ajustar o programa Python. Uma solução para não ter hard code seria criar um atributo na tabela clube para armazenar o nome clube do site da CBF.
+![Swagger - cartao](/imagens_readme/swagger_cartao.png)
+![Swagger - cartao](/imagens_readme/swagger_cartao_listar.png)
+![Swagger - cartao](/imagens_readme/swagger_cartao_incluir.png)
+![Swagger - cartao](/imagens_readme/swagger_cartao_criar_cartoes.png)
+![Swagger - cartao](/imagens_readme/swagger_cartao_atualizar.png)
+![Swagger - cartao](/imagens_readme/swagger_cartao_dados_cbf.png)
+![Swagger - cartao](/imagens_readme/swagger_cartao_deletar.png)
+![Swagger - cartao](/imagens_readme/swagger_cartao_listar_paginado.png)
+### **Passo 07**: Cadastra Rodada
 Os endpoints da **tag cadastra rodada** serão chamados pela tela form_manut_rodada
 ![Swagger - cadastra rodada](/imagens_readme/swagger_cadastra_rodada_form_manut_rodada_criar_rodada.png)
 ![Swagger - cadastra rodada](/imagens_readme/swagger_cadastra_rodada_form_manut_rodada_pesquisar_clubes.png)
 ![Swagger - cadastra rodada](/imagens_readme/swagger_cadastra_rodada_form_manut_rodada_pesquisar_estadios.png)
+### **Passo 08**: Placar Rodada
+Os endpoints da **tag placar rodada** serão chamados pela tela form_classificacao_rodada.  
+Quando inicia a rodada e os jogos do dia são finalizados, executa-se o endpoint que faz a autenticação dos placares dos jogos.  
+Após todos placares atualizados, acessar a **tag cartao** para atualizar os cartões amarelos e vermelhos de cada clube. Tais informações constam no site da CBF, e os cartões são atualizados somente um dia após o termino dos jogos.  
+Depois de atualizar os catões, executar o endpoint "classificacao", este endpoint possui os parametros: série, ano, rodada e carrega jogos nao realizados (informando "true", o processo irá procurar nas rodadas anteriores, os jogos finalizados e que não tiveram a classificacao calculada ou seja vai atualizar os jogos que foram prorrogados).
+![Swagger - placar rodada](/imagens_readme/swagger_placar_rodada.png)
+![Swagger - placar rodada](/imagens_readme/swagger_placar_rodada_buscar_placares.png)
+![Swagger - placar rodada](/imagens_readme/swagger_placar_rodada_atualizar_placares.png)
+![Swagger - placar rodada](/imagens_readme/swagger_placar_rodada_listar_paginado.png)
+![Swagger - placar rodada](/imagens_readme/swagger_placar_rodada_classificacao.png)
+![Swagger - placar rodada](/imagens_readme/swagger_placar_rodada_classificacao_geral.png)
+### **Passo 09**: Copiar Classificação por Rodada
+Nesta tag tem o endpoint para copiar a classificação geral com objetivo de salvar a classificação de cada rodada, para em novas implementações mostrar estatísticas dos time em qual posição estava na rodada 01 até a 38.  
+Outra opção é reclacular a classficação geral, a partir da última rodada. Vai recorrer a este endpoint quando em algum momento a classficação foi calculada com um placar errado ou esqueceu de buscar os cartões no site da CBF.
+![Swagger - placar rodada](/imagens_readme/swagger_copiar_classificacao.png)
+![Swagger - placar rodada](/imagens_readme/swagger_copiar_classificacao_copiar.png)
+![Swagger - placar rodada](/imagens_readme/swagger_copiar_classificacao_recalcular.png)
 ```
 O projeto esta disponível no github: https://github.com/guilhermeheizer/Brasileirao
 ```
@@ -340,7 +373,6 @@ O projeto esta disponível no github: https://github.com/guilhermeheizer/Brasile
 Contribuíram com meu projeto e agradeço pela ajuda:
 
 - João Paulo Rodrigues de Lira - Sócio e Professor da Hashtag Treinamentos. Fiz o curso de Python do framework FastApi disponível no YouTube: https://www.youtube.com/playlist?list=PLpdAy0tYrnKy3TvpCT-x7kGqMQ5grk1Xq
-- Jaime Nogueira da Gama - Grande incentivador do meu projeto. Ajudou na narrativa do projeto, e com a IA Manus gerou a apresentação em PowerPoint: Geração_da_Tabela_do_Brasileirão_com_Código_IA.pptx
 ## Autor
 - [@guilhermeheizer](https://www.github.com/guilhermeheizer)
 - [@LinkedIn](www.linkedin.com/in/guilhermeheizernogueira/)
