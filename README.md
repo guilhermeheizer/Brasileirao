@@ -2,12 +2,11 @@
 # Projeto Brasileirão Séries A e B
 
 ### Índice
-1. Como surgiu a ídeia - ok
-2. Como foi o processo de criação dos prompts - ok
-3. Como é a estrutura do projeto - ok
-4. Como baixar, instalar o projeto e executar - ok
+1. Como surgiu a ídeia
+2. Como foi o processo de criação dos prompts
+3. Como é a estrutura do projeto
+4. Como baixar, instalar o projeto e executar
 5. Como executar os endpoints do Brasileirão
-6. Acesse os prompts do ChatPGP utilizados para solicitar a geração de código Python
 
 ## 1. Como surgiu a ídeia
 
@@ -350,9 +349,9 @@ Os endpoints da **tag cadastra rodada** serão chamados pela tela form_manut_rod
 ![Swagger - cadastra rodada](/imagens_readme/swagger_cadastra_rodada_form_manut_rodada_pesquisar_estadios.png)
 ### **Passo 08**: Placar Rodada
 Os endpoints da **tag placar rodada** serão chamados pela tela form_classificacao_rodada.  
-Quando inicia a rodada e os jogos do dia são finalizados, executa-se o endpoint que faz a autenticação dos placares dos jogos.  
+Quando inicia a rodada e os jogos do dia são finalizados, executa-se o endpoint que faz a atualização dos placares dos jogos.  
 Após todos placares atualizados, acessar a **tag cartao** para atualizar os cartões amarelos e vermelhos de cada clube. Tais informações constam no site da CBF, e os cartões são atualizados somente um dia após o termino dos jogos.  
-Depois de atualizar os catões, executar o endpoint "classificacao", este endpoint possui os parametros: série, ano, rodada e carrega jogos nao realizados (informando "true", o processo irá procurar nas rodadas anteriores, os jogos finalizados e que não tiveram a classificacao calculada ou seja vai atualizar os jogos que foram prorrogados).
+Depois de atualizar os cartões, executar o endpoint "classificacao", este endpoint possui os parametros: série, ano, rodada e carrega jogos nao realizados (informando "true", o processo irá procurar nas rodadas anteriores, os jogos finalizados e que não tiveram a classificacao calculada ou seja vai atualizar os jogos que foram prorrogados).
 ![Swagger - placar rodada](/imagens_readme/swagger_placar_rodada.png)
 ![Swagger - placar rodada](/imagens_readme/swagger_placar_rodada_buscar_placares.png)
 ![Swagger - placar rodada](/imagens_readme/swagger_placar_rodada_atualizar_placares.png)
