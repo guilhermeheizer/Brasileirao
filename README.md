@@ -368,7 +368,7 @@ Outra opção é reclacular a classficação geral, a partir da última rodada. 
 ![Swagger - placar rodada](/imagens_readme/swagger_copiar_classificacao_recalcular.png)
 ```
 O projeto esta disponível no github: https://github.com/guilhermeheizer/Brasileirao
-``
+```
 ## Autor
 - [@guilhermeheizer](https://www.github.com/guilhermeheizer)
 - [@LinkedIn](www.linkedin.com/in/guilhermeheizernogueira/)
