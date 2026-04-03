@@ -358,8 +358,8 @@ Depois de atualizar os cartões, executar o endpoint "classificacao", este endpo
 ![Swagger - placar rodada](/imagens_readme/swagger_placar_rodada_listar_paginado.png)
 ![Swagger - placar rodada](/imagens_readme/swagger_placar_rodada_classificacao.png)
 ![Swagger - placar rodada](/imagens_readme/swagger_placar_rodada_classificacao_geral.png)
-![Classificação Série A](/imagens_readme/classificacao_geral_serie_a_2026.html)
-![Rodada 09 - Série A](/imagens_readme/rodada_brasileirao_a_2026_rodada_9.html)
+![Classificação Série A](/imagens_readme/classificacao_geral_serie_a_2026.jpeg)
+![Rodada 09 - Série A](/imagens_readme/rodada09_serie_a_2026.jpeg)
 ### **Passo 09**: Copiar Classificação por Rodada
 Nesta tag tem o endpoint para copiar a classificação geral com objetivo de salvar a classificação de cada rodada, para em novas implementações mostrar estatísticas dos time em qual posição estava na rodada 01 até a 38.  
 Outra opção é reclacular a classficação geral, a partir da última rodada. Vai recorrer a este endpoint quando em algum momento a classficação foi calculada com um placar errado ou esqueceu de buscar os cartões no site da CBF.
