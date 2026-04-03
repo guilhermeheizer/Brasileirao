@@ -330,14 +330,14 @@ def normalizar_dados_clubes(serie: str, resultados: list[dict]) -> list[dict]:
             "América": "AME",
             "Gremio Novorizontino - Saf": "NOV",
             "Juventude": "JUV",
-            "Fortaleza": "FOR",
+            "Fortaleza SAF": "FOR",
         }
 
     nova_lista = []
     for item in resultados:
         nome_clube = item["clube"]
         sigla = clubes_para_siglas.get(nome_clube, "N/A")
-        # print(f"cartao_service.py - coletar_dados_cartoes - Nome do clube: {nome_clube}, Sigla: {sigla}")
+        print(f"cartao_service.py - coletar_dados_cartoes - Nome do clube: {nome_clube}, Sigla: {sigla}")
         nova_lista.append({
             "clube": sigla,
             "cartoes_amarelos": item["cartoes_amarelos"],
