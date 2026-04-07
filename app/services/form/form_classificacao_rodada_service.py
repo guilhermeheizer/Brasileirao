@@ -58,7 +58,21 @@ def recalcular_classificacao(db: Session, serie: str, ano: int):
         # Passo 1: Atualizar a coluna rod_calculou_classificacao para "N" nas rodadas finalizadas
         db.execute(text("""
             UPDATE rodada
-            SET rod_calculou_classificacao = 'N'
+            SET rod_pontos_mandante = 
+                CASE
+                WHEN rod_gols_mandante > rod_gols_visitante THEN 3
+                WHEN rod_gols_mandante = rod_gols_visitante THEN 1
+                ELSE 0
+                END,
+    
+                rod_pontos_visitante = 
+                CASE
+                    WHEN rod_gols_visitante > rod_gols_mandante THEN 3
+                    WHEN rod_gols_visitante = rod_gols_mandante THEN 1
+                    ELSE 0
+                END,
+                        
+                rod_calculou_classificacao = 'N'
             WHERE rod_partida_finalizada = 'S'
             AND rod_serie = :serie
             AND rod_ano = :ano
@@ -75,7 +89,7 @@ def recalcular_classificacao(db: Session, serie: str, ano: int):
 
         # Passo 3: Achar o número da última rodada do campeonato
         result = db.execute(text("""
-            SELECT MAX(rod_numero) AS ultimo_numero FROM rodada
+            SELECT MAX(rod_rodada) AS ultimo_numero FROM rodada
             WHERE rod_serie = :serie
             AND rod_ano = :ano
         """), {"serie": serie_upper, "ano": ano}).fetchone()
