@@ -42,7 +42,7 @@ async def listar_cartoes(session: Session = Depends(pegar_sessao)):
         raise HTTPException(status_code=ex.status_code, detail=log_erro)
     except Exception as e:
         # Captura outros erros inesperados e gera um erro 500
-        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}") 
+        raise HTTPException(status_code=500, detail=f"Erro interno ao atualizar da CBF os cartões: {str(e)}")
     finally:
         session.close()
 
@@ -139,7 +139,7 @@ async def atualizar_cartao_por_serie_ano_sigla(
         raise HTTPException(status_code=ex.status_code, detail=log_erro)
     except Exception as e:
         # Captura outros erros inesperados e gera um erro 500
-        raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro interno atualização cartão : {str(e)}")
     finally:
         session.close()
 

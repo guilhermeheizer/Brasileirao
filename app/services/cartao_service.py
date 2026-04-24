@@ -8,6 +8,8 @@ from app.services.clube_service import buscar_clube_sigla, consiste_serie, consi
 from typing import Optional
 import requests
 from bs4 import BeautifulSoup
+import httpx
+import certifi
 import re
 from app.schemas.cartao_schema import (
     CartaoClubeSchema,
@@ -248,10 +250,25 @@ def obter_url_cbf(car_serie: str, car_ano: int) -> str:
 
 def coletar_dados_cartoes(url: str) -> list[dict]:
     """Faz o scraping no site da CBF e retorna os dados estruturados de cartões."""
-    response = requests.get(url)
-    if response.status_code != 200:
-        raise HTTPException(status_code=500, detail=f"Falha ao acessar a página {url}.")
+    #response = requests.get(url)
+    headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+    try:
+        r = httpx.Client(http2=True, verify=certifi.where(), headers=headers)
+        response = r.get(url)
+    except Exception as e:
+        print(f"cartao_service.py - coletar_dados_cartoes - Erro ao acessar a página: {url}. Erro: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro ao acessar a página {url}.")
     
+    print(f"response.text: {response.text}")
+    print(f"response.status_code: {response.status_code}")
+
+    if response.status_code != 200:
+        print(f"cartao_service.py - coletar_dados_cartoes - Falha ao acessar a página: {url}. Status code: {response.status_code}")
+        raise HTTPException(status_code=500, detail=f"Falha ao acessar a página {url}.")
+    print(f"cartao_service.py - coletar_dados_cartoes - Página acessada com sucesso: {url}. Iniciando parsing do conteúdo...")
+
     html_content = response.text
     soup = BeautifulSoup(html_content, "html.parser")
     section = soup.find("section", class_="styles_container__L5dGB")
@@ -261,6 +278,7 @@ def coletar_dados_cartoes(url: str) -> list[dict]:
     if not tbody:
         raise HTTPException(status_code=500, detail="Tabela não encontrada no site da CBF.")
     
+    print("cartao_service.py - coletar_dados_cartoes - Tabela encontrada, iniciando extração dos dados...")
     resultados = []
     for tr in tbody.find_all("tr"):
         try:
@@ -271,7 +289,7 @@ def coletar_dados_cartoes(url: str) -> list[dict]:
             nome_clube = td_nome_clube.find_all("strong")[1].text.strip()
             cartoes_amarelos = int(tr.find_all("td")[9].text.strip())
             cartoes_vermelhos = int(tr.find_all("td")[10].text.strip())
-
+            print(f"cartao_service.py - coletar_dados_cartoes - Dados extraídos para o clube '{nome_clube}': {cartoes_amarelos} amarelos, {cartoes_vermelhos} vermelhos.")
             resultados.append({
                 "clube": nome_clube,
                 "cartoes_amarelos": cartoes_amarelos,
@@ -280,7 +298,7 @@ def coletar_dados_cartoes(url: str) -> list[dict]:
         except Exception as e:
             print(f"Erro ao processar uma linha: {e}")
             continue
-
+    print(f"cartao_service.py - coletar_dados_cartoes - Dados coletados: {resultados}. Finalizando...")
     return resultados
 
 
@@ -399,15 +417,19 @@ def atualizar_dados_cartoes(nova_lista: list[dict], car_serie: str, car_ano: int
 def atualizar_cartao_cbf(car_serie: str, car_ano: int, session: Session) -> list[CartaoSchema]:
     """Função principal para atualizar os cartões."""
     # 1. Valida a série e obtém a URL correspondente
+    print(f"cartao_service.py - atualizar_cartao_cbf - Iniciando atualização para série '{car_serie.upper()}' e ano {car_ano}...")
     url = obter_url_cbf(car_serie.upper(), car_ano)
 
     # 2. Coleta os dados de cartões do site
+    print(f"cartao_service.py - atualizar_cartao_cbf - URL obtida: {url}. Iniciando coleta dos dados...")
     resultados = coletar_dados_cartoes(url)
 
     # 3. Normaliza os dados dos clubes para utilizar siglas
+    print(f"cartao_service.py - atualizar_cartao_cbf - Dados coletados: {resultados}. Iniciando normalização dos dados...")
     nova_lista = normalizar_dados_clubes(car_serie, resultados)
 
     # 4. Atualiza os dados no banco de dados
+    print(f"cartao_service.py - atualizar_cartao_cbf - Dados normalizados: {nova_lista}. Iniciando atualização no banco de dados...")
     return atualizar_dados_cartoes(nova_lista, car_serie.upper(), car_ano, session)
 
 def deletar_cartao(car_serie: str, car_ano: int, clube_clu_sigla: str, session: Session):
