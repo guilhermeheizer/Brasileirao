@@ -323,7 +323,7 @@ def normalizar_dados_clubes(serie: str, resultados: list[dict]) -> list[dict]:
             "Atlético Mineiro": "CAM",
             "Remo": "REM",
             "Vasco da Gama Saf": "VAS",
-            "Santos Fc": "SAN",
+            "Santos FC": "SAN",
             "Internacional": "INT",
             "Cruzeiro": "CRU",
         }
@@ -340,7 +340,7 @@ def normalizar_dados_clubes(serie: str, resultados: list[dict]) -> list[dict]:
             "Vila Nova": "VNO",
             "Sao Bernardo": "SBD",
             "Ceará": "CEA",
-            "Cuiabá Saf": "CUI",
+            "Cuiabá": "CUI",
             "Sport Recife": "SPT",
             "Ponte Preta": "PON",
             "Atlético Goianiense Saf": "ACG",
