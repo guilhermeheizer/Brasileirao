@@ -338,7 +338,7 @@ def normalizar_dados_clubes(serie: str, resultados: list[dict]) -> list[dict]:
             "Criciúma": "CRI",
             "Crb": "CRB",
             "Vila Nova": "VNO",
-            "Sao Bernardo": "SBD",
+            "São Bernardo SAF": "SBD",
             "Ceará": "CEA",
             "Cuiabá": "CUI",
             "Sport Recife": "SPT",

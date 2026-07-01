@@ -318,7 +318,7 @@ O escudo do Cruzeiro no G1: https://s.sde.globo.com/media/organizations/2021/02/
 ![Swagger - clube](/imagens_readme/swagger_clube_alterar.png)
 ![Swagger - clube](/imagens_readme/swagger_clube_deletar.png)
 ![Swagger - clube](/imagens_readme/swagger_clube_listar_paginado.png)
-### **Passoo 5**: Estádio
+### **Passo 5**: Estádio
 Executar o endpoint para incluir os estádios onde os jogos aconteceram, mas antes de cadastrar os jogos das primeiras rodadas. Acessar o site do Globo Esporte para consultar as rodadas, para cada jogo anote o nome do estádio e consulte qual é a cidade do estádio.  
 ![Swagger - estadio](/imagens_readme/swagger_estadio.png)
 ![Swagger - estadio](/imagens_readme/swagger_estadio_listar.png)
