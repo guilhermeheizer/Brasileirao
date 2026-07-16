@@ -6,11 +6,10 @@ from app.models.cartao_models import Cartao
 from app.models.clube_models import Clube
 from app.services.clube_service import buscar_clube_sigla, consiste_serie, consiste_sigla
 from typing import Optional
-import requests
 from bs4 import BeautifulSoup
 import httpx
 import certifi
-import re
+import unicodedata
 from app.schemas.cartao_schema import (
     CartaoClubeSchema,
     ResponseCartaoClubeSchema, 
@@ -257,9 +256,9 @@ def coletar_dados_cartoes(url: str) -> list[dict]:
     try:
         r = httpx.Client(http2=True, verify=certifi.where(), headers=headers)
         response = r.get(url)
-    except Exception as e:
-        # print(f"cartao_service.py - coletar_dados_cartoes - Erro ao acessar a página: {url}. Erro: {e}")
-        raise HTTPException(status_code=500, detail=f"Erro ao acessar a página {url}.")
+    except Exception as ex:
+        #print(f"cartao_service.py - coletar_dados_cartoes - Erro ao acessar a página: {url}. Erro: {ex}")
+        raise HTTPException(status_code=500, detail=f"Erro ao acessar a página {url}, Descr.Erro: {ex}")
     
     # print(f"response.text: {response.text}")
     # print(f"response.status_code: {response.status_code}")
@@ -291,7 +290,7 @@ def coletar_dados_cartoes(url: str) -> list[dict]:
             cartoes_vermelhos = int(tr.find_all("td")[10].text.strip())
             print(f"cartao_service.py - coletar_dados_cartoes - Dados extraídos para o clube '{nome_clube}': {cartoes_amarelos} amarelos, {cartoes_vermelhos} vermelhos.")
             resultados.append({
-                "clube": nome_clube,
+                "clube": normalizar_texto(nome_clube),
                 "cartoes_amarelos": cartoes_amarelos,
                 "cartoes_vermelhos": cartoes_vermelhos,
             })
@@ -301,54 +300,68 @@ def coletar_dados_cartoes(url: str) -> list[dict]:
     # print(f"cartao_service.py - coletar_dados_cartoes - Dados coletados: {resultados}. Finalizando...")
     return resultados
 
+def normalizar_texto(texto: str) -> str:
+    """
+    Normaliza um texto convertendo para minúsculas e removendo acentuação.
+    """
+    # Converte para minúsculas
+    texto = texto.lower()
+
+    # Decompõe caracteres acentuados em base + combining
+    texto = unicodedata.normalize('NFD', texto)
+
+    # Remove caracteres combining (acentos, cedilha etc.)
+    texto = ''.join(caractere for caractere in texto if not unicodedata.combining(caractere))
+
+    return texto
 
 def normalizar_dados_clubes(serie: str, resultados: list[dict]) -> list[dict]:
     """Substitui nomes dos clubes por suas respectivas siglas."""
     if serie == "A":
         clubes_para_siglas = {
-            "Palmeiras": "PAL",
-            "São Paulo": "SAO",
-            "Fluminense": "FLU",
-            "Bahia": "BAH",
-            "Athletico Paranaense": "CAP",
-            "Red Bull Bragantino": "RBB",
-            "Chapecoense": "CHA",
-            "Mirassol": "MIR",
-            "Coritiba SAF": "CFC",
-            "Flamengo": "FLA",
-            "Botafogo": "BOT",
-            "Corinthians": "COR",
-            "Grêmio": "GRE",
-            "Vitória": "VIT",
-            "Atlético Mineiro": "CAM",
-            "Remo": "REM",
-            "Vasco da Gama Saf": "VAS",
-            "Santos FC": "SAN",
-            "Internacional": "INT",
-            "Cruzeiro": "CRU",
+            "palmeiras": "PAL",
+            "sao paulo": "SAO",
+            "fluminense": "FLU",
+            "bahia": "BAH",
+            "athletico paranaense": "CAP",
+            "red bull bragantino": "RBB",
+            "chapecoense": "CHA",
+            "mirassol": "MIR",
+            "coritiba saf": "CFC",
+            "flamengo": "FLA",
+            "botafogo": "BOT",
+            "corinthians": "COR",
+            "gremio": "GRE",
+            "vitoria": "VIT",
+            "atletico mineiro": "CAM",
+            "remo": "REM",
+            "vasco da gama saf": "VAS",
+            "santos fc": "SAN",
+            "internacional": "INT",
+            "cruzeiro": "CRU",
         }
     elif serie == "B":
         clubes_para_siglas = {
-            "Botafogo": "BSP",
-            "Londrina SAF": "LEC",
-            "Goiás": "GOI",
-            "Avaí": "AVA",
-            "Athletic SAF": "ATH",
-            "Operário": "OPE",
-            "Criciúma": "CRI",
-            "Crb": "CRB",
-            "Vila Nova": "VNO",
-            "São Bernardo SAF": "SBD",
-            "Ceará": "CEA",
-            "Cuiabá": "CUI",
-            "Sport Recife": "SPT",
-            "Ponte Preta": "PON",
-            "Atlético Goianiense Saf": "ACG",
-            "Náutico": "NAU",
-            "América": "AME",
-            "Gremio Novorizontino - Saf": "NOV",
-            "Juventude": "JUV",
-            "Fortaleza SAF": "FOR",
+            "botafogo": "BSP",
+            "londrina saf": "LEC",
+            "goias": "GOI",
+            "avai": "AVA",
+            "athletic saf": "ATH",
+            "operario": "OPE",
+            "criciuma": "CRI",
+            "crb": "CRB",
+            "vila nova": "VNO",
+            "sao bernardo saf": "SBD",
+            "ceara": "CEA",
+            "cuiaba": "CUI",
+            "sport recife": "SPT",
+            "ponte preta": "PON",
+            "atletico goianiense saf": "ACG",
+            "nautico": "NAU",
+            "america": "AME",
+            "gremio novorizontino - saf": "NOV",
+            "juventude": "JUV",
+            "fortaleza saf": "FOR",
         }
 
     nova_lista = []
