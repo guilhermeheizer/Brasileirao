@@ -2,49 +2,86 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.models.estadio_models import Estadio
 from app.models.cidade_models import Cidade
-from app.schemas.estadio_schema import ResponseEstadioSchema, EstadioSchema, EstadioCidadeSchema, ResponseEstadioCidadeSchema
-from app.services.cidade_service import buscar_cidade_id
-from typing import List
-from typing import Optional
+from app.schemas.estadio_schema import EstadioCreate, EstadioUpdate, EstadioCidadeOut
+from typing import List, Optional
 import re
 
 
-def listar_todos_estadios(session: Session) -> ResponseEstadioSchema:
+def listar_todos_estadios(nome_estadio: Optional[str], nome_cidade: Optional[str], uf: Optional[str], session: Session) -> List[EstadioCidadeOut]:
     """Lista todos os estadios
 
     Args:
+        nome_estadio (Optional[str]): Nome do estadio a ser buscado.
+        nome_cidade (Optional[str]): Nome da cidade a ser buscada.
+        uf (Optional[str]): UF da cidade a ser buscada.
         session (Session): Sessão ativa do SQLAlchemy para conectar ao banco.
 
     Raises:
         HTTPException: Erro: 404 - Nenhum estadio encontrado.
 
     Returns:
-        ResponseEstadioSchema: Representação dos estadios encontrados.
+        List[EstadioCidadeOut]: Representação dos estadios encontrados.
     """
-    estadios = session.query(Estadio).order_by(Estadio.__table__.c.est_nome).all()
-    if not estadios:
+    query = session.query(
+        Estadio.__table__.c.est_id,
+        Estadio.__table__.c.est_nome,
+        Estadio.__table__.c.cidade_cid_id,
+        Cidade.__table__.c.cid_nome.label("cid_nome"),
+        Cidade.__table__.c.cid_uf.label("cid_uf"),
+    ).join(Cidade, Estadio.__table__.c.cidade_cid_id == Cidade.__table__.c.cid_id)
+
+    # Filtro opcional pelo nome do estadio
+    if nome_estadio:
+        query = query.filter(Estadio.__table__.c.est_nome.ilike(f"%{nome_estadio}%"))
+
+    # Filtro opcional pela cidade
+    if nome_cidade:
+        query = query.filter(Cidade.__table__.c.cid_nome.ilike(f"%{nome_cidade}%"))
+
+    # Filtro opcional pela UF
+    if uf:
+        query = query.filter(Cidade.__table__.c.cid_uf == uf)
+
+    query = query.order_by(Estadio.__table__.c.est_nome)
+
+    if not query:
         raise HTTPException(status_code=404, detail="Nenhum estadio encontrado.")
     
-    estadios_schema = [EstadioSchema(**estadio.as_dict()) for estadio in estadios]
-    return ResponseEstadioSchema(estadios=estadios_schema)
+    # Serializar os estadios no formato esperado
+    return [
+        EstadioCidadeOut(
+            est_id=estadio.est_id,
+            est_nome=estadio.est_nome,
+            cidade_cid_id=estadio.cidade_cid_id,
+            cidade_nome=estadio.cid_nome,
+            cidade_uf=estadio.cid_uf,
+        )
+        for estadio in query
+    ]
 
 
-def criar_estadio(estadio: EstadioSchema, session: Session) -> EstadioSchema:
+def criar_estadio(estadio: EstadioCreate, session: Session) -> EstadioCreate:
     """Criar registro na tabela de estadio
 
     Args:
-        estadio (EstadioSchema): Dados do estadior a ser criado.
+        estadio (EstadioCreate): Dados do estadior a ser criado.
         session (Session): Sessão ativa do SQLAlchemy para conectar ao banco.
     Raises:
         HTTPException: Erro: 404 - Estadio já cadastrado.
         HTTPException: Erro: 404 - Cidade não encontrada.
 
     Returns:
-        EstadioSchema: Representação do estadio criado.
+        EstadioCreate: Representação do estadio criado.
     """
     buscar_estadio_nome(True, estadio.est_nome, session)  # Verifica se o nome do estadio já existe
     buscar_estadio_id(True, estadio.est_id, session)  # Verifica se a iddo estadio já existe
-    buscar_cidade_id(True, estadio.cidade_cid_id, session)  # Verifica se a cidade existe
+    cidade = (
+            session.query(Cidade)
+            .filter(Cidade.cid_id == estadio.cidade_cid_id)
+            .first()
+        )
+    if not cidade:
+            raise HTTPException(status_code=404, detail="Cidade não encontrada.")
 
     novo_estadio = Estadio(
         est_nome= re.sub(r'\s+', ' ', estadio.est_nome.strip()).title(), # Remove espaços extras
@@ -53,10 +90,10 @@ def criar_estadio(estadio: EstadioSchema, session: Session) -> EstadioSchema:
     session.add(novo_estadio)
     session.commit()
     session.refresh(novo_estadio)
-    return EstadioSchema(**novo_estadio.as_dict())
+    return EstadioCreate(**novo_estadio.as_dict())
 
 
-def atualizar_estadio(est_id: int, estadio_atualizado: EstadioSchema, session: Session) -> EstadioSchema:
+def atualizar_estadio(est_id: int, estadio_atualizado: EstadioUpdate, session: Session) -> EstadioUpdate:
     estadio_db = session.query(Estadio).filter(Estadio.__table__.c.est_id == est_id).first()
 
     if not estadio_db:
@@ -64,7 +101,13 @@ def atualizar_estadio(est_id: int, estadio_atualizado: EstadioSchema, session: S
 
 
     if estadio_atualizado.cidade_cid_id:
-        buscar_cidade_id(True, estadio_atualizado.cidade_cid_id, session)  # Verifica se a cidade existe
+        cidade = (
+            session.query(Cidade)
+            .filter(Cidade.cid_id == estadio_atualizado.cidade_cid_id)
+            .first()
+        )
+        if not cidade:
+            raise HTTPException(status_code=404, detail="Cidade não encontrada.")
 
     # Atualização condicional dos campos (apenas os fornecidos pelo cliente)
     if estadio_atualizado.est_nome:
@@ -88,7 +131,7 @@ def atualizar_estadio(est_id: int, estadio_atualizado: EstadioSchema, session: S
         session.refresh(estadio_db)
 
     # Retorna o esquema atualizado
-    return EstadioSchema(**estadio_db.as_dict())
+    return EstadioUpdate(**estadio_db.as_dict())
 
 
 def deletar_estadio(est_id: int, session: Session):
@@ -100,7 +143,7 @@ def deletar_estadio(est_id: int, session: Session):
     session.commit()
     return "Estadio excluído com sucesso."
 
-def buscar_estadio_nome(retorna_exception: bool, nome: str, session: Session) -> Optional[EstadioSchema]:
+def buscar_estadio_nome(retorna_exception: bool, nome: str, session: Session) -> Optional[EstadioCreate]:
     """
     Busca uma estadio pelo nome no banco de dados.
 
@@ -123,9 +166,9 @@ def buscar_estadio_nome(retorna_exception: bool, nome: str, session: Session) ->
         if retorna_exception:
             raise HTTPException(status_code=404, detail=f"Já existe estadio com nome '{nome}' informado.")
 
-    return EstadioSchema(**estadio.as_dict()) if estadio else None
+    return EstadioCreate(**estadio.as_dict()) if estadio else None
 
-def buscar_estadio_id(retorna_exception: bool, estadio_id: int, session: Session) -> Optional[EstadioSchema]:
+def buscar_estadio_id(retorna_exception: bool, estadio_id: int, session: Session) -> Optional[EstadioCreate]:
     """
     Busca uma estadio pelo ID no banco de dados.
 
@@ -138,7 +181,7 @@ def buscar_estadio_id(retorna_exception: bool, estadio_id: int, session: Session
         HTTPException: Caso a estadio não seja encontrado.
 
     Returns:
-        Optional[EstadioSchema]: Representação do estadio encontrado ou None se não encontrado.
+        Optional[EstadioCreate]: Representação do estadio encontrado ou None se não encontrado.
     """
     # Busca pelo estadio no banco de dados
     estadio = session.query(Estadio).filter(Estadio.__table__.c.est_id == estadio_id).first()
@@ -146,14 +189,38 @@ def buscar_estadio_id(retorna_exception: bool, estadio_id: int, session: Session
     if estadio:
         if retorna_exception:
             raise HTTPException(status_code=404, detail=f"Estadio com sigla '{estadio_id}' já existe.")
-    return EstadioSchema(**estadio.as_dict()) if estadio else None
+    return EstadioCreate(**estadio.as_dict()) if estadio else None
 
+def buscar_estadio_por_cidade_id(retorna_exception: bool, cidade_id: int, session: Session) -> EstadioCreate | None:
+    """
+    Busca estadios pelo ID da cidade no banco de dados.
 
-def listar_estadios_paginadas(nome: Optional[str], pagina: int, tamanho_pagina: int, session: Session) -> ResponseEstadioCidadeSchema:
+    Args:
+        retorna_exception (bool): Indica se deve lançar uma exceção caso nenhum estadio seja encontrado.
+        cidade_id (int): ID da cidade a ser buscada.
+        session (Session): Sessão ativa do SQLAlchemy para conectar ao banco.
+
+    Raises:
+        HTTPException: Caso nenhum estadio seja encontrado.
+
+    Returns:
+        List[EstadioCreate]: Lista de estadios encontrados na cidade especificada.
+    """
+    # Busca pelos estadios no banco de dados
+    estadio = session.query(Estadio).filter(Estadio.__table__.c.cidade_cid_id == cidade_id).first()
+
+    if not estadio and retorna_exception:
+        raise HTTPException(status_code=404, detail=f"Nenhum estadio encontrado para a cidade com ID '{cidade_id}'.")
+
+    return EstadioCreate(**estadio.as_dict()) if estadio else None
+
+def listar_estadios_paginadas(nome_estadio: Optional[str], nome_cidade: Optional[str], uf: Optional[str], pagina: int, tamanho_pagina: int, session: Session) -> List[EstadioCidadeOut]:
     """Listar os estadios pelo nome da estadio (opcional) com paginação
 
     Args:
-        nome (Optional[str]): Nome do estadio a ser filtrado (opcional).
+        nome_estadio (Optional[str]): Nome do estadio a ser filtrado (opcional).
+        nome_cidade (Optional[str]): Nome da cidade a ser filtrada (opcional).
+        uf (Optional[str]): UF da cidade a ser filtrada (opcional).
         pagina (int): Número da página a ser retornada.
         tamanho_pagina (int): Tamanho da página a ser retornada.
         session (Session): Sessão ativa do SQLAlchemy para conectar ao banco.
@@ -162,7 +229,7 @@ def listar_estadios_paginadas(nome: Optional[str], pagina: int, tamanho_pagina: 
         HTTPException: Lançada se nenhuma estadio for encontrada.
 
     Returns:
-        ResponseEstadiosSchema: Lista de estadios no formato esperado na API.
+        List[EstadioCidadeOut]: Lista de estadios no formato esperado na API.
     """
     query = session.query(
         Estadio.__table__.c.est_id,
@@ -173,8 +240,16 @@ def listar_estadios_paginadas(nome: Optional[str], pagina: int, tamanho_pagina: 
     ).join(Cidade, Estadio.__table__.c.cidade_cid_id == Cidade.__table__.c.cid_id)
 
     # Filtro opcional pelo nome do estadio
-    if nome:
-        query = query.filter(Estadio.__table__.c.est_nome.ilike(f"%{nome}%"))
+    if nome_estadio:
+        query = query.filter(Estadio.__table__.c.est_nome.ilike(f"%{nome_estadio}%"))
+
+    # Filtro opcional pela cidade
+    if nome_cidade:
+        query = query.filter(Cidade.__table__.c.cid_nome.ilike(f"%{nome_cidade}%"))
+
+    # Filtro opcional pela UF
+    if uf:
+        query = query.filter(Cidade.__table__.c.cid_uf == uf)
 
     query = query.order_by(Estadio.__table__.c.est_nome)
     
@@ -187,7 +262,7 @@ def listar_estadios_paginadas(nome: Optional[str], pagina: int, tamanho_pagina: 
 
     # Serializar os estadios no formato esperado
     estadios_schema = [
-        EstadioCidadeSchema(
+        EstadioCidadeOut(
             est_id=estadio.est_id,
             est_nome=estadio.est_nome,
             cidade_cid_id=estadio.cidade_cid_id,
@@ -197,4 +272,4 @@ def listar_estadios_paginadas(nome: Optional[str], pagina: int, tamanho_pagina: 
         for estadio in estadios
     ]
 
-    return ResponseEstadioCidadeSchema(estadios=estadios_schema)
+    return estadios_schema

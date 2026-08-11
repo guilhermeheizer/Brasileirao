@@ -5,20 +5,18 @@ from fastapi import HTTPException
 from app.models.cartao_models import Cartao
 from app.models.clube_models import Clube
 from app.services.clube_service import buscar_clube_sigla, consiste_serie, consiste_sigla
-from typing import Optional
+from typing import Optional, List
 from bs4 import BeautifulSoup
 import httpx
 import certifi
 import unicodedata
 from app.schemas.cartao_schema import (
-    CartaoClubeSchema,
-    ResponseCartaoClubeSchema, 
-    ResponseCartaoSchema,
+    CartaoClubeOut,
     CartaoSchema,
 )
 
 
-def listar_todos_cartoes(session: Session) -> ResponseCartaoSchema:
+def listar_todos_cartoes(serie:str, ano:int, session: Session) -> List[CartaoClubeOut] | None:
     """Lista todos os cartões registrados no banco de dados.
 
     Args:
@@ -28,16 +26,35 @@ def listar_todos_cartoes(session: Session) -> ResponseCartaoSchema:
         HTTPException: Erro: 404 - Nenhum cartão encontrado.
 
     Returns:
-        ResponseCartaoSchema: Lista de cartões registrados.
+        List[CartaoClubeOut] | None: Lista de cartões registrados ou None se nenhum for encontrado.
     """
-    cartoes = session.query(Cartao).all()
-    if not cartoes:
-        raise HTTPException(status_code=404, detail="Nenhum cartão encontrado.")
-    
-    # Serializa os cartões na resposta
-    cartoes_schema = [CartaoSchema(**cartao.as_dict()) for cartao in cartoes]
+    query = session.query(
+	    Cartao.__table__.c.car_serie,
+		Cartao.__table__.c.car_ano,
+        Cartao.__table__.c.clube_clu_sigla,
+        Clube.__table__.c.clu_link_escudo.label("clube_link_escudo"),
+        Clube.__table__.c.clu_nome.label("clube_nome"),
+        Cartao.__table__.c.car_qtd_vermelho,
+        Cartao.__table__.c.car_qtd_amarelo,
+    ).join(Clube, Cartao.__table__.c.clube_clu_sigla == Clube.__table__.c.clu_sigla).filter(Cartao.__table__.c.car_ano == ano, Cartao.__table__.c.car_serie == serie.upper())
 
-    return ResponseCartaoSchema(cartoes=cartoes_schema)
+    query = query.order_by(Cartao.__table__.c.clube_clu_sigla).all()  # Ordena pela sigla do clube
+  
+    if not query:
+        raise HTTPException(status_code=404, detail=f"Nenhum cartão encontrado para a série {serie} e ano {ano} especificados.")
+    
+    return [
+        CartaoClubeOut(
+            car_serie=cartao.car_serie,
+            car_ano=cartao.car_ano,
+            clube_clu_sigla=cartao.clube_clu_sigla,
+            clube_link_escudo=cartao.clube_link_escudo,
+            clube_nome=cartao.clube_nome,
+            car_qtd_vermelho=cartao.car_qtd_vermelho,
+            car_qtd_amarelo=cartao.car_qtd_amarelo
+        )
+        for cartao in query
+    ]
 
 
 def criar_cartao(dados: CartaoSchema, session: Session) -> CartaoSchema:
@@ -53,7 +70,7 @@ def criar_cartao(dados: CartaoSchema, session: Session) -> CartaoSchema:
         HTTPException: Erro: 404 - Clube com sigla '{clube_sigla}' já existe.
 
     Returns:
-        ResponseCartaoSchema: Representação do cartão criado.
+        CartaoSchema: Representação do cartão criado.
     """
     consiste_serie(dados.car_serie.upper())
     consiste_sigla(dados.clube_clu_sigla.upper())
@@ -204,11 +221,19 @@ def atualizar_cartao(altera_qtd_menor: bool, car_serie: str, car_ano: int, clube
     consiste_sigla(clube_clu_sigla.upper())
 
     if not altera_qtd_menor:
-        cartao_qtd = buscar_cartao_sigla(False, clube_clu_sigla.upper(), session)
-        if cartao_qtd:  
-            if dados.car_qtd_vermelho is not None and cartao_qtd.car_qtd_vermelho is not None and dados.car_qtd_vermelho < cartao_qtd.car_qtd_vermelho:
+        cartao_qtd = buscar_cartao_sigla(False, car_ano,clube_clu_sigla.upper(), session)
+        if cartao_qtd:
+            if (
+                dados.car_qtd_vermelho is not None
+                and cartao_qtd.car_qtd_vermelho is not None
+                and dados.car_qtd_vermelho < cartao_qtd.car_qtd_vermelho
+            ):
                 raise HTTPException(status_code=404, detail="A quantidade de cartões vermelhos informada não pode ser menor do que a quantidade atual.")
-            if dados.car_qtd_amarelo is not None and cartao_qtd.car_qtd_amarelo is not None and dados.car_qtd_amarelo < cartao_qtd.car_qtd_amarelo:
+            if (
+                dados.car_qtd_amarelo is not None
+                and cartao_qtd.car_qtd_amarelo is not None
+                and dados.car_qtd_amarelo < cartao_qtd.car_qtd_amarelo
+            ):
                 raise HTTPException(status_code=404, detail="A quantidade de cartões amarelos informada não pode ser menor do que a quantidade atual.")
 
     # Busca o cartão no banco
@@ -479,7 +504,7 @@ def deletar_cartao(car_serie: str, car_ano: int, clube_clu_sigla: str, session: 
     return "Cartão excluído com sucesso."
 
 
-def buscar_cartao_sigla(retorna_exception: bool, clube_clu_sigla: str, session: Session) -> Optional[CartaoSchema]:
+def buscar_cartao_sigla(retorna_exception: bool, car_ano: int,clube_clu_sigla: str, session: Session) -> Optional[CartaoSchema]:
     """
     Busca uma cartao por serie, ano, sigla no banco de dados.
 
@@ -497,20 +522,19 @@ def buscar_cartao_sigla(retorna_exception: bool, clube_clu_sigla: str, session: 
         Optional[Cartao.chema]: Representação do cartão do clube encontrado ou None se não encontrado.
     """
     # Busca pelo cartao no banco de dados
-    cartao = session.query(Cartao).filter(Cartao.__table__.c.clube_clu_sigla == clube_clu_sigla).first()
+    cartao = session.query(Cartao).filter(Cartao.__table__.c.car_ano == car_ano, Cartao.__table__.c.clube_clu_sigla == clube_clu_sigla).first()
 
     if cartao and retorna_exception:
         raise HTTPException(status_code=404, detail=f"Cartao.com sigla '{clube_clu_sigla}' já existe.")
         
     return CartaoSchema(**cartao.as_dict()) if cartao else None
 
-
-
-def listar_cartoes_paginados(nome: Optional[str], pagina: int, tamanho_pagina: int, session: Session) -> ResponseCartaoClubeSchema:
+def listar_cartoes_paginados(serie: str, ano: int, pagina: int, tamanho_pagina: int, session: Session) -> List[CartaoClubeOut]:
     """Listar os cartões dos clubes pelo nome da clube (opcional) com paginação
 
     Args:
-        nome (Optional[str]): Nome do clube a ser filtrado (opcional).
+        serie (str): Série do campeonato.
+        ano (int): Ano do campeonato.
         pagina (int): Número da página a ser retornada.
         tamanho_pagina (int): Tamanho da página a ser retornada.
         session (Session): Sessão ativa do SQLAlchemy para conectar ao banco.
@@ -529,11 +553,9 @@ def listar_cartoes_paginados(nome: Optional[str], pagina: int, tamanho_pagina: i
         Clube.__table__.c.clu_nome.label("clube_nome"),
         Cartao.__table__.c.car_qtd_vermelho,
         Cartao.__table__.c.car_qtd_amarelo,
-    ).join(Clube, Cartao.__table__.c.clube_clu_sigla == Clube.__table__.c.clu_sigla)
+    ).join(Clube, Cartao.__table__.c.clube_clu_sigla == Clube.__table__.c.clu_sigla).filter(Cartao.__table__.c.car_ano == ano, Cartao.__table__.c.car_serie == serie.upper())
 
-    # Filtro opcional pelo nome do clube
-    if nome:
-        query = query.filter(Clube.__table__.c.clu_nome.ilike(f"%{nome}%"))
+    query = query.order_by(Cartao.__table__.c.clube_clu_sigla)  # Ordena pelo nome do clube
 
     # Paginação
     cartoes = query.offset((pagina - 1) * tamanho_pagina).limit(tamanho_pagina).all()
@@ -544,7 +566,7 @@ def listar_cartoes_paginados(nome: Optional[str], pagina: int, tamanho_pagina: i
 
     # Serializar os cartoes no formato esperado
     cartoes_schema = [
-        CartaoClubeSchema(
+        CartaoClubeOut(
 		    car_serie=cartao.car_serie,
 			car_ano=cartao.car_ano,
             clube_clu_sigla=cartao.clube_clu_sigla,
@@ -556,4 +578,4 @@ def listar_cartoes_paginados(nome: Optional[str], pagina: int, tamanho_pagina: i
         for cartao in cartoes
     ]
 
-    return ResponseCartaoClubeSchema(cartoes=cartoes_schema)
+    return cartoes_schema

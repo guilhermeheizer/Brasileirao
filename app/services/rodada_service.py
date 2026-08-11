@@ -18,14 +18,12 @@ Funções principais:
 - deletar_rodada: Remove uma rodada
 - obter_rodada: Consulta detalhes de uma rodada
 """
-from unittest import result
-
 from requests import session
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from sqlalchemy.sql import text
 from typing import Union
-import re
+from datetime import timezone
 from app.models.rodada_models import Rodada
 from app.models.estadio_models import Estadio
 from app.schemas.rodada_schema import CriarRodadaSchema, ResponseCriarRodadaSchema, ResponseAlterarRodadaSchema, AlterarJogoRodadaSchema
@@ -167,12 +165,13 @@ def criar_rodada(rodada: CriarRodadaSchema, session: Session):
     validar_rodada("I", rodada, session)
 
     try:
+        data_sem_tz = rodada.rod_data.replace(tzinfo=None)
         nova_rodada = Rodada(
                 rod_serie=rodada.rod_serie.upper(),
                 rod_ano=rodada.rod_ano,
                 rod_rodada=rodada.rod_rodada,
                 rod_sequencia=rodada.rod_sequencia,
-                rod_data=rodada.rod_data,
+                rod_data=data_sem_tz,
                 clube_clu_sigla_mandante=rodada.clube_clu_sigla_mandante.upper(),
                 clube_clu_sigla_visitante=rodada.clube_clu_sigla_visitante.upper(),
                 rod_calculou_classificacao="N",
@@ -209,12 +208,13 @@ def atualizar_jogo_rodada(serie: str, ano: int, rodada_numero: int, sequencia: i
     Returns:
         ResponseCriarRodadaSchema: Representação da rodada atualizada.
     """
+    data_sem_tz = jogo.rod_data.replace(tzinfo=None)
     jogos_data: CriarRodadaSchema = CriarRodadaSchema(
         rod_serie=serie,
         rod_ano=ano,
         rod_rodada=rodada_numero,
         rod_sequencia=sequencia,
-        rod_data=jogo.rod_data,
+        rod_data=data_sem_tz,
         clube_clu_sigla_mandante=jogo.clube_clu_sigla_mandante,
         clube_clu_sigla_visitante=jogo.clube_clu_sigla_visitante,
         estadio_est_id=jogo.estadio_est_id
@@ -258,7 +258,8 @@ def atualizar_jogo_rodada(serie: str, ano: int, rodada_numero: int, sequencia: i
 
     if jogo.rod_data is not None:
         update_fields.append("rod_data = :rod_data")
-        params["rod_data"] = jogo.rod_data
+        data_sem_tz = jogo.rod_data.replace(tzinfo=None)
+        params["rod_data"] = data_sem_tz
     if jogo.clube_clu_sigla_mandante is not None:
         update_fields.append("clube_clu_sigla_mandante = :clube_clu_sigla_mandante")
         params["clube_clu_sigla_mandante"] = jogo.clube_clu_sigla_mandante.upper()
@@ -319,13 +320,14 @@ def atualizar_jogo_rodada(serie: str, ano: int, rodada_numero: int, sequencia: i
 
     if not rodada_atualizada:
         raise HTTPException(status_code=500, detail="Erro ao recuperar a rodada após a atualização.")
-    
+
+    data_sem_tz = jogo.rod_data.replace(tzinfo=None)
     retorna_rodada: ResponseAlterarRodadaSchema = ResponseAlterarRodadaSchema(
         rod_serie=serie.upper(),
         rod_ano=ano,
         rod_rodada=rodada_numero,
         rod_sequencia=sequencia,
-        rod_data=jogo.rod_data,
+        rod_data=data_sem_tz,
         clube_clu_sigla_mandante=jogo.clube_clu_sigla_mandante,
         rod_gols_mandante=jogo.rod_gols_mandante,
         clube_clu_sigla_visitante=jogo.clube_clu_sigla_visitante,

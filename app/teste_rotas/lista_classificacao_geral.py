@@ -4,7 +4,8 @@ import os
 from jinja2 import Environment, FileSystemLoader
 from sqlalchemy.orm import Session
 from app.services.form.form_placar_rodada_service import lista_classificacao_geral, rodada_lista
-from app.services.estadio_service import listar_estadios_paginadas
+from app.services.estadio_service import listar_todos_estadios
+from app.schemas.estadio_schema import EstadioCidadeOut
 from app.core.database import get_db
 
 # Configurações
@@ -56,7 +57,7 @@ def gerar_html_estadios(dados_estadios):
         html_file.write(html_content)
     print(f"Página HTML dos Estádios gerada com sucesso em: {OUTPUT_ESTADIOS_HTML_FILE}")
 
-def gerar_html_rodada(dados_rodada):
+def gerar_html_rodada(serie, ano, rodada, jogos):
     """
     Gera o arquivo HTML para exibir os jogos de uma rodada específica.
     """
@@ -64,15 +65,15 @@ def gerar_html_rodada(dados_rodada):
     template = env.get_template(TEMPLATE_RODADA)
 
     html_content = template.render(
-        serie=dados_rodada.serie,
-        ano=dados_rodada.ano,
-        rodada_numero=dados_rodada.rodada,
-        jogos=dados_rodada.jogos_da_rodada
+        serie=serie,
+        ano=ano,
+        rodada_numero=rodada,
+        jogos=jogos
     )
 
     output_file_path = os.path.join(
         TEMPLATE_DIR,
-        f"rodada_brasileirao_{dados_rodada.serie.lower()}_{dados_rodada.ano}_rodada_{dados_rodada.rodada}.html"
+        f"rodada_brasileirao_{serie.lower()}_{ano}_rodada_{rodada}.html"
     )
     print(f"Gerando arquivo HTML da Rodada em: {output_file_path}")
     with open(output_file_path, "w", encoding="utf-8") as html_file:
@@ -126,12 +127,11 @@ def listar_estadios():
     """
     session: Session = next(get_db())
     try:
-        nome_estadio = input("Digite o nome do estádio (ou deixe vazio para listar todos): ").strip()
-        pagina = int(input("Digite o número da página: ").strip())
-        tamanho_pagina = int(input("Digite o tamanho da página: ").strip())
+        estadios = EstadioCidadeOut
+        resultado = listar_todos_estadios(None, None, None, session)
+        estadios = resultado
 
-        resultado = listar_estadios_paginadas(nome_estadio, pagina, tamanho_pagina, session)
-        gerar_html_estadios(resultado.estadios)
+        gerar_html_estadios(estadios)
     except Exception as e:
         print(f"Erro ao listar Estádios: {e}")
     finally:
@@ -147,7 +147,7 @@ def listar_rodada():
         rodada_numero = int(input(f"Digite o número da rodada ({serie} - {ANO}): ").strip())
         dados_rodada = rodada_lista(session, serie, ANO, rodada_numero, False)
 
-        gerar_html_rodada(dados_rodada)
+        gerar_html_rodada(serie, ANO, rodada_numero, dados_rodada)
     except Exception as e:
         print(f"Erro ao listar Rodada: {e}")
     finally:

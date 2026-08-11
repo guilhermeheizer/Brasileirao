@@ -12,9 +12,14 @@ Principais funcionalidades:
 Classe principal:
 - Rodada: modelo ORM da tabela rodada
 """
-from sqlalchemy import Column, CHAR, Integer, ForeignKey, DATETIME
-from sqlalchemy.orm import relationship
+from typing import TYPE_CHECKING
+from sqlalchemy import String, Integer, ForeignKey, DateTime, text, Identity, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.models.clube_models import Clube
+    from app.models.estadio_models import Estadio
 
 
 class Rodada(Base):
@@ -24,27 +29,100 @@ class Rodada(Base):
     """
     __tablename__ = "rodada"
 
-    rod_serie = Column(CHAR(1), primary_key=True, nullable=False)  #: Série (A ou B)
-    rod_ano = Column(Integer, primary_key=True, nullable=False)  #: Ano do campeonato
-    rod_rodada = Column(Integer, primary_key=True, nullable=False)  #: Número da rodada
-    rod_sequencia = Column(Integer, primary_key=True, nullable=False)  #: Identifica sequência da partida específica
-    rod_data = Column(DATETIME, nullable=False)  #: Data da partida
-    clube_clu_sigla_mandante = Column(CHAR(3), ForeignKey("clube.clu_sigla"), nullable=False)  #: Mandante
-    rod_gols_mandante = Column(Integer, nullable=True)  #: Gols do mandante
-    clube_clu_sigla_visitante = Column(CHAR(3), ForeignKey("clube.clu_sigla"), nullable=False)  #: Visitante
-    rod_gols_visitante = Column(Integer, nullable=True)  #: Gols do visitante
-    rod_pontos_mandante = Column(Integer, nullable=True)  #: Pontos do mandante
-    rod_pontos_visitante = Column(Integer, nullable=True)  #: Pontos do visitante
-    rod_calculou_classificacao = Column(CHAR(1), nullable=True, default="N")  #: Se classificações foram calculadas
-    rod_partida_finalizada = Column(CHAR(1), nullable=True, default="N")  #: Se a partida foi finalizada
-    estadio_est_id = Column(Integer, ForeignKey("estadio.est_id"), nullable=False)  #: Estádio onde ocorreu a partida
+    rod_serie: Mapped[str] = mapped_column(
+        String(1),
+        primary_key=True,
+        nullable=False
+    )
 
-    # Relacionamentos com Clube
-    clube_mandante = relationship("Clube", foreign_keys=[clube_clu_sigla_mandante])
-    clube_visitante = relationship("Clube", foreign_keys=[clube_clu_sigla_visitante])
+    rod_ano: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        nullable=False
+    )
 
-    # Relacionamento com Estádio
-    estadio = relationship("Estadio")
+    rod_rodada: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        nullable=False
+    )
+
+    rod_sequencia: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        nullable=False
+    )
+
+    rod_data: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=False),
+        nullable=False
+    )
+
+    clube_clu_sigla_mandante: Mapped[str] = mapped_column(
+        String(3),
+        ForeignKey("clube.clu_sigla"),
+        nullable=False
+    )
+
+    rod_gols_mandante: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True
+    )
+
+    clube_clu_sigla_visitante: Mapped[str] = mapped_column(
+        String(3),
+        ForeignKey("clube.clu_sigla"),
+        nullable=False
+    )
+
+    rod_gols_visitante: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True
+    )
+
+    rod_pontos_mandante: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True
+    )
+
+    rod_pontos_visitante: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True
+    )
+
+    rod_calculou_classificacao: Mapped[str] = mapped_column(
+        String(1),
+        nullable=False,
+        default="N",
+        server_default=text("'N'")
+    )
+
+    rod_partida_finalizada: Mapped[str] = mapped_column(
+        String(1),
+        nullable=False,
+        default="N",
+        server_default=text("'N'")
+    )
+
+    estadio_est_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("estadio.est_id"),
+        nullable=False
+    )
+
+    clube_mandante: Mapped["Clube"] = relationship(
+        "Clube",
+        foreign_keys=[clube_clu_sigla_mandante]
+    )
+
+    clube_visitante: Mapped["Clube"] = relationship(
+        "Clube",
+        foreign_keys=[clube_clu_sigla_visitante]
+    )
+
+    estadio: Mapped["Estadio"] = relationship(
+        "Estadio"
+    )
 
     def __init__(self, rod_serie, rod_ano, rod_rodada, rod_sequencia, rod_data, 
                  clube_clu_sigla_mandante, clube_clu_sigla_visitante, rod_calculou_classificacao, 
@@ -56,7 +134,7 @@ class Rodada(Base):
             rod_ano (int): Ano do campeonato
             rod_rodada (int): Número da rodada
             rod_sequencia (int): Sequência da partida
-            rod_data (datetime): Data da partida
+            rod_data (DateTime): Data da partida
             clube_clu_sigla_mandante (str): Sigla do clube mandante
             clube_clu_sigla_visitante (str): Sigla do clube visitante
             rod_calculou_classificacao (str): Se classificações foram calculadas

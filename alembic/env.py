@@ -5,13 +5,18 @@ from sqlalchemy import pool
 
 from alembic import context
 
-import sys
+from app.core.database import Base # Importar a classe Base do módulo database
+import app.models # Importar os modelos do banco de dados para que o Alembic possa detectá-los
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+db_url = os.environ.get("DATABASE_URL") # Obter a URL do banco de dados a partir de uma variável de ambiente
+if db_url:
+    config.set_main_option("sqlalchemy.url", db_url) # Configurar a URL do banco de dados no arquivo de configuração do Alembic 
+
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -22,8 +27,6 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from app.core.database import Base
-from app.models import usuario_models, cidade_models, estadio_models  # noqa: F401
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
@@ -50,6 +53,8 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        compare_type=True, # Adicionar esta linha para comparar os tipos de dados das colunas
+        compare_server_default=True # Adicionar esta linha para comparar os valores padrão das colunas
     )
 
     with context.begin_transaction():
@@ -71,7 +76,10 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, 
+            target_metadata=target_metadata,
+            compare_type=True, # Adicionar esta linha para comparar os tipos de dados das colunas
+            compare_server_default=True # Adicionar esta linha para comparar os valores padrão das colunas
         )
 
         with context.begin_transaction():

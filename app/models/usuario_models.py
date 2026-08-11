@@ -1,16 +1,45 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import String, Integer, Boolean, text, Identity, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
 
 class Usuario(Base):
     __tablename__ = "usuario"
 
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    nome = Column("nome", String)
-    email = Column("email", String, nullable=False)
-    senha = Column("senha", String)
-    ativo = Column("ativo", Boolean)
-    admin = Column("admin", Boolean, default=False)
+    id: Mapped[int] = mapped_column(
+        Integer,
+        Identity(),
+        primary_key=True,
+        autoincrement=True
+    )
+
+    nome: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False
+    )
+
+    email: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False
+    )
+
+    senha: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False
+    )
+
+    ativo: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True,
+        server_default=text("true")
+    )
+    
+    admin: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        server_default=text("false")
+    )
 
     def __init__(self, nome, email, senha, ativo=True, admin=False):
         self.nome = nome

@@ -1,35 +1,53 @@
-"""
-cidade_schema.py
+from pydantic import BaseModel, field_validator, PositiveInt, ConfigDict
+from pydantic_core import PydanticCustomError
+import re
 
-Este módulo define os schemas Pydantic para operações relacionadas às cidades no contexto do Campeonato Brasileiro.
-Os schemas são utilizados para validação, serialização e documentação automática das rotas FastAPI.
+REGEX_NOME = re.compile(r"^[A-Za-zÀ-ÿ\s\-']+$")
+REGEX_UF = re.compile(r"^[A-Za-z]{2}$")
 
-Principais schemas:
-- CidadesSchema: Representa uma cidade individual
-- ResponseCidadesSchema: Representa uma resposta com lista de cidades
-"""
-from pydantic import BaseModel
-from typing import Optional
-from typing import List
-
-class CidadesSchema(BaseModel):
+class CidadeCreate(BaseModel):
     """
-    Schema Pydantic que representa uma cidade.
-    Inclui id, nome e UF da cidade.
+    Schema Pydantic para criação de uma cidade.
+    Inclui nome e UF da cidade.
     """
+    cid_nome: str
+    cid_uf: str
+
+    @field_validator("cid_nome")
+    @classmethod
+    def _cid_nome(cls, v: str) -> str:
+        if not v.strip():
+            raise PydanticCustomError("Nome obrigatório", "Cidade é obrigatório.")
+        if len(v) > 100:
+            raise PydanticCustomError("Máximo de caracteres", "Cidade deve ter no máximo 100 caracteres.")
+        if not REGEX_NOME.match(v):
+            raise PydanticCustomError("Formato inválido", "Cidade contém caracteres inválidos.")
+        return v
+    
+
+    @field_validator("cid_uf")
+    @classmethod
+    def _cid_uf(cls, v: str) -> str:
+        if not v.strip():
+            raise PydanticCustomError("UF obrigatório", "UF é obrigatório.")
+        if len(v) != 2:
+            raise PydanticCustomError("Máximo de caracteres", "UF deve ter exatamente 2 caracteres.")
+        if not REGEX_UF.match(v):
+            raise PydanticCustomError("Formato inválido", "UF contém caracteres inválidos.")
+        return v
+
+    class Config:
+        from_attributes = True
+
+class CidadeUpdate(CidadeCreate):
+    cid_id: PositiveInt
+
+    class Config:
+        from_attributes = True
+
+class CidadeOut(BaseModel):
     cid_id: int
     cid_nome: str
     cid_uf: str
 
-    class Config:
-        from_attributes = True
-
-class ResponseCidadesSchema(BaseModel):
-    """
-    Schema de resposta contendo uma lista de cidades.
-    Utilizado para retornar múltiplas cidades em respostas de API.
-    """
-    cidades: List[CidadesSchema]
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

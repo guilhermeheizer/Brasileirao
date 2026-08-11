@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends
-from app.schemas.estadio_schema import ResponseEstadioSchema, EstadioSchema, ResponseEstadioCidadeSchema
+from app.schemas.estadio_schema import EstadioCreate, EstadioUpdate, EstadioCidadeOut
 from app.core.dependencies import pegar_sessao, verificar_token
 from app.models.usuario_models import Usuario
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List
 from fastapi import Query
 from app.services.estadio_service import (
     listar_todos_estadios,
@@ -16,25 +16,38 @@ from app.services.estadio_service import (
 estadio_router = APIRouter(tags=["estadio"])
 
 
-@estadio_router.get("/listar", response_model=ResponseEstadioSchema)
-async def listar_estadios(session: Session = Depends(pegar_sessao)):
+@estadio_router.get("/listar", response_model=List[EstadioCidadeOut])
+async def listar_estadios(
+    nome_estadio: Optional[str] = Query(None, 
+                                max_length=100,
+                                description="Busca parcial pelo nome da estadio"),
+    nome_cidade: Optional[str] = Query(None, 
+                                max_length=100,
+                                description="Busca parcial pelo nome da cidade"),
+    uf: Optional[str] = Query(None, 
+                              max_length=2,
+                              description="Busca parcial pela UF da cidade"),
+    session: Session = Depends(pegar_sessao)):
     """
     Lista todos os estadios cadastrados.
 
     Args:
-    session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI 
-    via dependência de injeção (Depends(pegar_sessao)).
+        nome_estadio (Optional[str], optional): Defaults to Query(None, description="Busca parcial pelo nome da estadio").
+        nome_cidade (Optional[str], optional): Defaults to Query(None, description="Busca parcial pelo nome da cidade").
+        uf (Optional[str], optional): Defaults to Query(None, description="Busca parcial pela UF da cidade").
+        session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI 
+        via dependência de injeção (Depends(pegar_sessao)).
 
     Raises:
-    HTTPException: Lançada se não houver estadios cadastrados no banco de dados 
-    (status 404).
+        HTTPException: Lançada se não houver estadios cadastrados no banco de dados 
+        (status 404).
 
     Returns:
-    ResponseEstadioSchema: Uma resposta no formato do esquema Pydantic `ResponseEstadioSchema`, 
-    que contém uma lista de estadio no formato especificado por `EstadioSchema`.
+        List[EstadioCidadeOut]: Uma resposta no formato do esquema Pydantic `EstadioCidadeOut`, 
+        que contém uma lista de estadios no formato especificado por `EstadioCidadeOut`.
     """
     try:
-        return listar_todos_estadios(session)
+        return listar_todos_estadios(nome_estadio, nome_cidade, uf, session)
     except HTTPException as ex:
         log_erro = f"Erro: {ex.detail}"
         raise HTTPException(status_code=ex.status_code, detail=log_erro)
@@ -45,13 +58,13 @@ async def listar_estadios(session: Session = Depends(pegar_sessao)):
         session.close()
 
 
-@estadio_router.post("/incluir/", response_model=EstadioSchema)
-async def criar_novo_estadio(estadio: EstadioSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
+@estadio_router.post("/incluir/", response_model=EstadioCreate)
+async def criar_novo_estadio(estadio: EstadioCreate, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     """
     Cria um novo estadio no banco de dados.
 
     Args:
-    estadio (EstadioSchema): estadio: Dados da estadio a ser criado.
+    estadio (EstadioCreate): estadio: Dados da estadio a ser criado.
     session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI   
                                     via dependência de injeção (Depends(pegar_sessao)).
     usuario (Usuario, optional): Defaults to Depends(verificar_token).
@@ -60,7 +73,7 @@ async def criar_novo_estadio(estadio: EstadioSchema, session: Session = Depends(
     HTTPException: Lançada se ocorrer um erro durante a criação da estadio.
 
     Returns:
-    EstadioSchema: A estadio criado.
+    EstadioCreate: A estadio criado.
     """
     try:
         return criar_estadio(estadio, session)
@@ -74,10 +87,10 @@ async def criar_novo_estadio(estadio: EstadioSchema, session: Session = Depends(
         session.close()
 
 
-@estadio_router.put("/alterar/{est_id}", response_model=EstadioSchema)
+@estadio_router.put("/alterar/{est_id}", response_model=EstadioUpdate)
 def atualizar_estadio_por_sigla(
     est_id: int,
-    estadio_atualizado: EstadioSchema,
+    estadio_atualizado: EstadioUpdate,
     session: Session = Depends(pegar_sessao),
     usuario: Usuario = Depends(verificar_token)):
     """
@@ -85,7 +98,7 @@ def atualizar_estadio_por_sigla(
 
     Args:
     estadio_id (int): informe o ID da estadio a ser atualizado.
-    estadio_atualizado (EstadioSchema): Dados para atualizar a estadio.
+    estadio_atualizado (EstadioUpdate): Dados para atualizar a estadio.
     session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI   
                                  via dependência de injeção (Depends(pegar_sessao)).
     usuario (Usuario, optional): Defaults to Depends(verificar_token).
@@ -94,7 +107,7 @@ def atualizar_estadio_por_sigla(
     HTTPException: Lançada se ocorrer um erro durante a atualização da estadio.
 
     Returns:
-    EstadioSchema: A estadio atualizada.
+    EstadioUpdate: A estadio atualizada.
     """
     try:
         return atualizar_estadio(est_id, estadio_atualizado, session)
@@ -140,16 +153,26 @@ async def deletar_estadio_por_id(
         session.close()
 
     
-@estadio_router.get("/listar-paginado", response_model=ResponseEstadioCidadeSchema)
+@estadio_router.get("/listar-paginado", response_model=List[EstadioCidadeOut])
 async def listar_estadios_paginacao(
-    nome: Optional[str] = Query(None, description="Busca parcial pelo nome da estadio"),
+    nome_estadio: Optional[str] = Query(None, 
+                                max_length=100,
+                                description="Busca parcial pelo nome da estadio"),
+    nome_cidade: Optional[str] = Query(None, 
+                                max_length=100,
+                                description="Busca parcial pelo nome da cidade"),
+    uf: Optional[str] = Query(None, 
+                              max_length=2,
+                              description="Busca parcial pela UF da cidade"),
     pagina: int = Query(1, description="Número da página", ge=1),
     tamanho_pagina: int = Query(10, description="Tamanho da página", ge=1),
     session: Session = Depends(pegar_sessao)):
     """Lista os estadios com paginação e busca por nome.
 
     Args:
-        nome (Optional[str], optional): Defaults to Query(None, description="Busca parcial pelo nome do estadio").
+        nome_estadio (Optional[str], optional): Defaults to Query(None, description="Busca parcial pelo nome do estadio").
+        nome_cidade (Optional[str], optional): Defaults to Query(None, description="Busca parcial pelo nome da cidade").
+        uf (Optional[str], optional): Defaults to Query(None, description="Busca parcial pela UF da cidade").
         pagina (int, optional): Defaults to Query(1, description="Número da página", ge=1).
         tamanho_pagina (int, optional): Defaults to Query(10, description="Tamanho da página", ge=1).   
         session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI   
@@ -158,11 +181,11 @@ async def listar_estadios_paginacao(
     Raises:
         HTTPException: Lançada se ocorrer um erro durante a listagem dos estadios.
 
-    Returns: ResponseEstadiosSchema: Uma resposta no formato do esquema Pydantic `ResponseEstadiosSchema`, 
-             que contém uma lista de estadios no formato especificado por `EstadioSchema`.
+    Returns: List[EstadioCidadeOut]: Uma resposta no formato do esquema Pydantic `List[EstadioCidadeOut]`, 
+             que contém uma lista de estadios no formato especificado por `EstadioCidadeOut`.
     """
     try:
-        return listar_estadios_paginadas(nome, pagina, tamanho_pagina, session)
+        return listar_estadios_paginadas(nome_estadio, nome_cidade, uf, pagina, tamanho_pagina, session)
     except HTTPException as ex:
         log_erro = f"Erro: {ex.detail}"
         raise HTTPException(status_code=ex.status_code, detail=log_erro)

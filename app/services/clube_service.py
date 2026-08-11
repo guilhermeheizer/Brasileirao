@@ -2,15 +2,12 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.models.clube_models import Clube
 from app.models.cidade_models import Cidade
-from app.models.cartao_models import Cartao
-from app.schemas.clube_schema import ResponseClubeSchema, ClubeSchema, ClubeCidadeSchema, ResponseClubeCidadeSchema
-from app.services.cidade_service import buscar_cidade_id
-from typing import List
-from typing import Optional
+from app.schemas.clube_schema import ResponseClubeSchema, ClubeSchema, ClubeCidadeOut
+from typing import Optional, List
 import re
 
 
-def listar_todos_clubes(serie: Optional[str], nome: Optional[str], session: Session) -> ResponseClubeSchema:
+def listar_todos_clubes(serie: Optional[str], nome: Optional[str], session: Session) -> List[ClubeCidadeOut]:
     """Lista todos os clubes
 
     Args:
@@ -22,28 +19,45 @@ def listar_todos_clubes(serie: Optional[str], nome: Optional[str], session: Sess
         HTTPException: Erro: 404 - Nenhum clube encontrado.
 
     Returns:
-        ResponseClubeSchema: Representação dos clubes encontrados.
+        List[ClubeCidadeOut]: Representação dos clubes encontrados.
     """
-    if serie:
-        consiste_serie(serie)  # Verifica se a série é válida
+    query = session.query(
+        Clube.__table__.c.clu_sigla,
+        Clube.__table__.c.clu_nome,
+        Clube.__table__.c.clu_serie,
+        Clube.__table__.c.clu_link_escudo,
+        Clube.__table__.c.cidade_cid_id,
+        Cidade.__table__.c.cid_nome.label("cid_nome"),
+        Cidade.__table__.c.cid_uf.label("cid_uf"),
+    ).join(Cidade, Clube.__table__.c.cidade_cid_id == Cidade.__table__.c.cid_id)
 
-    query = session.query(Clube).order_by(Clube.__table__.c.clu_nome)
-
-        # Filtro opcional pelo nome do clube
+    # Filtro opcional pelo nome do clube
     if nome:
         query = query.filter(Clube.__table__.c.clu_nome.ilike(f"%{nome}%"))
 
     if serie:
         query = query.filter(Clube.__table__.c.clu_serie == serie.upper())
-        
-    clubes = query.all()
 
-    if not clubes:
+    query = query.order_by(Clube.__table__.c.clu_nome)
+
+    if not query.all():
         raise HTTPException(status_code=404, detail="Nenhum clube encontrado.")
-    
-    clubes_schema = [ClubeSchema(**clube.as_dict()) for clube in clubes]
-    return ResponseClubeSchema(clubes=clubes_schema)
 
+    clube_schema = [
+        ClubeCidadeOut(
+            clu_sigla=clube.clu_sigla,
+            clu_nome=clube.clu_nome,
+            clu_serie=clube.clu_serie,
+            clu_link_escudo=clube.clu_link_escudo,
+            cidade_cid_id=clube.cidade_cid_id,
+            cidade_nome=clube.cid_nome,
+            cidade_uf=clube.cid_uf,
+        )
+        for clube in query.all()
+    ]
+
+    return clube_schema
+    # return [ClubeCidadeOut(**clube.as_dict()) for clube in query.all()]
 
 def criar_clube(clube: ClubeSchema, session: Session) -> ClubeSchema:
     """Criar registro na tabela de clube
@@ -64,7 +78,9 @@ def criar_clube(clube: ClubeSchema, session: Session) -> ClubeSchema:
     buscar_clube_nome(True, clube.clu_nome, session)  # Verifica se a sigla já existe
     buscar_clube_sigla(True, clube.clu_sigla.upper(), session)  # Verifica se a sigla já existe
     consiste_serie(clube.clu_serie)  # Verifica se a série é válida
-    buscar_cidade_id(True, clube.cidade_cid_id, session)  # Verifica se a cidade existe
+    cidade = (session.query(Cidade).filter(Cidade.cid_id == clube.cidade_cid_id).first())
+    if not cidade:
+        raise HTTPException(status_code=404, detail="Cidade não encontrada.")
 
     novo_clube = Clube(
         clu_sigla=clube.clu_sigla.upper(),
@@ -89,7 +105,13 @@ def atualizar_clube(clu_sigla: str, clube_atualizado: ClubeSchema, session: Sess
         consiste_serie(clube_atualizado.clu_serie)  # Ex.: verifica se a série é válida (A, B etc.)
 
     if clube_atualizado.cidade_cid_id:
-        buscar_cidade_id(True, clube_atualizado.cidade_cid_id, session)  # Verifica se a cidade existe
+        cidade = (
+            session.query(Cidade)
+            .filter(Cidade.cid_id == clube_atualizado.cidade_cid_id)
+            .first()
+        )
+        if not cidade:
+            raise HTTPException(status_code=404, detail="Cidade não encontrada.")
 
     # Atualização condicional dos campos (apenas os fornecidos pelo cliente)
     if clube_atualizado.clu_nome:
@@ -179,6 +201,30 @@ def buscar_clube_sigla(retorna_exception: bool, clube_sigla: str, session: Sessi
     if clube:
         if retorna_exception:
             raise HTTPException(status_code=404, detail=f"Clube com sigla '{clube_sigla}' já existe.")
+        
+    return ClubeSchema(**clube.as_dict()) if clube else None
+
+def buscar_clube_por_cidade_id(retorna_exception: bool, cidade_id: int, session: Session) -> ClubeSchema | None:
+    """
+    Busca clubes pelo ID da cidade no banco de dados.
+
+    Args:
+        retorna_exception (bool): Indica se deve lançar uma exceção caso nenhum clube seja encontrado.
+        cidade_id (int): ID da cidade a ser buscada.
+        session (Session): Sessão ativa do SQLAlchemy para conectar ao banco.
+
+    Raises:
+        HTTPException: Caso nenhum clube seja encontrado.
+
+    Returns:
+        List[ClubeSchema]: Lista de clubes encontrados na cidade especificada.
+    """
+    # Busca pelos clubes no banco de dados
+    clube = session.query(Clube).filter(Clube.__table__.c.cidade_cid_id == cidade_id).first()
+
+    if not clube and retorna_exception:
+        raise HTTPException(status_code=404, detail=f"Nenhum clube encontrado para a cidade com ID '{cidade_id}'.")
+
     return ClubeSchema(**clube.as_dict()) if clube else None
 
 def consiste_serie(serie: str) -> bool:
@@ -220,7 +266,7 @@ def consiste_sigla(sigla: str) -> bool:
     
     return bool(True)
 
-def listar_clubes_paginadas(serie: Optional[str], nome: Optional[str], pagina: int, tamanho_pagina: int, session: Session) -> ResponseClubeCidadeSchema:
+def listar_clubes_paginadas(serie: Optional[str], nome: Optional[str], pagina: int, tamanho_pagina: int, session: Session) -> List[ClubeCidadeOut]:
     """Listar os clubes pelo nome da clube (opcional) com paginação
 
     Args:
@@ -234,7 +280,7 @@ def listar_clubes_paginadas(serie: Optional[str], nome: Optional[str], pagina: i
         HTTPException: Lançada se nenhuma clube for encontrada.
 
     Returns:
-        ResponseClubesSchema: Lista de clubes no formato esperado na API.
+        List[ClubeCidadeOut]: Lista de clubes no formato esperado na API.
     """
     if serie:
         consiste_serie(serie)  # Verifica se a série é válida
@@ -266,8 +312,8 @@ def listar_clubes_paginadas(serie: Optional[str], nome: Optional[str], pagina: i
         raise HTTPException(status_code=404, detail="Nenhum clube encontrado.")
 
     # Serializar os clubes no formato esperado
-    clubes_schema = [
-        ClubeCidadeSchema(
+    return [
+        ClubeCidadeOut(
             clu_sigla=clube.clu_sigla,
             clu_nome=clube.clu_nome,
             clu_serie=clube.clu_serie,
@@ -278,5 +324,3 @@ def listar_clubes_paginadas(serie: Optional[str], nome: Optional[str], pagina: i
         )
         for clube in clubes
     ]
-
-    return ResponseClubeCidadeSchema(clubes=clubes_schema)

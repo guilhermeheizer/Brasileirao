@@ -14,6 +14,7 @@ from fastapi import HTTPException
 from app.models.rodada_models import Rodada
 from app.services.rodada_service import validar_rodada
 from typing import List
+from datetime import timezone
 from app.schemas.rodada_schema import (
     CriarRodadaSchema,
     ResponseCriarRodadaSchema,
@@ -54,12 +55,13 @@ def criar_rodada(
     try:
         for jogo in jogos_data:
             sequencia += 5
+            data_sem_tz = jogo.rod_data.replace(tzinfo=None)
             nova_rodada = Rodada(
                 rod_serie=jogo.rod_serie.upper(),
                 rod_ano=jogo.rod_ano,
                 rod_rodada=jogo.rod_rodada,
                 rod_sequencia=sequencia,
-                rod_data=jogo.rod_data,
+                rod_data=data_sem_tz,
                 clube_clu_sigla_mandante=jogo.clube_clu_sigla_mandante.upper(),
                 clube_clu_sigla_visitante=jogo.clube_clu_sigla_visitante.upper(),
                 rod_calculou_classificacao="N",

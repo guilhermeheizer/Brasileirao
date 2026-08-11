@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from app.models.usuario_models import Usuario
 from datetime import timedelta
+from app.core.config import settings
 
 
 login_router = APIRouter(tags=["login"])
@@ -48,7 +49,8 @@ async def refresh_token(usuario: Usuario = Depends(verificar_token)):
     Returns:
         _type_: _description_
     """
-    acess_token = criar_token(getattr(usuario, "id"))
+    usuario_id = usuario.id
+    acess_token = criar_token(usuario_id, duracao_token=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))  # Novo token de acesso com duração de 15 minutos
     return {
         "access_token": acess_token,
         "token_type": "Bearer"

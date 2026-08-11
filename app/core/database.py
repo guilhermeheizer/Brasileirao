@@ -11,7 +11,11 @@ database_url = settings.DATABASE_URL
 if settings.DATABASE_URL is None:
     raise HTTPException(status_code=500, detail="DATABASE_URL is not set in environment variables")
 
-engine = create_engine(str(settings.DATABASE_URL), connect_args={"check_same_thread": False} if "sqlite" in str(settings.DATABASE_URL) else {})
+# Para SQLite, adiciona o argumento connect_args={"check_same_thread": False}
+# engine = create_engine(str(settings.DATABASE_URL), connect_args={"check_same_thread": False} if "sqlite" in str(settings.DATABASE_URL) else {})
+
+# Para PostgreSQL, não é necessário o argumento connect_args
+engine = create_engine(str(settings.DATABASE_URL), pool_pre_ping=True)
 
 # Cria sessão local
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine) 

@@ -16,11 +16,10 @@ Todos os endpoints utilizam injeção de dependências para sessão do banco e a
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List
-from typing import Optional
 from app.core.dependencies import pegar_sessao, verificar_token
 from app.models.usuario_models import Usuario
-from app.schemas.cartao_schema import ResponseCartaoClubeSchema
-from app.schemas.rodada_schema import ListaJogosRodadaFormPlacarResponse, AtualizarRodadaPlacarSchema
+from app.schemas.cartao_schema import CartaoClubeOut
+from app.schemas.rodada_schema import JogoFormPlacarSchema, AtualizarRodadaPlacarSchema
 from app.services.cartao_service import listar_cartoes_paginados
 from app.schemas.classificacao_geral_schema import ResponseClassificacaoGeralListaSchema
 from app.services.form.form_placar_rodada_service import calcular_classificacao_brasileirao, rodada_lista, atualizar_placares_rodada, lista_classificacao_geral
@@ -29,7 +28,7 @@ router_placar_rodada = APIRouter(tags=["placar rodada"])
 
 @router_placar_rodada.get(
     "/buscar-placares/{serie}/{ano}/{rodada}",
-    response_model=ListaJogosRodadaFormPlacarResponse,
+    response_model=List[JogoFormPlacarSchema],
     summary="Busca os jogos da rodada para preenchimento de placares",
     description="Retorna jogos de uma rodada específica ou jogos anteriores não realizados no formato esperado pelo front-end."
 )
@@ -100,16 +99,18 @@ async def atualizar_placares(
         session.close()
 
 
-@router_placar_rodada.get("/listar-paginado", response_model=ResponseCartaoClubeSchema)
+@router_placar_rodada.get("/listar-paginado", response_model=List[CartaoClubeOut])
 async def listar_cartoes_paginacao(
-    nome: Optional[str] = Query(None, description="Busca parcial pelo nome da clube"),
+    serie: str = Query(description="Busca parcial pela série do campeonato"),
+    ano: int = Query(description="Busca parcial pelo ano do campeonato"),
     pagina: int = Query(1, description="Número da página", ge=1),
     tamanho_pagina: int = Query(20, description="Tamanho da página", ge=1),
     session: Session = Depends(pegar_sessao)):
     """Lista os cartões com paginação e busca por nome.
 
     Args:
-        nome (Optional[str], optional): Defaults to Query(None, description="Busca parcial pelo nome do clube").
+        serie (str): Série do campeonato (ex.: 'A', 'B').
+        ano (int), optional): Defaults to Query(None, description="Busca parcial pelo ano do campeonato").
         pagina (int, optional): Defaults to Query(1, description="Número da página", ge=1).
         tamanho_pagina (int, optional): Defaults to Query(10, description="Tamanho da página", ge=1).   
         session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI   
@@ -118,11 +119,10 @@ async def listar_cartoes_paginacao(
     Raises:
         HTTPException: Lançada se ocorrer um erro durante a listagem dos cartões.
 
-    Returns: ResponseCartaoClubeSchema: Uma resposta no formato do esquema Pydantic `ResponseCartaoClubeSchema`, 
-             que contém uma lista de cartões no formato especificado por `CartaoSchema`.
+    Returns: List[CartaoClubeOut]: Uma lista de cartões no formato especificado por `CartaoClubeOut`.
     """
     try:
-        return listar_cartoes_paginados(nome, pagina, tamanho_pagina, session)
+        return listar_cartoes_paginados(serie, ano, pagina, tamanho_pagina, session)
     except HTTPException as ex:
         log_erro = f"Erro: {ex.detail}"
         raise HTTPException(status_code=ex.status_code, detail=log_erro)

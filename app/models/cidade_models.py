@@ -12,10 +12,15 @@ Principais funcionalidades:
 Classe principal:
 - Cidade: modelo ORM da tabela cidade
 """
-from sqlalchemy import Column, Integer, String, CHAR
-from sqlalchemy.orm import relationship
+from typing import TYPE_CHECKING
+from sqlalchemy import String, Integer, Identity
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
+
+if TYPE_CHECKING:
+    from app.models.clube_models import Clube
+    from app.models.estadio_models import Estadio
 
 class Cidade(Base):
     """
@@ -24,12 +29,32 @@ class Cidade(Base):
     """
     __tablename__ = "cidade"
 
-    cid_id = Column(Integer, primary_key=True, autoincrement=True)
-    cid_nome = Column(String(100), nullable=False)
-    cid_uf = Column(CHAR(2), nullable=False)
+    cid_id: Mapped[int] = mapped_column(
+        Integer,
+        Identity(),
+        primary_key=True,
+        autoincrement=True
+    )
 
-    estadios = relationship("Estadio", cascade="all, delete")
-    clubes = relationship("Clube", cascade="all, delete", back_populates="cidade")
+    cid_nome: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False
+    )
+    
+    cid_uf: Mapped[str] = mapped_column(
+        String(2),
+        nullable=False
+    )
+
+    estadios: Mapped[list["Estadio"]] = relationship(
+        "Estadio",
+        back_populates="cidade"
+    )
+
+    clubes: Mapped[list["Clube"]] = relationship(
+        "Clube",
+        back_populates="cidade"
+    )
 
     def __init__(self, cid_nome, cid_uf):
         """

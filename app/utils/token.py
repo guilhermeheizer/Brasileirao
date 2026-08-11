@@ -54,12 +54,17 @@ def verificar_token(token: str = Depends(oauth2_scheme), session: Session = Depe
     Returns:
         usuario: Retorna o usuário associado ao token válido.
     """
+    if not token:
+        raise HTTPException(status_code=401, detail="Token não fornecido!")
     if settings.SECRET_KEY is None:        
         raise HTTPException(status_code=500, detail="Abra config.py e veja SECRET_KEY esta vazio ou não é uma string válida")
     try:
         dic_info = jwt.decode(token, settings.SECRET_KEY, settings.ALGORITHM)
-        id_usuario = dic_info.get("sub")
-    except JWTError as erro:
+        sub = dic_info.get("sub")
+        if sub is None:
+            raise JWTError("sub claim ausente")
+        id_usuario = int(sub)
+    except (JWTError, ValueError, TypeError) as erro:
         print(f"Erro ao decodificar o token: {erro}")
         raise HTTPException(status_code=401, detail="Acesso não autorizado, verifique a validade do token!")
     

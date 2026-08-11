@@ -1,34 +1,11 @@
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
-
-
-"""
-rodada_schema.py
-
-Este módulo define os schemas Pydantic para operações relacionadas às rodadas do Campeonato Brasileiro.
-
-Os schemas representam as estruturas de dados utilizadas para:
-- Cadastro de rodadas
-- Atualização de placar
-- Respostas de API para rodadas e jogos
-- Formulários de placar
-
-Cada schema é utilizado para validação, serialização e documentação automática das rotas FastAPI.
-
-Classes principais:
-- RodadaSchema: Base para dados de uma rodada
-- CriarRodadaSchema: Para criação de rodada
-- AtualizarRodadaPlacarSchema: Para atualização de placar
-- ResponseRodadaSchema: Resposta detalhada de uma rodada
-- ResponseRodadasSchema: Lista de rodadas
-- JogoFormPlacarSchema: Detalhes de um jogo
-- ListaJogosRodadaFormPlacarResponse: Lista de jogos de uma rodada
-- AlterarJogoRodadaSchema: Para alteração de dados de um jogo em uma rodada
-"""
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
+
+
 class RodadaSchema(BaseModel):
     """
     Schema base para dados de uma rodada do campeonato.
@@ -45,7 +22,6 @@ class RodadaSchema(BaseModel):
     
     class Config:
         from_attributes = True
-
 
 class CriarRodadaSchema(RodadaSchema):
     """
@@ -97,18 +73,6 @@ class ResponseRodadaSchema(AtualizarRodadaPlacarSchema):
     class Config:
         from_attributes = True
 
-
-class ResponseRodadasSchema(BaseModel):
-    """
-    Schema de resposta para lista de rodadas.
-    Contém uma lista de ResponseRodadaSchema.
-    """
-    rodadas: List[ResponseRodadaSchema]
-
-    class Config:
-        from_attributes = True
-
-
 # Schema para representar os detalhes de um único jogo
 class JogoFormPlacarSchema(BaseModel):
     """
@@ -141,19 +105,19 @@ class JogoFormPlacarSchema(BaseModel):
 
 
 # Schema para a resposta que contém a lista de jogos de uma rodada
-class ListaJogosRodadaFormPlacarResponse(BaseModel):
-    """
-    Schema para resposta contendo a lista de jogos de uma rodada.
-    Utilizado para exibir todos os jogos de uma rodada específica.
-    """
-    serie: str  # Série do campeonato (A ou B)
-    ano: int  # Ano da competição
-    rodada: int  # Número da rodada
-    jogos_da_rodada: List[JogoFormPlacarSchema]  # Lista de jogos da rodada
+# class ListaJogosRodadaFormPlacarResponse(BaseModel):
+#     """
+#     Schema para resposta contendo a lista de jogos de uma rodada.
+#     Utilizado para exibir todos os jogos de uma rodada específica.
+#     """
+#     # serie: str  # Série do campeonato (A ou B)
+#     # ano: int  # Ano da competição
+#     # rodada: int  # Número da rodada
+#     jogos_da_rodada: List[JogoFormPlacarSchema]  # Lista de jogos da rodada
 
-    class Config:
-        # Configuração para uso direto com objetos SQLAlchemy (opcional)
-        from_attributes = True
+#     class Config:
+#         # Configuração para uso direto com objetos SQLAlchemy (opcional)
+#         from_attributes = True
 
 class AlterarJogoRodadaSchema(BaseModel):
     """

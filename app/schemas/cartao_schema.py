@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
 
 
 class CartaoSchema(BaseModel):
@@ -12,13 +12,7 @@ class CartaoSchema(BaseModel):
     class Config:
         from_attributes = True
 
-class ResponseCartaoSchema(BaseModel):
-    cartoes: List[CartaoSchema]
-
-    class Config:
-        from_attributes = True
-
-class CartaoClubeSchema(BaseModel):
+class CartaoClubeOut(BaseModel):
     car_serie: str
     car_ano: int
     clube_clu_sigla: str
@@ -26,12 +20,6 @@ class CartaoClubeSchema(BaseModel):
     clube_nome: str
     car_qtd_vermelho: Optional[int] = 0
     car_qtd_amarelo: Optional[int] = 0
-
-    class Config:
-        from_attributes = True
-
-class ResponseCartaoClubeSchema(BaseModel):
-    cartoes: List[CartaoClubeSchema]
 
     class Config:
         from_attributes = True

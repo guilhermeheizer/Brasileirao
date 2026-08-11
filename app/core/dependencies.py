@@ -19,8 +19,15 @@ def verificar_token(token: str = Depends(auth2_scheme), session: Session = Depen
     if settings.SECRET_KEY is None:
         raise HTTPException(status_code=500, detail="Chave secreta não configurada!")
     try:
+        # dic_info = jwt.decode(token, settings.SECRET_KEY, settings.ALGORITHM)
+        # id_usuario = dic_info.get("sub")
+
+
         dic_info = jwt.decode(token, settings.SECRET_KEY, settings.ALGORITHM)
-        id_usuario = dic_info.get("sub")
+        sub = dic_info.get("sub")
+        if sub is None:
+            raise JWTError("sub claim ausente")
+        id_usuario = int(sub)
     except JWTError as erro:
         print(f"Erro ao decodificar o token: {erro}")
         raise HTTPException(status_code=401, detail="Acesso não autorizado, verifique a validade do token!")

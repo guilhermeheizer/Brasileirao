@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Body, HTTPException, Depends
-from app.schemas.cartao_schema import ResponseCartaoSchema, CartaoSchema, ResponseCartaoClubeSchema
+from app.schemas.cartao_schema import CartaoSchema, CartaoClubeOut
 from app.core.dependencies import pegar_sessao, verificar_token
 from app.models.usuario_models import Usuario
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List
 from fastapi import Query
 from app.services.cartao_service import (
     listar_todos_cartoes,
@@ -18,8 +18,8 @@ from app.services.cartao_service import (
 cartao_router = APIRouter(tags=["cartao"])
 
 
-@cartao_router.get("/listar", response_model=ResponseCartaoSchema)
-async def listar_cartoes(session: Session = Depends(pegar_sessao)):
+@cartao_router.get("/listar/{serie}/{ano}", response_model=List[CartaoClubeOut])
+async def listar_cartoes(serie: str, ano: int, session: Session = Depends(pegar_sessao)):
     """
     Lista todos os cartões cadastrados.
 
@@ -36,13 +36,13 @@ async def listar_cartoes(session: Session = Depends(pegar_sessao)):
     que contém uma lista de dos cartoes dos clubes no formato especificado por `CartaoSchema`.
     """
     try:
-        return listar_todos_cartoes(session)
+        return listar_todos_cartoes(serie.upper(), ano, session)
     except HTTPException as ex:
         log_erro = f"Erro: {ex.detail}"
         raise HTTPException(status_code=ex.status_code, detail=log_erro)
     except Exception as e:
         # Captura outros erros inesperados e gera um erro 500
-        raise HTTPException(status_code=500, detail=f"Erro interno ao atualizar da CBF os cartões: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro interno ao listar cartões: {str(e)}")
     finally:
         session.close()
 
@@ -139,7 +139,7 @@ async def atualizar_cartao_por_serie_ano_sigla(
         raise HTTPException(status_code=ex.status_code, detail=log_erro)
     except Exception as e:
         # Captura outros erros inesperados e gera um erro 500
-        raise HTTPException(status_code=500, detail=f"Erro interno atualização cartão : {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro interno ao atualizar cartão : {str(e)}")
     finally:
         session.close()
 
@@ -200,8 +200,7 @@ async def deletar_cartao_por_sigla(
     HTTPException: Lançada se ocorrer um erro durante a exclusão da cartão.
 
     Returns:
-    CartaosSchema: O cartão excluído.
-
+    CartaoSchema: O cartão excluído.
     """
     try:
         return deletar_cartao(serie, ano, clu_sigla, session)
@@ -215,9 +214,10 @@ async def deletar_cartao_por_sigla(
         session.close()
 
     
-@cartao_router.get("/listar-paginado", response_model=ResponseCartaoClubeSchema)
+@cartao_router.get("/listar-paginado/{serie}/{ano}", response_model=List[CartaoClubeOut])
 async def listar_cartoes_paginacao(
-    nome: Optional[str] = Query(None, description="Busca parcial pelo nome da clube"),
+    serie: str,
+    ano: int,
     pagina: int = Query(1, description="Número da página", ge=1),
     tamanho_pagina: int = Query(20, description="Tamanho da página", ge=1),
     session: Session = Depends(pegar_sessao)):
@@ -233,11 +233,10 @@ async def listar_cartoes_paginacao(
     Raises:
         HTTPException: Lançada se ocorrer um erro durante a listagem dos cartões.
 
-    Returns: ResponseCartaoClubeSchema: Uma resposta no formato do esquema Pydantic `ResponseCartaoClubeSchema`, 
-             que contém uma lista de cartões no formato especificado por `CartaoSchema`.
+    Returns: List[CartaoClubeOut]: Uma lista de cartões no formato especificado por `CartaoClubeOut`.
     """
     try:
-        return listar_cartoes_paginados(nome, pagina, tamanho_pagina, session)
+        return listar_cartoes_paginados(serie, ano, pagina, tamanho_pagina, session)
     except HTTPException as ex:
         log_erro = f"Erro: {ex.detail}"
         raise HTTPException(status_code=ex.status_code, detail=log_erro)

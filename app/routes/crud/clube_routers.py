@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends
-from app.schemas.clube_schema import ResponseClubeSchema, ClubeSchema, ResponseClubeCidadeSchema
+from app.schemas.clube_schema import ResponseClubeSchema, ClubeSchema, ClubeCidadeOut
 from app.core.dependencies import pegar_sessao, verificar_token
 from app.models.usuario_models import Usuario
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List
 from fastapi import Query
 from app.services.clube_service import (
     listar_todos_clubes,
@@ -16,7 +16,7 @@ from app.services.clube_service import (
 clube_router = APIRouter(tags=["clube"])
 
 
-@clube_router.get("/listar/", response_model=ResponseClubeSchema)
+@clube_router.get("/listar", response_model=List[ClubeCidadeOut])
 async def listar_clubes(    
     serie: Optional[str] = Query(None, description="Filtro opcional pela série do clube (A ou B"),
     nome: Optional[str] = Query(None, description="Busca parcial pelo nome da clube"),
@@ -49,7 +49,7 @@ async def listar_clubes(
         session.close()
 
 
-@clube_router.post("/incluir/", response_model=ClubeSchema)
+@clube_router.post("/incluir", response_model=ClubeSchema)
 async def criar_novo_clube(clube: ClubeSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     """
     Cria um novo clube no banco de dados.
@@ -144,7 +144,7 @@ async def deletar_clube_por_sigla(
         session.close()
 
     
-@clube_router.get("/listar-paginado", response_model=ResponseClubeCidadeSchema)
+@clube_router.get("/listar-paginado", response_model=list[ClubeCidadeOut])
 async def listar_clubes_paginacao(
     serie: Optional[str] = Query(None, description="Filtro opcional pela série do clube (A, B, C ou D)"),
     nome: Optional[str] = Query(None, description="Busca parcial pelo nome da clube"),

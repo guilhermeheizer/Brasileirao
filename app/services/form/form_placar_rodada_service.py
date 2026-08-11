@@ -15,7 +15,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from typing import List
-from app.schemas.rodada_schema import ListaJogosRodadaFormPlacarResponse, JogoFormPlacarSchema, AtualizarRodadaPlacarSchema
+from app.schemas.rodada_schema import JogoFormPlacarSchema, AtualizarRodadaPlacarSchema
 from app.schemas.classificacao_geral_schema import ResponseClassificacaoGeralListaSchema
 from app.services.clube_service import consiste_serie
 
@@ -25,7 +25,7 @@ def rodada_lista(
     ano: int,
     rodada: int,
     carrega_nao_realizados: bool = False
-) -> ListaJogosRodadaFormPlacarResponse:
+    ) -> List[JogoFormPlacarSchema]:
     """
     Carrega a lista de jogos da rodada no formato necessário para o front-end.
     Se carrega_nao_realizados=True, inclui jogos de rodadas anteriores não finalizados.
@@ -38,7 +38,7 @@ def rodada_lista(
         carrega_nao_realizados (bool): Se True, inclui jogos não finalizados das rodadas anteriores.
 
     Returns:
-        ListaJogosRodadaFormPlacarResponse: JSON contendo detalhes da rodada e jogos.
+        List[JogoFormPlacarSchema]: Lista de jogos da rodada no formato necessário para o front-end.
     """
     # Garantir que a série está em maiúsculo
     serie_upper = serie.upper()
@@ -122,48 +122,76 @@ def rodada_lista(
         )
 
     # Construir o JSON da resposta
-    jogos_da_rodada = []
-    for jogo in resultados:
-        jogos_da_rodada.append(
-            JogoFormPlacarSchema(
-                rod_serie=jogo.rodada_rod_serie,
-                rod_ano=jogo.rodada_rod_ano,
-                rod_rodada=jogo.rodada_rod_rodada,
-                rod_sequencia=jogo.rodada_rod_sequencia,
-                est_id=jogo.rodada_estadio_est_id,
-                est_nome=jogo.est_nome,
-                rod_data=jogo.rodada_rod_data,
+    # jogos_da_rodada = []
+    # for jogo in resultados:
+    #     jogos_da_rodada.append(
+    #         JogoFormPlacarSchema(
+    #             rod_serie=jogo.rodada_rod_serie,
+    #             rod_ano=jogo.rodada_rod_ano,
+    #             rod_rodada=jogo.rodada_rod_rodada,
+    #             rod_sequencia=jogo.rodada_rod_sequencia,
+    #             est_id=jogo.rodada_estadio_est_id,
+    #             est_nome=jogo.est_nome,
+    #             rod_data=jogo.rodada_rod_data,
 
-                clube_clu_sigla_mandante=jogo.rodada_clube_clu_sigla_mandante,
-                clu_nome_mandante=jogo.clu_nome_mandante,
-                clu_link_escudo_mandante=jogo.clu_link_escudo_mandante,
-                rod_gols_mandante=jogo.rodada_rod_gols_mandante if jogo.rodada_rod_gols_mandante != "" else None,
-                rod_pontos_mandante=jogo.rodada_rod_pontos_mandante if jogo.rodada_rod_pontos_mandante != "" else None,
+    #             clube_clu_sigla_mandante=jogo.rodada_clube_clu_sigla_mandante,
+    #             clu_nome_mandante=jogo.clu_nome_mandante,
+    #             clu_link_escudo_mandante=jogo.clu_link_escudo_mandante,
+    #             rod_gols_mandante=jogo.rodada_rod_gols_mandante if jogo.rodada_rod_gols_mandante != "" else None,
+    #             rod_pontos_mandante=jogo.rodada_rod_pontos_mandante if jogo.rodada_rod_pontos_mandante != "" else None,
                 
-                clube_clu_sigla_visitante=jogo.rodada_clube_clu_sigla_visitante,
-                clu_nome_visitante=jogo.clu_nome_visitante,
-                clu_link_escudo_visitante=jogo.clu_link_escudo_visitante,
-                rod_gols_visitante=jogo.rodada_rod_gols_visitante if jogo.rodada_rod_gols_visitante != "" else None,
-                rod_pontos_visitante=jogo.rodada_rod_pontos_visitante if jogo.rodada_rod_pontos_visitante != "" else None,
+    #             clube_clu_sigla_visitante=jogo.rodada_clube_clu_sigla_visitante,
+    #             clu_nome_visitante=jogo.clu_nome_visitante,
+    #             clu_link_escudo_visitante=jogo.clu_link_escudo_visitante,
+    #             rod_gols_visitante=jogo.rodada_rod_gols_visitante if jogo.rodada_rod_gols_visitante != "" else None,
+    #             rod_pontos_visitante=jogo.rodada_rod_pontos_visitante if jogo.rodada_rod_pontos_visitante != "" else None,
 
-                car_qtd_vermelho_mandante=jogo.cartoes_vermelhos_mandante,
-                car_qtd_amarelo_mandante=jogo.cartoes_amarelos_mandante,
-                car_qtd_vermelho_visitante=jogo.cartoes_vermelhos_visitante,
-                car_qtd_amarelo_visitante=jogo.cartoes_amarelos_visitante,
+    #             car_qtd_vermelho_mandante=jogo.cartoes_vermelhos_mandante,
+    #             car_qtd_amarelo_mandante=jogo.cartoes_amarelos_mandante,
+    #             car_qtd_vermelho_visitante=jogo.cartoes_vermelhos_visitante,
+    #             car_qtd_amarelo_visitante=jogo.cartoes_amarelos_visitante,
 
-                rod_partida_finalizada=jogo.rodada_rod_partida_finalizada,
-                rod_calculou_classificacao=jogo.rodada_rod_calculou_classificacao,
-            )
+    #             rod_partida_finalizada=jogo.rodada_rod_partida_finalizada,
+    #             rod_calculou_classificacao=jogo.rodada_rod_calculou_classificacao,
+    #         )
+    #     )
+
+    # # Retornar o JSON completo
+    # return jogos_da_rodada
+    jogos_da_rodada = [
+        JogoFormPlacarSchema(
+            rod_serie=jogo.rodada_rod_serie,
+            rod_ano=jogo.rodada_rod_ano,
+            rod_rodada=jogo.rodada_rod_rodada,
+            rod_sequencia=jogo.rodada_rod_sequencia,
+            est_id=jogo.rodada_estadio_est_id,
+            est_nome=jogo.est_nome,
+            rod_data=jogo.rodada_rod_data,
+
+            clube_clu_sigla_mandante=jogo.rodada_clube_clu_sigla_mandante,
+            clu_nome_mandante=jogo.clu_nome_mandante,
+            clu_link_escudo_mandante=jogo.clu_link_escudo_mandante,
+            rod_gols_mandante=jogo.rodada_rod_gols_mandante,
+            rod_pontos_mandante=jogo.rodada_rod_pontos_mandante,
+
+            clube_clu_sigla_visitante=jogo.rodada_clube_clu_sigla_visitante,
+            clu_nome_visitante=jogo.clu_nome_visitante,
+            clu_link_escudo_visitante=jogo.clu_link_escudo_visitante,
+            rod_gols_visitante=jogo.rodada_rod_gols_visitante,
+            rod_pontos_visitante=jogo.rodada_rod_pontos_visitante,
+
+            car_qtd_vermelho_mandante=jogo.cartoes_vermelhos_mandante,
+            car_qtd_amarelo_mandante=jogo.cartoes_amarelos_mandante,
+            car_qtd_vermelho_visitante=jogo.cartoes_vermelhos_visitante,
+            car_qtd_amarelo_visitante=jogo.cartoes_amarelos_visitante,
+
+            rod_partida_finalizada=jogo.rodada_rod_partida_finalizada,
+            rod_calculou_classificacao=jogo.rodada_rod_calculou_classificacao,
         )
+        for jogo in resultados
+    ]
 
-    # Retornar o JSON completo
-    return ListaJogosRodadaFormPlacarResponse(
-        serie=serie_upper,
-        ano=ano,
-        rodada=rodada,
-        jogos_da_rodada=jogos_da_rodada
-    )
-   
+    return jogos_da_rodada
 
 
 def atualizar_placares_rodada(

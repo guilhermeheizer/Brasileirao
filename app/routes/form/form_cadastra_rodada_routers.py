@@ -15,7 +15,7 @@ from app.core.dependencies import pegar_sessao, verificar_token
 from app.models.usuario_models import Usuario
 from app.schemas.rodada_schema import CriarRodadaSchema, ResponseCriarRodadaSchema
 from app.schemas.clube_schema import ResponseClubeSchema
-from app.schemas.estadio_schema import ResponseEstadioSchema
+from app.schemas.estadio_schema import EstadioCidadeOut
 from app.services.form.form_cadastra_rodada_service import criar_rodada
 from typing import List, Annotated
 from app.services.clube_service import listar_todos_clubes
@@ -77,12 +77,20 @@ async def pesquisar_clubes(
         session.close()
 
 
-@rodada_form_router.get("/pesquisar-estadios", response_model=ResponseEstadioSchema)
+@rodada_form_router.get("/pesquisar-estadios", response_model=List[EstadioCidadeOut])
 async def pesquisar_estadios(
-    session: Session = Depends(pegar_sessao),
-    usuario: Usuario = Depends(verificar_token)
-):
+    nome_estadio: Optional[str] = Query(None, 
+                                max_length=100,
+                                description="Busca parcial pelo nome da estadio"),
+    nome_cidade: Optional[str] = Query(None, 
+                                max_length=100,
+                                description="Busca parcial pelo nome da cidade"),
+    uf: Optional[str] = Query(None, 
+                              max_length=2,
+                              description="Busca parcial pela UF da cidade"),
+    session: Session = Depends(pegar_sessao)
+    ):
     try:
-        return listar_todos_estadios(session)
+        return listar_todos_estadios(nome_estadio, nome_cidade, uf, session)
     finally:
         session.close()

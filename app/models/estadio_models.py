@@ -1,17 +1,36 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
+from typing import TYPE_CHECKING
+from sqlalchemy import String, Integer, ForeignKey, Index, Identity
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
+if TYPE_CHECKING:
+    from app.models.cidade_models import Cidade
 
 class Estadio(Base):
     __tablename__ = "estadio"
 
-    est_id = Column(Integer, primary_key=True, autoincrement=True)
-    est_nome = Column(String(100), nullable=False)
-    cidade_cid_id = Column(Integer, ForeignKey("cidade.cid_id"), nullable=False)
+    __table_args__ = (
+        Index("idx_estadio_cidade_cid_id", "cidade_cid_id"),
+    )
+
+    est_id: Mapped[int] = mapped_column(
+        Integer,
+        Identity(),
+        primary_key=True,
+        autoincrement=True
+    )
+    est_nome: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False
+    )
+    cidade_cid_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("cidade.cid_id"),
+        nullable=False
+    )
 
     # Relacionamento com Cidade
-    cidade = relationship("Cidade", back_populates="estadios")
+    cidade: Mapped["Cidade"] = relationship("Cidade", back_populates="estadios")
 
     def __init__(self, est_nome, cidade_cid_id):
         self.est_nome = est_nome

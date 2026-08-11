@@ -1,27 +1,88 @@
-from sqlalchemy import Column, CHAR, Integer, ForeignKey
-from sqlalchemy.orm import relationship
+from typing import TYPE_CHECKING, Optional
+from sqlalchemy import String, Integer, ForeignKey, DateTime, text, Identity, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.models.clube_models import Clube
 
 
 class ClassificacaoGeral(Base):
     __tablename__ = "classificacao_geral"
 
-    clg_id = Column(Integer, primary_key=True, autoincrement=True)  # ID da classificação geral
-    clg_serie = Column(CHAR(1), nullable=False)  # Série do campeonato (A ou B)
-    clg_ano = Column(Integer, nullable=False)  # Ano da competição
-    clg_pontos = Column(Integer, nullable=False)  # Pontuação total do clube
-    clg_vitorias = Column(Integer, nullable=False)  # Número total de vitórias
-    clg_saldo_gols = Column(Integer, nullable=False)  # Saldo total de gols
-    clg_gols_pro = Column(Integer, nullable=False)  # Total de gols marcados ("gols pró")
-    clg_confronto_direto = Column(Integer, nullable=False)  # Critério de confronto direto
-    clube_clu_sigla = Column(CHAR(3), ForeignKey("clube.clu_sigla"), nullable=False)  # FK Clube
-    clg_qtd_jogou = Column(Integer, nullable=True)  # Total de jogos disputados
-    clg_qtd_empates = Column(Integer, nullable=True)  # Total de empates
-    clg_qtd_derrotas = Column(Integer, nullable=True)  # Total de derrotas
-    clg_gols_contra = Column(Integer, nullable=True)  # Total de gols sofridos
+    clg_id: Mapped[int] = mapped_column(
+        Integer,
+        Identity(),
+        primary_key=True,
+        autoincrement=True
+    )  # ID da classificação geral
+
+    clg_serie: Mapped[str] = mapped_column(
+        String(1),
+        nullable=False
+    )  # Série do campeonato (A ou B)
+
+    clg_ano: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False
+    )  # Ano da competição
+
+    clg_pontos: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False
+    )  # Pontuação total do clube
+
+    clg_vitorias: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False
+    )  # Número total de vitórias
+
+    clg_saldo_gols: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False
+    )  # Saldo total de gols
+
+    clg_gols_pro: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False
+    )  # Total de gols marcados ("gols pró")
+
+    clg_confronto_direto: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False
+    )  # Critério de confronto direto
+
+    clube_clu_sigla: Mapped[str] = mapped_column(
+        String(3),
+        ForeignKey("clube.clu_sigla"),
+        nullable=False
+    )  # FK Clube
+
+    clg_qtd_jogou: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True
+    )  # Total de jogos disputados
+
+    clg_qtd_empates: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True
+    )  # Total de empates
+
+    clg_qtd_derrotas: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True
+    )  # Total de derrotas
+    
+    clg_gols_contra: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True
+    )  # Total de gols sofridos
 
     # Relacionamento com a tabela Clube
-    clube = relationship("Clube", foreign_keys=[clube_clu_sigla])
+    clube: Mapped["Clube"] = relationship(
+        "Clube",
+        foreign_keys=[clube_clu_sigla]
+    )
 
     def __init__(self, clg_serie, clg_ano, clg_pontos, clg_vitorias, clg_saldo_gols, clg_gols_pro, 
                  clg_confronto_direto, clube_clu_sigla, clg_qtd_jogou=None, clg_qtd_empates=None, 
