@@ -103,22 +103,13 @@ class JogoFormPlacarSchema(BaseModel):
     rod_partida_finalizada: str  # Indica se a partida foi finalizada ("S" ou "N")
     rod_calculou_classificacao: str  # Indica se a classificação foi calculada ("S" ou "N")
 
+class UltimaRodadaResponseSchema(BaseModel):
+    ultima_rodada_cadastrada: int
+    proxima_rodada: int
 
-# Schema para a resposta que contém a lista de jogos de uma rodada
-# class ListaJogosRodadaFormPlacarResponse(BaseModel):
-#     """
-#     Schema para resposta contendo a lista de jogos de uma rodada.
-#     Utilizado para exibir todos os jogos de uma rodada específica.
-#     """
-#     # serie: str  # Série do campeonato (A ou B)
-#     # ano: int  # Ano da competição
-#     # rodada: int  # Número da rodada
-#     jogos_da_rodada: List[JogoFormPlacarSchema]  # Lista de jogos da rodada
-
-#     class Config:
-#         # Configuração para uso direto com objetos SQLAlchemy (opcional)
-#         from_attributes = True
-
+    class Config:
+        from_attributes = True        
+        
 class AlterarJogoRodadaSchema(BaseModel):
     """
     Schema para alteração de dados de um jogo em uma rodada.

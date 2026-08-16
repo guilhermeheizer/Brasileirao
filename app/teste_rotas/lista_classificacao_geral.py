@@ -151,6 +151,8 @@ def listar_rodada():
     except Exception as e:
         print(f"Erro ao listar Rodada: {e}")
     finally:
+
+
         session.close()
 
 def cadastrar_rodada():

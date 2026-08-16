@@ -15,7 +15,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from typing import List
-from app.schemas.rodada_schema import JogoFormPlacarSchema, AtualizarRodadaPlacarSchema
+from app.schemas.rodada_schema import JogoFormPlacarSchema, AtualizarRodadaPlacarSchema, JogoFormPlacarSchema, UltimaRodadaResponseSchema
 from app.schemas.classificacao_geral_schema import ResponseClassificacaoGeralListaSchema
 from app.services.clube_service import consiste_serie
 
@@ -121,43 +121,6 @@ def rodada_lista(
             detail="Nenhum jogo encontrado para os parâmetros fornecidos."
         )
 
-    # Construir o JSON da resposta
-    # jogos_da_rodada = []
-    # for jogo in resultados:
-    #     jogos_da_rodada.append(
-    #         JogoFormPlacarSchema(
-    #             rod_serie=jogo.rodada_rod_serie,
-    #             rod_ano=jogo.rodada_rod_ano,
-    #             rod_rodada=jogo.rodada_rod_rodada,
-    #             rod_sequencia=jogo.rodada_rod_sequencia,
-    #             est_id=jogo.rodada_estadio_est_id,
-    #             est_nome=jogo.est_nome,
-    #             rod_data=jogo.rodada_rod_data,
-
-    #             clube_clu_sigla_mandante=jogo.rodada_clube_clu_sigla_mandante,
-    #             clu_nome_mandante=jogo.clu_nome_mandante,
-    #             clu_link_escudo_mandante=jogo.clu_link_escudo_mandante,
-    #             rod_gols_mandante=jogo.rodada_rod_gols_mandante if jogo.rodada_rod_gols_mandante != "" else None,
-    #             rod_pontos_mandante=jogo.rodada_rod_pontos_mandante if jogo.rodada_rod_pontos_mandante != "" else None,
-                
-    #             clube_clu_sigla_visitante=jogo.rodada_clube_clu_sigla_visitante,
-    #             clu_nome_visitante=jogo.clu_nome_visitante,
-    #             clu_link_escudo_visitante=jogo.clu_link_escudo_visitante,
-    #             rod_gols_visitante=jogo.rodada_rod_gols_visitante if jogo.rodada_rod_gols_visitante != "" else None,
-    #             rod_pontos_visitante=jogo.rodada_rod_pontos_visitante if jogo.rodada_rod_pontos_visitante != "" else None,
-
-    #             car_qtd_vermelho_mandante=jogo.cartoes_vermelhos_mandante,
-    #             car_qtd_amarelo_mandante=jogo.cartoes_amarelos_mandante,
-    #             car_qtd_vermelho_visitante=jogo.cartoes_vermelhos_visitante,
-    #             car_qtd_amarelo_visitante=jogo.cartoes_amarelos_visitante,
-
-    #             rod_partida_finalizada=jogo.rodada_rod_partida_finalizada,
-    #             rod_calculou_classificacao=jogo.rodada_rod_calculou_classificacao,
-    #         )
-    #     )
-
-    # # Retornar o JSON completo
-    # return jogos_da_rodada
     jogos_da_rodada = [
         JogoFormPlacarSchema(
             rod_serie=jogo.rodada_rod_serie,
@@ -189,10 +152,44 @@ def rodada_lista(
             rod_calculou_classificacao=jogo.rodada_rod_calculou_classificacao,
         )
         for jogo in resultados
-    ]
+    ] 
 
     return jogos_da_rodada
 
+def buscar_ultima_rodada_cadastrada(db: Session, serie: str, ano: int) -> UltimaRodadaResponseSchema:
+    """
+    Retorna o número da última rodada cadastrada para a série e ano informados.
+    Se não houver nenhuma rodada, retorna 0.
+    """
+    sql = text("""
+        SELECT COALESCE(MAX(rod_rodada), 0) AS ultima_rodada
+        FROM rodada
+        WHERE rod_serie = :serie
+          AND rod_ano = :ano
+    """)
+    resultado = db.execute(sql, {"serie": serie, "ano": ano}).fetchone()
+
+    if resultado is None:
+        return UltimaRodadaResponseSchema(
+            ultima_rodada_cadastrada=0,
+            proxima_rodada=1
+        )
+
+    ultima_rodada = int(resultado.ultima_rodada) if resultado.ultima_rodada is not None else 0
+
+    proxima_rodada = calcular_proxima_rodada(ultima_rodada)
+
+    return UltimaRodadaResponseSchema(
+        ultima_rodada_cadastrada=ultima_rodada,
+        proxima_rodada=proxima_rodada
+    )
+
+def calcular_proxima_rodada(ultima_rodada: int) -> int:
+    """
+    Calcula qual será a próxima rodada a ser inserida.
+    Por padrão, é a última cadastrada + 1.
+    """
+    return ultima_rodada + 1
 
 def atualizar_placares_rodada(
     db: Session,
