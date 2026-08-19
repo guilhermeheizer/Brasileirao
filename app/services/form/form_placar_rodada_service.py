@@ -24,32 +24,72 @@ def rodada_lista(
     serie: str,
     ano: int,
     rodada: int,
-    carrega_nao_realizados: bool = False
     ) -> List[JogoFormPlacarSchema]:
     """
     Carrega a lista de jogos da rodada no formato necessário para o front-end.
-    Se carrega_nao_realizados=True, inclui jogos de rodadas anteriores não finalizados.
 
     Args:
         db (Session): Sessão ativa do banco de dados.
         serie (str): Série do campeonato (ex: 'A', 'B').
         ano (int): Ano da competição.
         rodada (int): Número da rodada.
-        carrega_nao_realizados (bool): Se True, inclui jogos não finalizados das rodadas anteriores.
 
     Returns:
         List[JogoFormPlacarSchema]: Lista de jogos da rodada no formato necessário para o front-end.
     """
-    # Garantir que a série está em maiúsculo
-    serie_upper = serie.upper()
+    consiste_serie(serie)
+    condicao = " AND rodada.rod_rodada = :rodada "
+    sql_query = query_principal_lista_rodada(condicao)
+ 
+    resultados = db.execute(text(sql_query), {"serie": serie, "ano": ano, "rodada": rodada}).fetchall()
 
-    # Validar a série
-    if serie_upper not in ["A", "B"]:
+    if not resultados:
         raise HTTPException(
             status_code=404,
-            detail=f"Série '{serie_upper}' inválida. Use 'A' ou 'B'."
+            detail=f"Nenhum jogo encontrado para série {serie}, ano {ano} e rodada {rodada} informados."
         )
-   
+
+    return _mapear_jogos(resultados)
+
+def rodada_jogos_nao_finalizados_lista(
+    db: Session,
+    serie: str,
+    ano: int,
+    rodada: int,
+    carrega_rodada_anteriores: bool
+    ) -> List[JogoFormPlacarSchema]:
+    """
+    Carrega a lista de jogos não finalizados da rodada no formato necessário para o front-end.
+
+    Args:
+        db (Session): Sessão ativa do banco de dados.
+        serie (str): Série do campeonato (ex: 'A', 'B').
+        ano (int): Ano da competição.
+        rodada (int): Número da rodada.
+        carrega_rodada_anteriores: Verdadeiro - carrega jogos das rodadas anteriores, False - carrega jogos da rodada informada
+
+    Returns:
+        List[JogoFormPlacarSchema]: Lista de jogos da rodada no formato necessário para o front-end.
+    """
+    consiste_serie(serie)
+    if carrega_rodada_anteriores:
+        condicao = " AND rodada.rod_rodada <= :rodada AND rodada.rod_partida_finalizada = 'N' "
+    else:
+        condicao = " AND rodada.rod_rodada = :rodada AND rodada.rod_partida_finalizada = 'N' "
+        
+    sql_query = query_principal_lista_rodada(condicao)
+
+    resultados = db.execute(text(sql_query), {"serie": serie, "ano": ano, "rodada": rodada}).fetchall()
+
+    if not resultados:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Nenhum jogo encontrado para série {serie}, ano {ano} e rodada {rodada} informados."
+        )
+
+    return _mapear_jogos(resultados)
+
+def query_principal_lista_rodada(condicao: str) -> str:
     sql_query_str = """
         SELECT
             rodada.rod_serie AS rodada_rod_serie,
@@ -99,29 +139,19 @@ def rodada_lista(
             rodada.rod_serie = :serie
             AND rodada.rod_ano = :ano
     """
-    if carrega_nao_realizados:
-        sql_query_str += " AND rodada.rod_rodada <= :rodada\n"
-    else:
-        sql_query_str += " AND rodada.rod_rodada = :rodada\n"
+    sql_query_str += condicao
     sql_query_str += """
-        ORDER BY
+            ORDER BY
             rodada.rod_rodada,
             rodada.rod_data,
             rodada.rod_sequencia
     """
-    sql_query = text(sql_query_str)
 
-    # Executar a query diretamente no banco de dados
-    resultados = db.execute(sql_query, {"serie": serie_upper, "ano": ano, "rodada": rodada}).fetchall()
+    return sql_query_str
 
-    # Validar se há jogos correspondentes
-    if not resultados:
-        raise HTTPException(
-            status_code=404,
-            detail="Nenhum jogo encontrado para os parâmetros fornecidos."
-        )
-
-    jogos_da_rodada = [
+def _mapear_jogos(resultados) -> List[JogoFormPlacarSchema]:
+    """Converte rows raw em JogoFormPlacarSchema."""
+    return [
         JogoFormPlacarSchema(
             rod_serie=jogo.rodada_rod_serie,
             rod_ano=jogo.rodada_rod_ano,
@@ -130,31 +160,25 @@ def rodada_lista(
             est_id=jogo.rodada_estadio_est_id,
             est_nome=jogo.est_nome,
             rod_data=jogo.rodada_rod_data,
-
             clube_clu_sigla_mandante=jogo.rodada_clube_clu_sigla_mandante,
             clu_nome_mandante=jogo.clu_nome_mandante,
             clu_link_escudo_mandante=jogo.clu_link_escudo_mandante,
             rod_gols_mandante=jogo.rodada_rod_gols_mandante,
             rod_pontos_mandante=jogo.rodada_rod_pontos_mandante,
-
             clube_clu_sigla_visitante=jogo.rodada_clube_clu_sigla_visitante,
             clu_nome_visitante=jogo.clu_nome_visitante,
             clu_link_escudo_visitante=jogo.clu_link_escudo_visitante,
             rod_gols_visitante=jogo.rodada_rod_gols_visitante,
             rod_pontos_visitante=jogo.rodada_rod_pontos_visitante,
-
             car_qtd_vermelho_mandante=jogo.cartoes_vermelhos_mandante,
             car_qtd_amarelo_mandante=jogo.cartoes_amarelos_mandante,
             car_qtd_vermelho_visitante=jogo.cartoes_vermelhos_visitante,
             car_qtd_amarelo_visitante=jogo.cartoes_amarelos_visitante,
-
             rod_partida_finalizada=jogo.rodada_rod_partida_finalizada,
             rod_calculou_classificacao=jogo.rodada_rod_calculou_classificacao,
         )
         for jogo in resultados
-    ] 
-
-    return jogos_da_rodada
+    ]
 
 def buscar_ultima_rodada_cadastrada(db: Session, serie: str, ano: int) -> UltimaRodadaResponseSchema:
     """
@@ -517,9 +541,10 @@ def lista_classificacao_geral(db: Session, serie: str, ano: int) -> list:
     ordem_classificacao = 0
     classificacao = []
     for resultado in resultados:
+        ordem_classificacao += 1
         classificacao.append(
             ResponseClassificacaoGeralListaSchema(
-                ordem_classificacao=ordem_classificacao + 1,
+                ordem_classificacao=ordem_classificacao,
                 clube_clu_sigla=resultado.clube_clu_sigla,
                 clu_nome=resultado.clu_nome,
                 clu_link_escudo=resultado.clu_link_escudo,
@@ -535,5 +560,5 @@ def lista_classificacao_geral(db: Session, serie: str, ano: int) -> list:
                 car_qtd_vermelho=resultado.car_qtd_vermelho
             )
         )
-
+ 
     return classificacao

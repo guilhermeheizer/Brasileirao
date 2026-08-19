@@ -679,16 +679,114 @@ INSERT INTO rodada (rod_serie, rod_ano, rod_rodada, rod_sequencia, rod_data, clu
 ('A', 2026, 4, 45, '2026-02-26 19:00:00.000000', 'BOT', None, 'VIT', None, None, None, 'N', 'N', 10), 
 ('A', 2026, 4, 50, '2026-02-26 19:00:00.000000', 'BAH', None, 'CHA', None, None, None, 'N', 'N', 15)
 
+-- Lista rodada
+       SELECT
+            rodada.rod_serie AS rodada_rod_serie,
+            rodada.rod_ano AS rodada_rod_ano,
+            rodada.rod_rodada AS rodada_rod_rodada,
+            rodada.rod_sequencia AS rodada_rod_sequencia,
+            rodada.estadio_est_id AS rodada_estadio_est_id,
+            estadio.est_nome AS est_nome,
+            rodada.rod_data AS rodada_rod_data,
 
-select rod_rodada, r.rod_sequencia , r.clube_clu_sigla_mandante, r.rod_gols_mandante, r.clube_clu_sigla_visitante, r.rod_gols_visitante, r.rod_pontos_mandante, r.rod_pontos_visitante  
-from rodada r 
-WHERE rod_serie = "A"
-  AND rod_ano = 2026
-  --AND rod_rodada = 11
-  --AND r.rod_sequencia = 15
-  AND rod_partida_finalizada = 'S'
-  AND (clube_clu_sigla_mandante = 'RBB' OR
-       clube_clu_sigla_visitante = 'RBB')
+            rodada.clube_clu_sigla_mandante AS rodada_clube_clu_sigla_mandante,
+            clube_mandante.clu_nome AS clu_nome_mandante,
+            clube_mandante.clu_link_escudo AS clu_link_escudo_mandante,
+            COALESCE(rodada.rod_gols_mandante, NULL) AS rodada_rod_gols_mandante,
+            COALESCE(rodada.rod_pontos_mandante, NULL) AS rodada_rod_pontos_mandante,
+
+            rodada.clube_clu_sigla_visitante AS rodada_clube_clu_sigla_visitante,
+            clube_visitante.clu_nome AS clu_nome_visitante,
+            clube_visitante.clu_link_escudo AS clu_link_escudo_visitante,
+            COALESCE(rodada.rod_gols_visitante, NULL) AS rodada_rod_gols_visitante,
+            COALESCE(rodada.rod_pontos_visitante, NULL) AS rodada_rod_pontos_visitante,
+
+            cartao_mandante.car_qtd_vermelho AS cartoes_vermelhos_mandante,
+            cartao_mandante.car_qtd_amarelo AS cartoes_amarelos_mandante,
+            cartao_visitante.car_qtd_vermelho AS cartoes_vermelhos_visitante,
+            cartao_visitante.car_qtd_amarelo AS cartoes_amarelos_visitante,
+
+            rodada.rod_partida_finalizada AS rodada_rod_partida_finalizada,
+            rodada.rod_calculou_classificacao AS rodada_rod_calculou_classificacao
+        FROM
+            rodada
+        JOIN estadio ON
+            rodada.estadio_est_id = estadio.est_id
+        JOIN clube AS clube_mandante ON
+            rodada.clube_clu_sigla_mandante = clube_mandante.clu_sigla
+        JOIN clube AS clube_visitante ON
+            rodada.clube_clu_sigla_visitante = clube_visitante.clu_sigla
+        LEFT OUTER JOIN cartao AS cartao_mandante ON
+            rodada.rod_serie = cartao_mandante.car_serie
+            AND rodada.rod_ano = cartao_mandante.car_ano
+            AND rodada.clube_clu_sigla_mandante = cartao_mandante.clube_clu_sigla
+        LEFT OUTER JOIN cartao AS cartao_visitante ON
+            rodada.rod_serie = cartao_visitante.car_serie
+            AND rodada.rod_ano = cartao_visitante.car_ano
+            AND rodada.clube_clu_sigla_visitante = cartao_visitante.clube_clu_sigla
+        WHERE
+            rodada.rod_serie = 'A'
+            AND rodada.rod_ano = '2026'
+     AND rodada.rod_rodada = 22
+        ORDER BY
+            rodada.rod_rodada,
+            rodada.rod_data,
+            rodada.rod_sequencia
+
+-- Lista rodada para informar placares 
+       SELECT
+            rodada.rod_serie AS rodada_rod_serie,
+            rodada.rod_ano AS rodada_rod_ano,
+            rodada.rod_rodada AS rodada_rod_rodada,
+            rodada.rod_sequencia AS rodada_rod_sequencia,
+            rodada.estadio_est_id AS rodada_estadio_est_id,
+            estadio.est_nome AS est_nome,
+            rodada.rod_data AS rodada_rod_data,
+
+            rodada.clube_clu_sigla_mandante AS rodada_clube_clu_sigla_mandante,
+            clube_mandante.clu_nome AS clu_nome_mandante,
+            clube_mandante.clu_link_escudo AS clu_link_escudo_mandante,
+            COALESCE(rodada.rod_gols_mandante, NULL) AS rodada_rod_gols_mandante,
+            COALESCE(rodada.rod_pontos_mandante, NULL) AS rodada_rod_pontos_mandante,
+
+            rodada.clube_clu_sigla_visitante AS rodada_clube_clu_sigla_visitante,
+            clube_visitante.clu_nome AS clu_nome_visitante,
+            clube_visitante.clu_link_escudo AS clu_link_escudo_visitante,
+            COALESCE(rodada.rod_gols_visitante, NULL) AS rodada_rod_gols_visitante,
+            COALESCE(rodada.rod_pontos_visitante, NULL) AS rodada_rod_pontos_visitante,
+
+            cartao_mandante.car_qtd_vermelho AS cartoes_vermelhos_mandante,
+            cartao_mandante.car_qtd_amarelo AS cartoes_amarelos_mandante,
+            cartao_visitante.car_qtd_vermelho AS cartoes_vermelhos_visitante,
+            cartao_visitante.car_qtd_amarelo AS cartoes_amarelos_visitante,
+
+            rodada.rod_partida_finalizada AS rodada_rod_partida_finalizada,
+            rodada.rod_calculou_classificacao AS rodada_rod_calculou_classificacao
+        FROM
+            rodada
+        JOIN estadio ON
+            rodada.estadio_est_id = estadio.est_id
+        JOIN clube AS clube_mandante ON
+            rodada.clube_clu_sigla_mandante = clube_mandante.clu_sigla
+        JOIN clube AS clube_visitante ON
+            rodada.clube_clu_sigla_visitante = clube_visitante.clu_sigla
+        LEFT OUTER JOIN cartao AS cartao_mandante ON
+            rodada.rod_serie = cartao_mandante.car_serie
+            AND rodada.rod_ano = cartao_mandante.car_ano
+            AND rodada.clube_clu_sigla_mandante = cartao_mandante.clube_clu_sigla
+        LEFT OUTER JOIN cartao AS cartao_visitante ON
+            rodada.rod_serie = cartao_visitante.car_serie
+            AND rodada.rod_ano = cartao_visitante.car_ano
+            AND rodada.clube_clu_sigla_visitante = cartao_visitante.clube_clu_sigla
+        WHERE
+            rodada.rod_serie = 'A'
+            AND rodada.rod_ano = '2026'
+            AND rodada.rod_rodada <= 23
+	        AND rodada.rod_partida_finalizada = 'N'
+        ORDER BY
+            rodada.rod_rodada,
+            rodada.rod_data,
+            rodada.rod_sequencia
 
 select * 
 from rodada r 

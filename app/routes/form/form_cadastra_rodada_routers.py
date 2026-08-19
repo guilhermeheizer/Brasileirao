@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from app.core.dependencies import pegar_sessao, verificar_token
 from app.models.usuario_models import Usuario
 from app.schemas.rodada_schema import CriarRodadaSchema, ResponseCriarRodadaSchema, JogoFormPlacarSchema, UltimaRodadaResponseSchema
-from app.services.form.form_placar_rodada_service import rodada_lista, buscar_ultima_rodada_cadastrada
+from app.services.form.form_placar_rodada_service import rodada_lista, buscar_ultima_rodada_cadastrada, rodada_jogos_nao_finalizados_lista
 from app.schemas.clube_schema import ResponseClubeSchema
 from app.schemas.estadio_schema import EstadioCidadeOut
 from app.services.form.form_cadastra_rodada_service import criar_rodada
@@ -99,18 +99,13 @@ async def pesquisar_estadios(
 @rodada_form_router.get(
     "/buscar-placares/{serie}/{ano}/{rodada}",
     response_model=List[JogoFormPlacarSchema],
-    summary="Busca os jogos da rodada para preenchimento de placares",
-    description="Retorna jogos de uma rodada específica ou jogos anteriores não realizados no formato esperado pelo front-end."
+    summary="Busca os jogos de uma rodada.",
+    description="Retorna jogos de uma rodada específica."
 )
 async def get_rodada_lista(
     serie: str,
     ano: int,
     rodada: int,
-    carrega_nao_realizados: bool = Query(
-        default=False,
-        alias="carrega_jogos",
-        description="Quando verdadeiro, inclui jogos de rodadas anteriores."
-    ),
     session: Session = Depends(pegar_sessao),
     usuario: Usuario = Depends(verificar_token)
 ):
@@ -121,17 +116,58 @@ async def get_rodada_lista(
         rodada (int): Rodada a ser buscada (ex.: '1', '2', '3', etc.).
         carrega_nao_realizados (bool, optional): Quando verdadeiro, inclui jogos de rodadas anteriores que ainda não foram realizados. Defaults to False.
         session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI via dependência de injeção (Depends(pegar_sessao)).
-        usuario (Usuario, optional): Objeto do usuário autenticado, gerenciado pelo middleware `verificar_token`.   
+        usuario (Usuario, optional): Objeto do usuário autenticado, gerenciado pelo middleware `verificar_token`.    
     """
     try:
         return rodada_lista(
             db=session,
             serie=serie,
             ano=ano,
+            rodada=rodada
+            )
+    except HTTPException as ex:
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao listar rodadas: {str(e)}")
+    finally:
+        session.close()
+
+@rodada_form_router.get(
+    "/buscar-jogos-nao-finalizados/{serie}/{ano}/{rodada}",
+    response_model=List[JogoFormPlacarSchema],
+    summary="Busca os jogos da rodada para preenchimento de placares",
+    description="Retorna jogos não finalizados de uma rodada ou anteriores no formato esperado pelo front-end."
+)
+async def get_rodada_jogos_nao_finalizados_lista(
+    serie: str,
+    ano: int,
+    rodada: int,
+    carrega_rodada_anteriores: bool = Query(
+        default=False,
+        alias="carrega_jogos",
+        description="Quando verdadeiro, inclui jogos de rodadas anteriores."),
+    session: Session = Depends(pegar_sessao),
+    usuario: Usuario = Depends(verificar_token)
+):
+    """Endpoint para buscar os jogos de uma rodada específica, ou jogos anteriores não realizados, para preenchimento de placares.
+    Args:
+        serie (str): Série do campeonato (ex.: 'A', 'B').
+        ano (int): Ano do campeonato.
+        rodada (int): Rodada a ser buscada (ex.: '1', '2', '3', etc.).
+        carrega_rodada_anteriores (bool, optional): Quando verdadeiro, inclui jogos de rodadas anteriores que ainda não foram realizados. Defaults to False.
+        session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI via dependência de injeção (Depends(pegar_sessao)).
+        usuario (Usuario, optional): Objeto do usuário autenticado, gerenciado pelo middleware `verificar_token`.    
+    """
+    try:
+        return rodada_jogos_nao_finalizados_lista(
+            db=session,
+            serie=serie,
+            ano=ano,
             rodada=rodada,
-            carrega_nao_realizados=carrega_nao_realizados
-            
-    )
+            carrega_rodada_anteriores=carrega_rodada_anteriores
+            )
     except HTTPException as ex:
         log_erro = f"Erro: {ex.detail}"
         raise HTTPException(status_code=ex.status_code, detail=log_erro)
@@ -161,7 +197,6 @@ async def get_ultima_rodada(
         usuario (Usuario, optional): Objeto do usuário autenticado, gerenciado pelo middleware `verificar_token`.   
     """
     try:
-        # print (f"parametros serie {serie} e ano {ano}")
         return buscar_ultima_rodada_cadastrada(
             db=session,
             serie=serie,
