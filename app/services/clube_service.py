@@ -2,7 +2,9 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.models.clube_models import Clube
 from app.models.cidade_models import Cidade
-from app.schemas.clube_schema import ResponseClubeSchema, ClubeSchema, ClubeCidadeOut
+from app.models.rodada_models import Rodada
+from app.schemas.clube_schema import ClubeSchema, ClubeCidadeOut
+from app.schemas.rodada_schema import RodadaSchema
 from typing import Optional, List
 import re
 
@@ -95,8 +97,8 @@ def criar_clube(clube: ClubeSchema, session: Session) -> ClubeSchema:
     return ClubeSchema(**novo_clube.as_dict())
 
 
-def atualizar_clube(clu_sigla: str, clube_atualizado: ClubeSchema, session: Session) -> ClubeSchema:
-    clube_db = session.query(Clube).filter(Clube.__table__.c.clu_sigla == clu_sigla.upper()).first()
+def atualizar_clube(clube_atualizado: ClubeSchema, session: Session) -> ClubeSchema:
+    clube_db = session.query(Clube).filter(Clube.__table__.c.clu_sigla == clube_atualizado.clu_sigla.upper()).first()
 
     if not clube_db:
         raise HTTPException(status_code=404, detail="Clube não encontrado.")
@@ -151,9 +153,33 @@ def deletar_clube(clu_sigla: str, session: Session):
     if not clube:
         raise HTTPException(status_code=404, detail="Clube não encontrado.")
 
+    clube_rodada = buscar_clube_rodada(clu_sigla, session)
+    if clube_rodada:
+        raise HTTPException(status_code=404, detail=f"O clube {clu_sigla} esta na {clube_rodada.rod_rodada} da rodada {clube_rodada.rod_data} está vinculado ao clube. Exclusão não permitida.")
+
     session.delete(clube)
     session.commit()
     return "Clube excluido com sucesso."
+
+def buscar_clube_rodada(sigla: str, session: Session) -> Optional[RodadaSchema] | None:
+    """
+    Busca um clubew pela sigla na tabela rodada.
+
+    Args:
+        sigla (str): sigla do clube a ser buscado.
+        session (Session): Sessão ativa do SQLAlchemy para conectar ao banco.
+
+    Returns:
+        Optional[RodadaSchema]: Representação do estadio encontrado ou None se não encontrado.
+    """
+    # Busca pelo estadio no banco de dados
+    rodada = session.query(Rodada).filter(Rodada.__table__.c.clube_clu_sigla_mandante == sigla or 
+                                          Rodada.__table__.c.clube_clu_sigla_visitante == sigla).first()
+
+    if rodada:
+        return RodadaSchema(**rodada.as_dict()) if rodada else None
+
+    return None
 
 def buscar_clube_nome(retorna_exception: bool, nome: str, session: Session) -> Optional[ClubeSchema]:
     """

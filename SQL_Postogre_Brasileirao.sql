@@ -1,3 +1,9 @@
+SELECT version_num
+	FROM public.alembic_version;
+
+UPDATE alembic_version 
+SET version_num = 'e8130c11a669'
+
 select * from usuario;
 
 SELECT usuario.id AS usuario_id, usuario.nome AS usuario_nome, usuario.email AS usuario_email, usuario.senha AS usuario_senha, usuario.ativo AS usuario_ativo, usuario.admin AS usuario_admin 
@@ -22,16 +28,18 @@ and clube_clu_sigla = 'CRI';
 
 select * from classificacao_rodada;
 
-
+select * from cartao
+where car_serie = 'A'
+and car_ano = 2027
 
 
 --delete from public.rodada
 
 SELECT rod_rodada, rod_sequencia, rod_data, clube_clu_sigla_mandante, rod_gols_mandante, clube_clu_sigla_visitante, rod_gols_visitante, rod_pontos_mandante, rod_pontos_visitante, rod_calculou_classificacao, rod_partida_finalizada, estadio_est_id
 	FROM public.rodada
-where rod_serie = 'B' 
+where rod_serie = 'A' 
 and rod_ano = 2026
-and rod_rodada = 21;
+and rod_rodada = 23;
 	
 select count(*) from rodada;
 insert into rodada values ( 'A',2026,1,1,'2026-01-28 19:00:00','CAM',2,'PAL',2,1,1,'S','S',1);
@@ -796,8 +804,8 @@ and r.rod_rodada = 19
 
 SELECT *
 FROM classificacao_rodada
-where classificacao_rodada.clr_serie = "B"
-and classificacao_rodada.clr_rodada = 15;
+where classificacao_rodada.clr_serie = 'B'
+and classificacao_rodada.clr_rodada = '15';
 
 UPDATE rodada
 SET 
@@ -895,8 +903,9 @@ join cidade ON
 order by estadio.est_id 
    
 --delete from classificacao_geral where clg_serie =  "B"
-select * from classificacao_geral
-where clg_serie =  "A"
+select * --clube_clu_sigla, clg_posicao, car_qtd_amarelo, car_qtd_vermelho
+from classificacao_geral
+where clg_serie = 'A'
 
             SELECT MAX(rod_rodada) AS ultimo_numero FROM rodada
             WHERE rod_serie = :serie
@@ -904,17 +913,9 @@ where clg_serie =  "A"
             
 select * from classificacao_rodada 
 
-SELECT clube_clu_sigla, 
-    clg_pontos,
-    clg_qtd_jogou,
-    clg_vitorias,
-    clg_qtd_empates,
-    clg_qtd_derrotas,
-    clg_gols_pro,
-    clg_gols_contra,
-    clg_saldo_gols
+SELECT *
 from classificacao_geral
-WHERE clg_serie = "A" 
+WHERE clg_serie = 'A' 
   and clg_ano = 2026
   and clube_clu_sigla = "CAM"
   
@@ -960,9 +961,13 @@ order by cg.clg_pontos desc,
          cartao.car_qtd_amarelo asc
          
  SELECT clr_id, clr_serie, clr_ano, clr_rodada, clr_pontos, clr_vitorias, clr_saldo_gols, clr_gols_pro, clr_confronto_direto, clube_clu_sigla, clr_qtd_jogou, clr_qtd_empates, clr_qtd_derrotas, clr_gols_contra
-FROM classificacao_rodada
+delete FROM classificacao_rodada
 where classificacao_rodada.clr_ano = 2026
-and classificacao_rodada.clr_serie = "B";
+and classificacao_rodada.clr_serie = 'A'
+and clr_rodada = 2
+and clr_id >= 61 and clr_id <= 80 
+order by clr_id;
+
 
 SELECT
     clr_serie,
@@ -972,12 +977,36 @@ FROM classificacao_rodada
 GROUP BY clr_serie, clr_ano
 ORDER BY clr_ano, clr_serie;
 
+SELECT * FROM classificacao_rodada 
+where clr_serie = 'A'
+and clr_ano = 2026
+and clr_rodada = 25;
+
+SELECT
+    clr_serie,
+    clr_ano,
+	COUNT(DISTINCT clr_rodada) AS total_rodadas,
+FROM classificacao_rodada
+GROUP BY clr_serie, clr_ano
+ORDER BY clr_ano, clr_serie;
+
 SELECT
     clr_serie,
     clr_ano,
     clr_rodada,
-    COUNT(*) AS qtde_jogos
+    COUNT(*) AS quantidade_registros
 FROM classificacao_rodada
 GROUP BY clr_serie, clr_ano, clr_rodada
 ORDER BY clr_ano, clr_serie, clr_rodada;
 
+SELECT *
+ FROM classificacao_rodada
+where clr_serie = 'A' 
+and clr_ano = 2026
+and clr_rodada = 25;
+
+        SELECT * FROM rodada
+        WHERE rod_serie = 'A'
+          AND rod_ano = 2026
+          AND rod_partida_finalizada = 'S'
+          AND rod_calculou_classificacao = 'N'

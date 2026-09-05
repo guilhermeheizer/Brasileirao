@@ -27,10 +27,10 @@ class ClassificacaoRodada(Base):
         nullable=False
     )  # Ano da competição
 
-    clr_rodada: Mapped[Optional[str]] = mapped_column(
-        String(45),
-        nullable=True
-    )  # Número ou descrição da rodada
+    clr_rodada: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False
+    )   # Número ou descrição da rodada
 
     clr_pontos: Mapped[int] = mapped_column(
         Integer,
@@ -83,6 +83,21 @@ class ClassificacaoRodada(Base):
         nullable=True
     )  # Gols sofridos ("gols contra")
 
+    clr_posicao: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True
+    )  # Posição na classificacao
+
+    car_qtd_vermelho: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True
+    )  # Cartões vermelhos
+
+    car_qtd_amarelo: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True
+    )
+
     # Relacionamento com a tabela Clube
     clube: Mapped["Clube"] = relationship(
         "Clube",
@@ -91,7 +106,8 @@ class ClassificacaoRodada(Base):
 
     def __init__(self, clr_serie, clr_ano, clr_rodada, clr_pontos, clr_vitorias, clr_saldo_gols,
                  clr_gols_pro, clr_confronto_direto, clube_clu_sigla, clr_qtd_jogou=None, clr_qtd_empates=None, 
-                 clr_qtd_derrotas=None, clr_gols_contra=None):
+                 clr_qtd_derrotas=None, clr_gols_contra=None, clr_posicao=None, car_qtd_vermelho=None, 
+                 car_qtd_amarelo=None):
         self.clr_serie = clr_serie
         self.clr_ano = clr_ano
         self.clr_rodada = clr_rodada
@@ -105,6 +121,9 @@ class ClassificacaoRodada(Base):
         self.clr_qtd_empates = clr_qtd_empates
         self.clr_qtd_derrotas = clr_qtd_derrotas
         self.clr_gols_contra = clr_gols_contra
+        self.clr_posicao = clr_posicao
+        self.car_qtd_vermelho = car_qtd_vermelho
+        self.car_qtd_amarelo = car_qtd_amarelo
 
     def as_dict(self):
         return {
@@ -121,5 +140,8 @@ class ClassificacaoRodada(Base):
             "clr_qtd_jogou": self.clr_qtd_jogou,
             "clr_qtd_empates": self.clr_qtd_empates,
             "clr_qtd_derrotas": self.clr_qtd_derrotas,
-            "clr_gols_contra": self.clr_gols_contra
+            "clr_gols_contra": self.clr_gols_contra,
+            "clr_posicao": self.clr_posicao,
+            "car_qtd_vermelho": self.car_qtd_vermelho,
+            "car_qtd_amarelo": self.car_qtd_amarelo
         }

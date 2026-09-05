@@ -18,7 +18,7 @@ clube_router = APIRouter(tags=["clube"])
 
 @clube_router.get("/listar", response_model=List[ClubeCidadeOut])
 async def listar_clubes(    
-    serie: Optional[str] = Query(None, description="Filtro opcional pela série do clube (A ou B"),
+    serie: Optional[str] = Query(None, description="Filtro opcional pela série do clube (A ou B)"),
     nome: Optional[str] = Query(None, description="Busca parcial pelo nome da clube"),
     session: Session = Depends(pegar_sessao)
     ):
@@ -78,9 +78,8 @@ async def criar_novo_clube(clube: ClubeSchema, session: Session = Depends(pegar_
         session.close()
 
 
-@clube_router.put("/alterar/{clu_sigla}", response_model=ClubeSchema)
+@clube_router.put("/alterar", response_model=ClubeSchema)
 async def atualizar_clube_por_sigla(
-    clu_sigla: str,
     clube_atualizado: ClubeSchema,
     session: Session = Depends(pegar_sessao),
     usuario: Usuario = Depends(verificar_token)):
@@ -88,7 +87,6 @@ async def atualizar_clube_por_sigla(
     Atualiza os dados de um clube específico.
 
     Args:
-    clube_id (int): informe o ID da clube a ser atualizado.
     clube_atualizado (ClubeSchema): Dados para atualizar a clube.
     session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI   
                                  via dependência de injeção (Depends(pegar_sessao)).
@@ -101,7 +99,7 @@ async def atualizar_clube_por_sigla(
     ClubeSchema: A clube atualizada.
     """
     try:
-        return atualizar_clube(clu_sigla, clube_atualizado, session)
+        return atualizar_clube(clube_atualizado, session)
     except HTTPException as ex:
         log_erro = f"Erro: {ex.detail}"
         raise HTTPException(status_code=ex.status_code, detail=log_erro)

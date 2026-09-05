@@ -22,7 +22,7 @@ from app.schemas.cartao_schema import CartaoClubeOut
 from app.schemas.rodada_schema import JogoFormPlacarSchema, AtualizarRodadaPlacarSchema
 from app.services.cartao_service import listar_cartoes_paginados
 from app.schemas.classificacao_geral_schema import ResponseClassificacaoGeralListaSchema
-from app.services.form.form_placar_rodada_service import calcular_classificacao_brasileirao, rodada_lista, atualizar_placares_rodada, lista_classificacao_geral, rodada_jogos_nao_finalizados_lista
+from app.services.form.form_placar_rodada_service import calcular_classificacao_brasileirao, rodada_jogos_finalizados_e_nao_calc_classificacao_lista, rodada_lista, atualizar_placares_rodada, lista_classificacao_geral, rodada_jogos_nao_finalizados_lista
 
 router_placar_rodada = APIRouter(tags=["placar rodada"])
 
@@ -107,6 +107,43 @@ async def get_rodada_jogos_nao_finalizados_lista(
     finally:
         session.close()
 
+@router_placar_rodada.get(
+    "/rodada_jogos_finalizados_e_nao_calc_classificacao_lista/{serie}/{ano}", # /{rodada}",
+    response_model=List[JogoFormPlacarSchema],
+    summary="Busca os jogos da rodada.",
+    description="Retorna jogos finalizados de uma rodada ou anteriores no formato esperado pelo front-end."
+)
+async def get_rodada_jogos_finalizados_e_nao_calc_classificacao_lista(
+    serie: str,
+    ano: int,
+    # rodada: int,
+    session: Session = Depends(pegar_sessao),
+    usuario: Usuario = Depends(verificar_token)
+):
+    """Endpoint para buscar os jogos de uma rodada específica, ou jogos anteriores não realizados, para preenchimento de placares.
+    Args:
+        serie (str): Série do campeonato (ex.: 'A', 'B').
+        ano (int): Ano do campeonato.
+        rodada (int): Rodada a ser buscada (ex.: '1', '2', '3', etc.).
+        session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI via dependência de injeção (Depends(pegar_sessao)).
+        usuario (Usuario, optional): Objeto do usuário autenticado, gerenciado pelo middleware `verificar_token`.    
+    """
+    try:
+        return rodada_jogos_finalizados_e_nao_calc_classificacao_lista(
+            db=session,
+            serie=serie,
+            ano=ano #,
+            # rodada=rodada
+            )
+    except HTTPException as ex:
+        log_erro = f"Erro: {ex.detail}"
+        raise HTTPException(status_code=ex.status_code, detail=log_erro)
+    except Exception as e:
+        # Captura outros erros inesperados e gera um erro 500
+        raise HTTPException(status_code=500, detail=f"Erro interno ao listar rodadas: {str(e)}")
+    finally:
+        session.close()
+
 @router_placar_rodada.put("/atualizar-placares")
 async def atualizar_placares(
     jogos: List[AtualizarRodadaPlacarSchema],
@@ -170,7 +207,7 @@ async def listar_cartoes_paginacao(
 
 
 @router_placar_rodada.post(
-    "/classificacao/{serie}/{ano}/{rodada}",
+    "/classificacao/{serie}/{ano}", #/{rodada}",
     summary="Calcula a classificação da série informada no campeonato",
     description="Calcula e atualiza a tabela classificacao_geral com base nas rodadas já finalizadas.",
     response_description="Confirmação do processamento."
@@ -178,11 +215,11 @@ async def listar_cartoes_paginacao(
 async def calcular_classificacao(
     serie: str,
     ano: int,
-    rodada: int,
-    carrega_jogos_nao_realizados: bool = Query(
-        default=False,
-        alias="carrega_jogos_nao_realizados",
-        description="Quando verdadeiro, inclui jogos não realizados de rodadas anteriores."),
+    # rodada: int,
+    # carrega_jogos_nao_realizados: bool = Query(
+    #     default=False,
+    #     alias="carrega_jogos_nao_realizados",
+    #     description="Quando verdadeiro, inclui jogos não realizados de rodadas anteriores."),
     session: Session = Depends(pegar_sessao),
     usuario: Usuario = Depends(verificar_token)
 ):
@@ -190,9 +227,9 @@ async def calcular_classificacao(
         return calcular_classificacao_brasileirao(
             db=session,
             serie=serie,
-            ano=ano,
-            rodada=rodada,
-            carrega_nao_realizados=carrega_jogos_nao_realizados)
+            ano=ano) #,
+            # rodada=rodada,
+            # carrega_nao_realizados=carrega_jogos_nao_realizados)
     except HTTPException as ex:
         log_erro = f"Erro: {ex.detail}"
         raise HTTPException(status_code=ex.status_code, detail=log_erro)

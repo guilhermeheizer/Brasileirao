@@ -135,49 +135,6 @@ async def get_rodada_lista(
         session.close()
 
 @rodada_form_router.get(
-    "/buscar-jogos-nao-finalizados/{serie}/{ano}/{rodada}",
-    response_model=List[JogoFormPlacarSchema],
-    summary="Busca os jogos da rodada para preenchimento de placares",
-    description="Retorna jogos não finalizados de uma rodada ou anteriores no formato esperado pelo front-end."
-)
-async def get_rodada_jogos_nao_finalizados_lista(
-    serie: str,
-    ano: int,
-    rodada: int,
-    carrega_rodada_anteriores: bool = Query(
-        default=False,
-        alias="carrega_jogos",
-        description="Quando verdadeiro, inclui jogos de rodadas anteriores."),
-    session: Session = Depends(pegar_sessao),
-    usuario: Usuario = Depends(verificar_token)
-):
-    """Endpoint para buscar os jogos de uma rodada específica, ou jogos anteriores não realizados, para preenchimento de placares.
-    Args:
-        serie (str): Série do campeonato (ex.: 'A', 'B').
-        ano (int): Ano do campeonato.
-        rodada (int): Rodada a ser buscada (ex.: '1', '2', '3', etc.).
-        carrega_rodada_anteriores (bool, optional): Quando verdadeiro, inclui jogos de rodadas anteriores que ainda não foram realizados. Defaults to False.
-        session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI via dependência de injeção (Depends(pegar_sessao)).
-        usuario (Usuario, optional): Objeto do usuário autenticado, gerenciado pelo middleware `verificar_token`.    
-    """
-    try:
-        return rodada_jogos_nao_finalizados_lista(
-            db=session,
-            serie=serie,
-            ano=ano,
-            rodada=rodada,
-            carrega_rodada_anteriores=carrega_rodada_anteriores
-            )
-    except HTTPException as ex:
-        log_erro = f"Erro: {ex.detail}"
-        raise HTTPException(status_code=ex.status_code, detail=log_erro)
-    except Exception as e:
-        # Captura outros erros inesperados e gera um erro 500
-        raise HTTPException(status_code=500, detail=f"Erro interno ao listar rodadas: {str(e)}")
-    finally:
-        session.close()
-
-@rodada_form_router.get(
     "/buscar-ultima-rodada/{serie}/{ano}",
     response_model=UltimaRodadaResponseSchema,
     summary="Busca a última rodada cadastrada",

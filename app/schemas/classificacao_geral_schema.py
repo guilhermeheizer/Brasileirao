@@ -87,6 +87,7 @@ class ResponseClassificacaoGeralListaSchema(BaseModel):
     clg_saldo_gols: int
     car_qtd_amarelo: int
     car_qtd_vermelho: int
+    clg_id: int
 
     class Config:
         from_attributes = True

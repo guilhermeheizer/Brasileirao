@@ -56,12 +56,8 @@ async def criar_rodada_endpoint(
         raise HTTPException(status_code=500, detail=f"Erro interno ao criar rodadas: {str(e)}")
     finally:        session.close()
     
-@rodada_router.put("/atualizar_jogo/{serie}/{ano}/{rodada_numero}/{sequencia}", response_model=ResponseAlterarRodadaSchema)
+@rodada_router.put("/atualizar-jogo", response_model=ResponseAlterarRodadaSchema)
 async def atualizar_jogo_rodada_endpoint(
-    serie: str,
-    ano: int,
-    rodada_numero: int,
-    sequencia: int,
     jogo_atualizado: AlterarJogoRodadaSchema,
     session: Session = Depends(pegar_sessao),
     usuario: Usuario = Depends(verificar_token)):
@@ -69,10 +65,6 @@ async def atualizar_jogo_rodada_endpoint(
     Atualiza os dados de um jogo específico em uma rodada.
 
     Args:
-        serie (str): Informe a série do jogo a ser atualizado.
-        ano (int): Informe o ano do jogo a ser atualizado.
-        rodada_numero (int): Informe o número da rodada do jogo a ser atualizado.
-        sequencia (int): Informe a sequência do jogo a ser atualizado.
         jogo_atualizado (CriarRodadaSchema): Dados atualizados do jogo.
         session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI   
                                      via dependência de injeção (Depends(pegar_sessao)).
@@ -85,7 +77,7 @@ async def atualizar_jogo_rodada_endpoint(
         ResponseCriarRodadaSchema: O jogo atualizado.
     """
     try:
-        jogo_atualizado = atualizar_jogo_rodada(serie, ano, rodada_numero, sequencia, jogo_atualizado, session)
+        jogo_atualizado = atualizar_jogo_rodada(jogo_atualizado, session)
         return jogo_atualizado
     except HTTPException as ex:
         log_erro = f"Erro: {ex.detail}"

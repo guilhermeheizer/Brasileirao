@@ -28,7 +28,6 @@ from app.models.rodada_models import Rodada
 from app.models.estadio_models import Estadio
 from app.schemas.rodada_schema import CriarRodadaSchema, ResponseCriarRodadaSchema, ResponseAlterarRodadaSchema, AlterarJogoRodadaSchema
 from app.services.clube_service import buscar_clube_sigla, consiste_serie, consiste_sigla
-from app.services.estadio_service import buscar_estadio_id
 
 
 def consiste_sigla_clube_igual(clube_mandante: str, clube_visitante: str):
@@ -187,14 +186,10 @@ def criar_rodada(rodada: CriarRodadaSchema, session: Session):
    
     return ResponseCriarRodadaSchema(**nova_rodada.as_dict())
 
-def atualizar_jogo_rodada(serie: str, ano: int, rodada_numero: int, sequencia: int, jogo: AlterarJogoRodadaSchema, session: Session):
+def atualizar_jogo_rodada(jogo: AlterarJogoRodadaSchema, session: Session):
     """
     Atualiza os dados de um jogo específico em uma rodada.
     Args:
-        serie (str): Série do campeonato (A ou B).
-        ano (int): Ano do campeonato.
-        rodada_numero (int): Número da rodada.
-        sequencia (int): Sequência do jogo na rodada.
         jogo (AlterarJogoRodadaSchema): Dados atualizados do jogo.
         session (Session): Sessão ativa do SQLAlchemy para conectar ao banco.
     Raises:        HTTPException: Erro: 404:
@@ -210,10 +205,10 @@ def atualizar_jogo_rodada(serie: str, ano: int, rodada_numero: int, sequencia: i
     """
     data_sem_tz = jogo.rod_data.replace(tzinfo=None)
     jogos_data: CriarRodadaSchema = CriarRodadaSchema(
-        rod_serie=serie,
-        rod_ano=ano,
-        rod_rodada=rodada_numero,
-        rod_sequencia=sequencia,
+        rod_serie=jogo.rod_serie,
+        rod_ano=jogo.rod_ano,
+        rod_rodada=jogo.rod_rodada,
+        rod_sequencia=jogo.rod_sequencia,
         rod_data=data_sem_tz,
         clube_clu_sigla_mandante=jogo.clube_clu_sigla_mandante,
         clube_clu_sigla_visitante=jogo.clube_clu_sigla_visitante,
@@ -235,25 +230,25 @@ def atualizar_jogo_rodada(serie: str, ano: int, rodada_numero: int, sequencia: i
     result = session.execute(
         text(query),
         {
-            "serie": serie.upper(),
-            "ano": ano,
-            "rodada_numero": rodada_numero,
-            "sequencia": sequencia
+            "serie": jogo.rod_serie.upper(),
+            "ano": jogo.rod_ano,
+            "rodada_numero": jogo.rod_rodada,
+            "sequencia": jogo.rod_sequencia
         }
     ).fetchone()
 
     if not result:
         raise HTTPException(
             status_code=404,
-            detail=f"Rodada com série '{serie.upper()}', ano '{ano}', rodada '{rodada_numero}' e sequência '{sequencia}' não encontrada."
+            detail=f"Rodada com série '{jogo.rod_serie.upper()}', ano '{jogo.rod_ano}', rodada '{jogo.rod_rodada}' e sequência '{jogo.rod_sequencia}' não encontrada."
         )
 
     update_fields = []
     params = {
-        "serie": serie.upper(),
-        "ano": ano,
-        "rodada_numero": rodada_numero,
-        "sequencia": sequencia
+        "serie": jogo.rod_serie.upper(),
+        "ano": jogo.rod_ano,
+        "rodada_numero": jogo.rod_rodada,
+        "sequencia": jogo.rod_sequencia
     }
 
     if jogo.rod_data is not None:
@@ -311,10 +306,10 @@ def atualizar_jogo_rodada(serie: str, ano: int, rodada_numero: int, sequencia: i
     rodada_atualizada = session.execute(
         text(query),
         {
-            "serie": serie.upper(),
-            "ano": ano,
-            "rodada_numero": rodada_numero,
-            "sequencia": sequencia
+            "serie": jogo.rod_serie.upper(),
+            "ano": jogo.rod_ano,
+            "rodada_numero": jogo.rod_rodada,
+            "sequencia": jogo.rod_sequencia
         }
     ).fetchone()
 
@@ -323,10 +318,10 @@ def atualizar_jogo_rodada(serie: str, ano: int, rodada_numero: int, sequencia: i
 
     data_sem_tz = jogo.rod_data.replace(tzinfo=None)
     retorna_rodada: ResponseAlterarRodadaSchema = ResponseAlterarRodadaSchema(
-        rod_serie=serie.upper(),
-        rod_ano=ano,
-        rod_rodada=rodada_numero,
-        rod_sequencia=sequencia,
+        rod_serie=jogo.rod_serie.upper(),
+        rod_ano=jogo.rod_ano,
+        rod_rodada=jogo.rod_rodada,
+        rod_sequencia=jogo.rod_sequencia,
         rod_data=data_sem_tz,
         clube_clu_sigla_mandante=jogo.clube_clu_sigla_mandante,
         rod_gols_mandante=jogo.rod_gols_mandante,
@@ -371,3 +366,22 @@ def deletar_rodada(serie: str, ano: int, rodada_numero: int, sequencia: int, ses
         raise HTTPException(status_code=404, detail=str(e))
 
     return "Jogo excluído com sucesso"    
+
+def buscar_estadio_id(estadio_est_id: int, session: Session) -> bool:
+    """
+    Verifica se tem algum estadio ligado a rodada.
+
+    Args:
+        estadio_est_id (int): ID do estadio a ser buscada.
+        session (Session): Sessão ativa do SQLAlchemy para conectar ao banco.
+
+    Returns:
+        Retorna True caso encontre e False não encontra
+    """
+    # Busca pela rodada no banco de dados
+    rodada = session.query(Rodada).filter(Rodada.cid_id == estadio_est_id).first()
+
+    if not rodada:
+        return False
+
+    return True

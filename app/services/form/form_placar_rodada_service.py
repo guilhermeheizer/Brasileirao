@@ -1,16 +1,3 @@
-"""
-form_placar_rodada_service.py
-
-Este módulo implementa a lógica de serviço para operações de placar de rodada do Campeonato Brasileiro.
-Fornece funções para:
-- Listar jogos de uma rodada para preenchimento de placares
-- Atualizar placares e status de jogos
-- Calcular e atualizar a classificação geral
-- Processar e atualizar dados de clubes na classificação
-- Listar classificação geral detalhada
-
-Utiliza SQLAlchemy para persistência, queries customizadas e integrações com modelos e schemas do projeto.
-"""
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
@@ -51,6 +38,41 @@ def rodada_lista(
 
     return _mapear_jogos(resultados)
 
+def rodada_jogos_finalizados_e_nao_calc_classificacao_lista(
+    db: Session,
+    serie: str,
+    ano: int #,
+    # rodada: int
+    ) -> List[JogoFormPlacarSchema]:
+    """
+    Carrega a lista de jogos finalizados e classificação não calculada da rodada no formato necessário para o front-end.
+
+    Args:
+        db (Session): Sessão ativa do banco de dados.
+        serie (str): Série do campeonato (ex: 'A', 'B').
+        ano (int): Ano da competição.
+        rodada (int): Número da rodada.
+
+    Returns:
+        List[JogoFormPlacarSchema]: Lista de jogos da rodada no formato necessário para o front-end.
+    """
+    consiste_serie(serie)
+  
+    condicao = " AND rod_partida_finalizada = 'S' AND rod_calculou_classificacao = 'N' "
+
+    sql_query = query_principal_lista_rodada(condicao)
+    # print (sql_query)
+    # resultados = db.execute(text(sql_query), {"serie": serie, "ano": ano, "rodada": rodada}).fetchall()
+    resultados = db.execute(text(sql_query), {"serie": serie, "ano": ano}).fetchall()
+
+    if not resultados:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Nenhum jogo encontrado para série {serie} e ano {ano} informados."
+        )
+
+    return _mapear_jogos(resultados)
+
 def rodada_jogos_nao_finalizados_lista(
     db: Session,
     serie: str,
@@ -78,7 +100,7 @@ def rodada_jogos_nao_finalizados_lista(
         condicao = " AND rodada.rod_rodada = :rodada AND rodada.rod_partida_finalizada = 'N' "
         
     sql_query = query_principal_lista_rodada(condicao)
-
+    # print (sql_query)
     resultados = db.execute(text(sql_query), {"serie": serie, "ano": ano, "rodada": rodada}).fetchall()
 
     if not resultados:
@@ -286,9 +308,9 @@ def atualizar_placares_rodada(
 def calcular_classificacao_brasileirao(
     db: Session,
     serie: str,
-    ano: int,
-    rodada: int,
-    carrega_nao_realizados: bool = False
+    ano: int #,
+    # rodada: int,
+    # carrega_nao_realizados: bool = False
 ):
     """
     Calcula e atualiza a classificação do Brasileirão na tabela 'classificacao_geral' a partir dos dados da tabela 'rodada'.
@@ -303,6 +325,7 @@ def calcular_classificacao_brasileirao(
     Returns:
         dict: Mensagem de sucesso contendo o resultado da operação.
     """
+    # print(f"Calculando classificação do Brasileirão para série {serie}, ano {ano}, rodada {rodada}, carrega_nao_realizados={carrega_nao_realizados}")
     # Query para carregar as rodadas que atendem aos critérios
     sql_query_rodadas = """
         SELECT * FROM rodada
@@ -312,14 +335,15 @@ def calcular_classificacao_brasileirao(
           AND rod_calculou_classificacao = 'N'
     """
 
-    if carrega_nao_realizados:
-        sql_query_rodadas += " AND rod_rodada <= :rodada"
-    else:
-        sql_query_rodadas += " AND rod_rodada = :rodada"
+    # if carrega_nao_realizados:
+    #     sql_query_rodadas += " AND rod_rodada <= :rodada"
+    # else:
+    #     sql_query_rodadas += " AND rod_rodada = :rodada"
 
     sql_query_rodadas += " order by rod_serie, rod_ano, rod_rodada, rod_sequencia"
-
-    rodadas = db.execute(text(sql_query_rodadas), {"serie": serie, "ano": ano, "rodada": rodada}).fetchall()
+    # print(f"Executando query para buscar rodadas: {sql_query_rodadas}")
+    # rodadas = db.execute(text(sql_query_rodadas), {"serie": serie, "ano": ano, "rodada": rodada}).fetchall()
+    rodadas = db.execute(text(sql_query_rodadas), {"serie": serie, "ano": ano}).fetchall()
 
     # Se nenhuma rodada for encontrada
     if not rodadas:
@@ -362,10 +386,10 @@ def calcular_classificacao_brasileirao(
                 UPDATE rodada
                 SET rod_calculou_classificacao = 'S'
                 WHERE rod_serie = :serie
-                  AND rod_ano = :ano
-                  AND rod_rodada = :rodada
-                  AND rod_sequencia = :sequencia
-                  AND rod_partida_finalizada = 'S'
+                    AND rod_ano = :ano
+                    AND rod_rodada = :rodada
+                    AND rod_sequencia = :sequencia
+                    AND rod_partida_finalizada = 'S'
             """),
             {
                 "serie": partida.rod_serie,
@@ -375,7 +399,47 @@ def calcular_classificacao_brasileirao(
             }
         )
 
-    # Salvar alterações
+    resultados = lista_classificacao_geral(db, serie, ano)
+
+    classificacao = []
+    for resultado in resultados:
+        classificacao.append(
+            ResponseClassificacaoGeralListaSchema(
+                ordem_classificacao=resultado.ordem_classificacao,
+                clube_clu_sigla=resultado.clube_clu_sigla,
+                clu_nome=resultado.clu_nome,
+                clu_link_escudo=resultado.clu_link_escudo,
+                clg_pontos=resultado.clg_pontos,
+                clg_qtd_jogou=resultado.clg_qtd_jogou,
+                clg_vitorias=resultado.clg_vitorias,
+                clg_qtd_empates=resultado.clg_qtd_empates,
+                clg_qtd_derrotas=resultado.clg_qtd_derrotas,
+                clg_gols_pro=resultado.clg_gols_pro,
+                clg_gols_contra=resultado.clg_gols_contra,
+                clg_saldo_gols=resultado.clg_saldo_gols,
+                car_qtd_amarelo=resultado.car_qtd_amarelo,
+                car_qtd_vermelho=resultado.car_qtd_vermelho,
+                clg_id=resultado.clg_id,
+            )
+        )
+        # print(f"Atualizando posição do clube {resultado.clube_clu_sigla} para {resultado.ordem_classificacao}")
+        db.execute(
+            text("""
+                UPDATE classificacao_geral
+                SET clg_posicao = :clg_posicao,
+                    car_qtd_vermelho = :car_qtd_vermelho,
+                    car_qtd_amarelo = :car_qtd_amarelo
+                WHERE clg_id = :clg_id
+            """),
+            {
+                "clg_posicao": resultado.ordem_classificacao,
+                "clg_id": resultado.clg_id,
+                "car_qtd_vermelho": resultado.car_qtd_vermelho,
+                "car_qtd_amarelo": resultado.car_qtd_amarelo
+            },
+        )
+
+    # # Salvar alterações
     db.commit()
     return {"message": "Classificação geral do Brasileirão atualizada com sucesso!"}
 
@@ -511,7 +575,9 @@ def lista_classificacao_geral(db: Session, serie: str, ano: int) -> list:
            cg.clg_gols_contra, 
            cg.clg_saldo_gols,  
            cartao.car_qtd_amarelo,
-           cartao.car_qtd_vermelho 
+           cartao.car_qtd_vermelho,
+           cg.clg_posicao,
+           cg.clg_id 
     FROM classificacao_geral cg 
     LEFT JOIN cartao AS cartao ON
         cg.clg_serie = cartao.car_serie AND
@@ -520,13 +586,14 @@ def lista_classificacao_geral(db: Session, serie: str, ano: int) -> list:
     JOIN clube AS clube ON
         cg.clube_clu_sigla = clube.clu_sigla 	
     WHERE cg.clg_serie = :serie AND cg.clg_ano = :ano
-    ORDER BY cg.clg_pontos DESC, 
-             cg.clg_vitorias DESC, 
-             cg.clg_saldo_gols DESC, 
-             cg.clg_gols_pro DESC, 
-             cartao.car_qtd_vermelho ASC,
-             cartao.car_qtd_amarelo ASC
+    ORDER BY cg.clg_posicao
     """
+    # ORDER BY cg.clg_pontos DESC, 
+    #          cg.clg_vitorias DESC, 
+    #          cg.clg_saldo_gols DESC, 
+    #          cg.clg_gols_pro DESC, 
+    #          cartao.car_qtd_vermelho ASC,
+    #          cartao.car_qtd_amarelo ASC
 
     resultados = db.execute(text(sql_query), {"serie": serie_upper, "ano": ano}).fetchall()
 
@@ -557,7 +624,8 @@ def lista_classificacao_geral(db: Session, serie: str, ano: int) -> list:
                 clg_gols_contra=resultado.clg_gols_contra,
                 clg_saldo_gols=resultado.clg_saldo_gols,
                 car_qtd_amarelo=resultado.car_qtd_amarelo,
-                car_qtd_vermelho=resultado.car_qtd_vermelho
+                car_qtd_vermelho=resultado.car_qtd_vermelho,
+                clg_id=resultado.clg_id
             )
         )
  

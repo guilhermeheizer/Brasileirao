@@ -58,7 +58,7 @@ async def listar_estadios(
         session.close()
 
 
-@estadio_router.post("/incluir/", response_model=EstadioCreate)
+@estadio_router.post("/incluir", response_model=EstadioCreate)
 async def criar_novo_estadio(estadio: EstadioCreate, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     """
     Cria um novo estadio no banco de dados.
@@ -87,9 +87,8 @@ async def criar_novo_estadio(estadio: EstadioCreate, session: Session = Depends(
         session.close()
 
 
-@estadio_router.put("/alterar/{est_id}", response_model=EstadioUpdate)
-def atualizar_estadio_por_sigla(
-    est_id: int,
+@estadio_router.put("/alterar", response_model=EstadioUpdate)
+def atualiza_estadio(
     estadio_atualizado: EstadioUpdate,
     session: Session = Depends(pegar_sessao),
     usuario: Usuario = Depends(verificar_token)):
@@ -97,7 +96,6 @@ def atualizar_estadio_por_sigla(
     Atualiza os dados de um estadio específico.
 
     Args:
-    estadio_id (int): informe o ID da estadio a ser atualizado.
     estadio_atualizado (EstadioUpdate): Dados para atualizar a estadio.
     session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI   
                                  via dependência de injeção (Depends(pegar_sessao)).
@@ -107,10 +105,10 @@ def atualizar_estadio_por_sigla(
     HTTPException: Lançada se ocorrer um erro durante a atualização da estadio.
 
     Returns:
-    EstadioUpdate: A estadio atualizada.
+    EstadioUpdate: A estadio atualizado.
     """
     try:
-        return atualizar_estadio(est_id, estadio_atualizado, session)
+        return atualizar_estadio(estadio_atualizado, session)
     except HTTPException as ex:
         log_erro = f"Erro: {ex.detail}"
         raise HTTPException(status_code=ex.status_code, detail=log_erro)

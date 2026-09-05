@@ -76,10 +76,10 @@ async def criar_novo_cartao(cartao: CartaoSchema, session: Session = Depends(peg
         session.close()
 
 
-@cartao_router.post("/criar-cartoes")
+@cartao_router.post("/criar-cartoes/{serie}/{ano}")
 async def criar_cartoes(
-    serie: str = Query(description="Série do campeonato ('A' ou 'B')"),
-    ano: int = Query(description="Ano do campeonato"),
+    serie: str,
+    ano: int,
     session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)
 ):
     """
@@ -105,22 +105,15 @@ async def criar_cartoes(
         session.close()
 
 
-@cartao_router.put("/atualizar/{serie}/{ano}/{clu_sigla}", response_model=CartaoSchema)
+@cartao_router.put("/atualizar", response_model=CartaoSchema)
 async def atualizar_cartao_por_serie_ano_sigla(
-    serie: str,
-    ano: int,
-    clu_sigla: str,
     cartao_atualizado: CartaoSchema,
-    altera_qtd_menor: bool = Query(False, description="Permite diminuir a quantidade de cartões?"),
     session: Session = Depends(pegar_sessao),
     usuario: Usuario = Depends(verificar_token)):
     """
     Atualiza os dados de um cartao específico.
 
     Args:
-    serie (str): Informe a série do cartão a ser atualizado.
-    ano (int): Informe o ano do cartão a ser atualizado.
-    clu_sigla (str): Informe a sigla do clube do cartão a ser atualizado.
     cartao_atualizado (CartaoSchema): Dados para atualizar do cartao.
     session (Session, optional): Sessão do SQLAlchemy gerenciada pelo FastAPI   
                                  via dependência de injeção (Depends(pegar_sessao)).
@@ -133,7 +126,8 @@ async def atualizar_cartao_por_serie_ano_sigla(
     CartaoSchema: Cartão atualizado.
     """
     try:
-        return atualizar_cartao(altera_qtd_menor, serie, ano, clu_sigla, cartao_atualizado, session)
+        print(f"{cartao_atualizado}")
+        return atualizar_cartao(cartao_atualizado, session)
     except HTTPException as ex:
         log_erro = f"Erro: {ex.detail}"
         raise HTTPException(status_code=ex.status_code, detail=log_erro)
@@ -144,7 +138,7 @@ async def atualizar_cartao_por_serie_ano_sigla(
         session.close()
 
 
-@cartao_router.post("/atualizar/dados-cbf/{serie}/{ano}", response_model=list[CartaoSchema])
+@cartao_router.post("/dados-cbf/{serie}/{ano}", response_model=list[CartaoSchema])
 async def atualizar_cartao_por_serie_ano(
     serie: str,
     ano: int,

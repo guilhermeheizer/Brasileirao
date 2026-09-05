@@ -6,7 +6,6 @@ import re
 REGEX_NOME = re.compile(r"^[A-Za-zÀ-ÿ\s\-']+$")
 
 class EstadioCreate(BaseModel):
-    est_id: int
     est_nome: str
     cidade_cid_id: int
 

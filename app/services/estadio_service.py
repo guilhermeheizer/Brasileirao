@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.models.estadio_models import Estadio
 from app.models.cidade_models import Cidade
+from app.models.rodada_models import Rodada
+from app.schemas.rodada_schema import RodadaSchema
 from app.schemas.estadio_schema import EstadioCreate, EstadioUpdate, EstadioCidadeOut
 from typing import List, Optional
 import re
@@ -74,7 +76,7 @@ def criar_estadio(estadio: EstadioCreate, session: Session) -> EstadioCreate:
         EstadioCreate: Representação do estadio criado.
     """
     buscar_estadio_nome(True, estadio.est_nome, session)  # Verifica se o nome do estadio já existe
-    buscar_estadio_id(True, estadio.est_id, session)  # Verifica se a iddo estadio já existe
+
     cidade = (
             session.query(Cidade)
             .filter(Cidade.cid_id == estadio.cidade_cid_id)
@@ -93,8 +95,8 @@ def criar_estadio(estadio: EstadioCreate, session: Session) -> EstadioCreate:
     return EstadioCreate(**novo_estadio.as_dict())
 
 
-def atualizar_estadio(est_id: int, estadio_atualizado: EstadioUpdate, session: Session) -> EstadioUpdate:
-    estadio_db = session.query(Estadio).filter(Estadio.__table__.c.est_id == est_id).first()
+def atualizar_estadio(estadio_atualizado: EstadioUpdate, session: Session) -> EstadioUpdate:
+    estadio_db = session.query(Estadio).filter(Estadio.__table__.c.est_id == estadio_atualizado.est_id).first()
 
     if not estadio_db:
         raise HTTPException(status_code=404, detail="Estadio não encontrado.")
@@ -137,11 +139,15 @@ def atualizar_estadio(est_id: int, estadio_atualizado: EstadioUpdate, session: S
 def deletar_estadio(est_id: int, session: Session):
     estadio = session.query(Estadio).filter(Estadio.__table__.c.est_id == est_id).first()
     if not estadio:
-        raise HTTPException(status_code=404, detail="Estadio não encontrado.")
+        raise HTTPException(status_code=404, detail="Estádio não encontrado.")
+
+    estadio_rodada = buscar_estadio_rodada(est_id, session)
+    if estadio_rodada:
+        raise HTTPException(status_code=404, detail=f"O jogo de {estadio_rodada.rod_data} da rodada {estadio_rodada.rod_rodada} está vinculado ao estádio. Exclusão não permitida.")
 
     session.delete(estadio)
     session.commit()
-    return "Estadio excluído com sucesso."
+    return "Estádio excluído com sucesso."
 
 def buscar_estadio_nome(retorna_exception: bool, nome: str, session: Session) -> Optional[EstadioCreate]:
     """
@@ -168,28 +174,24 @@ def buscar_estadio_nome(retorna_exception: bool, nome: str, session: Session) ->
 
     return EstadioCreate(**estadio.as_dict()) if estadio else None
 
-def buscar_estadio_id(retorna_exception: bool, estadio_id: int, session: Session) -> Optional[EstadioCreate]:
+def buscar_estadio_rodada(estadio_id: int, session: Session) -> Optional[RodadaSchema] | None:
     """
-    Busca uma estadio pelo ID no banco de dados.
+    Busca um estadio pelo ID na tabela rodada.
 
     Args:
-        retorna_exception (bool): Indica se deve lançar uma exceção caso a estadio não seja encontrado.
         estadio_id (int): ID do estadio a ser buscada.
         session (Session): Sessão ativa do SQLAlchemy para conectar ao banco.
 
-    Raises:
-        HTTPException: Caso a estadio não seja encontrado.
-
     Returns:
-        Optional[EstadioCreate]: Representação do estadio encontrado ou None se não encontrado.
+        Optional[RodadaSchema]: Representação do estadio encontrado ou None se não encontrado.
     """
     # Busca pelo estadio no banco de dados
-    estadio = session.query(Estadio).filter(Estadio.__table__.c.est_id == estadio_id).first()
+    rodada = session.query(Rodada).filter(Rodada.__table__.c.estadio_est_id == estadio_id).first()
 
-    if estadio:
-        if retorna_exception:
-            raise HTTPException(status_code=404, detail=f"Estadio com sigla '{estadio_id}' já existe.")
-    return EstadioCreate(**estadio.as_dict()) if estadio else None
+    if rodada:
+        return RodadaSchema(**rodada.as_dict()) if rodada else None
+
+    return None
 
 def buscar_estadio_por_cidade_id(retorna_exception: bool, cidade_id: int, session: Session) -> EstadioCreate | None:
     """

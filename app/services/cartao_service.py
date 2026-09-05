@@ -143,7 +143,7 @@ def criar_cartoes_para_clubes(serie: str, ano: int, session: Session) -> dict:
     if registros_existentes and registros_existentes > 0:
         raise HTTPException(
             status_code=404,
-            detail=f"Já existem registros na tabela 'cartao' para a série '{serie.upper()}' e ano '{ano}'."
+            detail=f"Os cartões amarelos e vermelhos já foram gerados para a série '{serie.upper()}' e ano '{ano}'."
         )
     
     # Buscar todos os clubes da série
@@ -200,7 +200,7 @@ def criar_cartoes_para_clubes(serie: str, ano: int, session: Session) -> dict:
     return {"message": f"Registros de cartões criados com sucesso para a série '{serie.upper()}' e ano '{ano}'."}
 
 
-def atualizar_cartao(altera_qtd_menor: bool, car_serie: str, car_ano: int, clube_clu_sigla: str, dados: CartaoSchema, session: Session) -> CartaoSchema:
+def atualizar_cartao(cartao: CartaoSchema, session: Session) -> CartaoSchema:
     """Atualiza um registro de cartão existente.
 
     Args:
@@ -217,45 +217,34 @@ def atualizar_cartao(altera_qtd_menor: bool, car_serie: str, car_ano: int, clube
     Returns:
         CartaoSchema: Representação do cartão atualizado.
     """
-    consiste_serie(car_serie.upper())
-    consiste_sigla(clube_clu_sigla.upper())
-
-    if not altera_qtd_menor:
-        cartao_qtd = buscar_cartao_sigla(False, car_ano,clube_clu_sigla.upper(), session)
-        if cartao_qtd:
-            if (
-                dados.car_qtd_vermelho is not None
-                and cartao_qtd.car_qtd_vermelho is not None
-                and dados.car_qtd_vermelho < cartao_qtd.car_qtd_vermelho
-            ):
-                raise HTTPException(status_code=404, detail="A quantidade de cartões vermelhos informada não pode ser menor do que a quantidade atual.")
-            if (
-                dados.car_qtd_amarelo is not None
-                and cartao_qtd.car_qtd_amarelo is not None
-                and dados.car_qtd_amarelo < cartao_qtd.car_qtd_amarelo
-            ):
-                raise HTTPException(status_code=404, detail="A quantidade de cartões amarelos informada não pode ser menor do que a quantidade atual.")
+    serie = cartao.car_serie.upper()
+    sigla = cartao.clube_clu_sigla.upper()
+    consiste_serie(serie)
+    consiste_sigla(sigla)
 
     # Busca o cartão no banco
-    cartao = session.query(Cartao).filter(
-        Cartao.__table__.c.car_serie == car_serie.upper(),
-        Cartao.__table__.c.car_ano == car_ano,
-        Cartao.__table__.c.clube_clu_sigla == clube_clu_sigla.upper(),
+    cartao_existente = session.query(Cartao).filter(
+        Cartao.__table__.c.car_serie == serie,
+        Cartao.__table__.c.car_ano == cartao.car_ano,
+        Cartao.__table__.c.clube_clu_sigla == sigla,
     ).first()
 
-    if not cartao:
+    if not cartao_existente:
         raise HTTPException(
-            status_code=404, detail=f"Cartão para o clube '{clube_clu_sigla.upper()}' na série '{car_serie.upper()}' do ano {car_ano} não encontrado."
+            status_code=404, detail=f"Cartão para o clube '{sigla}' na série '{serie}' do ano {cartao.car_ano} não encontrado."
         )
 
+    dados_atualizacao = cartao
+    cartao = cartao_existente
+
     # Atualiza os campos fornecidos
-    if dados.car_qtd_vermelho is not None:
-        cartao.car_qtd_vermelho = dados.car_qtd_vermelho
+    if dados_atualizacao.car_qtd_vermelho is not None:
+        cartao.car_qtd_vermelho = dados_atualizacao.car_qtd_vermelho
 
-    if dados.car_qtd_amarelo is not None:
-        cartao.car_qtd_amarelo = dados.car_qtd_amarelo
+    if dados_atualizacao.car_qtd_amarelo is not None:
+        cartao.car_qtd_amarelo = dados_atualizacao.car_qtd_amarelo
 
-    if dados:
+    if cartao:
         session.commit()
         session.refresh(cartao)
 

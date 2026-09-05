@@ -78,6 +78,21 @@ class ClassificacaoGeral(Base):
         nullable=True
     )  # Total de gols sofridos
 
+    clg_posicao: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True
+    )  # Posição na classificacao
+
+    car_qtd_vermelho: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True
+    )  # Cartões vermelhos
+
+    car_qtd_amarelo: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True
+    )  # Cartões amarelos
+
     # Relacionamento com a tabela Clube
     clube: Mapped["Clube"] = relationship(
         "Clube",
@@ -86,7 +101,8 @@ class ClassificacaoGeral(Base):
 
     def __init__(self, clg_serie, clg_ano, clg_pontos, clg_vitorias, clg_saldo_gols, clg_gols_pro, 
                  clg_confronto_direto, clube_clu_sigla, clg_qtd_jogou=None, clg_qtd_empates=None, 
-                 clg_qtd_derrotas=None, clg_gols_contra=None):
+                 clg_qtd_derrotas=None, clg_gols_contra=None, clg_posicao=None, car_qtd_vermelho=None, 
+                 car_qtd_amarelo=None):
         self.clg_serie = clg_serie
         self.clg_ano = clg_ano
         self.clg_pontos = clg_pontos
@@ -99,6 +115,9 @@ class ClassificacaoGeral(Base):
         self.clg_qtd_empates = clg_qtd_empates
         self.clg_qtd_derrotas = clg_qtd_derrotas
         self.clg_gols_contra = clg_gols_contra
+        self.clg_posicao = clg_posicao
+        self.car_qtd_vermelho = car_qtd_vermelho
+        self.car_qtd_amarelo = car_qtd_amarelo
 
     def as_dict(self):
         return {
@@ -114,5 +133,8 @@ class ClassificacaoGeral(Base):
             "clg_qtd_jogou": self.clg_qtd_jogou,
             "clg_qtd_empates": self.clg_qtd_empates,
             "clg_qtd_derrotas": self.clg_qtd_derrotas,
-            "clg_gols_contra": self.clg_gols_contra
+            "clg_gols_contra": self.clg_gols_contra,
+            "clg_posicao": self.clg_posicao,
+            "car_qtd_vermelho": self.car_qtd_vermelho,
+            "car_qtd_amarelo": self.car_qtd_amarelo
         }

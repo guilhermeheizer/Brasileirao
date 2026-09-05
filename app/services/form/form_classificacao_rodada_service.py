@@ -1,18 +1,8 @@
-"""
-form_classificacao_rodada_service.py
-
-Este módulo implementa a lógica de serviço para copiar a classificação geral para a tabela de classificação por rodada.
-Fornece função para persistir o estado da classificação geral ao final de uma rodada específica.
-
-Funcionalidade principal:
-- Copiar e salvar a classificação geral de uma rodada, preservando o histórico da competição
-
-Utiliza SQLAlchemy para execução de SQL direto e persistência dos dados.
-"""
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.services.form.form_placar_rodada_service import calcular_classificacao_brasileirao
 from sqlalchemy import text
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.services.clube_service import consiste_serie
 
@@ -26,17 +16,35 @@ def copia_classificacao_por_rodada(db: Session, rodada: str, ano: int, serie: st
     :param ano: Ano da competição
     :param serie: Série do campeonato (A ou B)
     """
+    # Ler a tabela classificacao_rodada ordenada por serie, ano, rodada, 
+    # SQL para verificacar se já foi realizada a copia da rodada
+    sql = text("""
+        select count(*) as qtd_registros
+        from classificacao_rodada
+        where clr_serie = :serie and clr_ano = :ano and clr_rodada = :rodada
+    """)
+    result = db.execute(sql, {"rodada": rodada, "ano": ano, "serie": serie})
+    row = result.fetchone()
+    qtd_registros = row[0] if row and row[0] is not None else 0
+    if qtd_registros != 0:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Cópia da classificação referente a série {serie}, ano {ano} e rodada {rodada} já foi realizada."
+        )
     # SQL para copiar a classificação geral para a tabela de classificação por rodada
+    sql = ""
     sql = text("""
         INSERT INTO classificacao_rodada (
             clr_serie, clr_ano, clr_rodada, clr_pontos, clr_vitorias, 
             clr_saldo_gols, clr_gols_pro, clr_confronto_direto, clube_clu_sigla,
-            clr_qtd_jogou, clr_qtd_empates, clr_qtd_derrotas, clr_gols_contra
+            clr_qtd_jogou, clr_qtd_empates, clr_qtd_derrotas, clr_gols_contra, clr_posicao,
+            car_qtd_vermelho, car_qtd_amarelo
         )
         SELECT 
             clg_serie, clg_ano, :rodada AS clr_rodada, clg_pontos, clg_vitorias,
             clg_saldo_gols, clg_gols_pro, clg_confronto_direto, clube_clu_sigla,
-            clg_qtd_jogou, clg_qtd_empates, clg_qtd_derrotas, clg_gols_contra
+            clg_qtd_jogou, clg_qtd_empates, clg_qtd_derrotas, clg_gols_contra, clg_posicao,
+            car_qtd_vermelho, car_qtd_amarelo
         FROM classificacao_geral
         WHERE clg_ano = :ano AND clg_serie = :serie
     """)
@@ -96,7 +104,8 @@ def recalcular_classificacao(db: Session, serie: str, ano: int):
         ultimo_numero = result[0] if result and result[0] is not None else 0
 
         # Passo 4: Chamar a função calcular_classificacao_brasileirao
-        calcular_classificacao_brasileirao(db, serie_upper, ano, ultimo_numero, True)
+        # calcular_classificacao_brasileirao(db, serie_upper, ano, ultimo_numero, True)
+        calcular_classificacao_brasileirao(db, serie_upper, ano)
     except Exception as e:
         print(f"Erro ao recalcular classificação: {e}")
     finally:
